@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天堂W 擊殺王及重生紀錄器 (過輪閃爍修復版)</title>
-    <!-- 引入 Tailwind CSS -->
+    <title>天堂W 擊殺王及重生紀錄器 (別稱更新版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- 引入 Firebase App 和 Database SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
@@ -43,14 +40,12 @@
 
     <div id="app" v-cloak class="max-w-md mx-auto px-4 pt-6">
         
-        <!-- 頁首標題 -->
         <header class="mb-4 text-center">
             <h1 v-if="!isEventActive" class="text-2xl font-bold text-yellow-500 tracking-wider transition-all">👑 天堂W 王怪計時看板</h1>
             <h1 v-else class="text-2xl font-black text-red-500 tracking-widest event-title-active transition-all flex items-center justify-center gap-1">
                 🔥 王的逆襲：首領瘋狂暴動！
             </h1>
             
-            <!-- 活動跑馬燈小標 -->
             <p v-if="isEventActive" class="text-xs text-orange-400 font-bold mt-2 tracking-wide bg-red-950/30 py-1.5 rounded-full border border-red-900/40">
                 ⚡ 雙倍重生速度已啟動，請盟友立刻就位！
             </p>
@@ -60,12 +55,10 @@
             </p>
         </header>
 
-        <!-- 指令輸入區塊 -->
         <div :class="isEventActive ? 'bg-gray-800/90 border-red-900/60 shadow-red-950/20' : 'bg-gray-800 border-gray-700'" class="p-4 rounded-xl border shadow-md mb-6 relative transition-colors duration-500">
             <div class="flex justify-between items-center mb-2">
                 <label :class="isEventActive ? 'text-red-400' : 'text-yellow-500/80'" class="block text-xs font-bold uppercase tracking-wider">💬 指令輸入</label>
                 
-                <!-- 全域設定齒輪按鈕 -->
                 <div class="relative">
                     <button 
                         @click="toggleSettingsMenu" 
@@ -74,11 +67,9 @@
                         <span>⚙️ 設定</span>
                     </button>
 
-                    <!-- 齒輪下拉選單 -->
                     <div v-if="showSettingsMenu" class="absolute right-0 mt-2 w-56 bg-gray-950 border border-gray-700 rounded-xl shadow-2xl p-3 z-50 space-y-2">
                         <p class="text-[10px] font-bold text-gray-500 border-b border-gray-800 pb-1 mb-2 uppercase tracking-wider">🛠️ 系統控制面版</p>
                         
-                        <!-- 齒輪內按鈕 1: 王的逆襲開關 -->
                         <button 
                             @click="toggleEventMode"
                             :class="isEventActive ? 'bg-red-600 text-white border-red-500' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'"
@@ -89,7 +80,6 @@
                             </span>
                         </button>
 
-                        <!-- 齒輪內按鈕 2: 一鍵重設 -->
                         <button 
                             @click="triggerRestart"
                             class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 hover:bg-red-950/40 text-red-400 border border-gray-700 hover:border-red-900/60 transition-colors flex items-center gap-1.5">
@@ -99,7 +89,6 @@
                 </div>
             </div>
 
-            <!-- 輸入框核心 -->
             <div class="flex gap-2">
                 <input 
                     v-model="commandText" 
@@ -115,12 +104,10 @@
                     執行
                 </button>
             </div>
-            <!-- 狀態/提示訊息 -->
             <p v-if="errorMsg" class="text-red-400 text-xs mt-2 font-medium">⚠️ {{ errorMsg }}</p>
             <p v-if="successMsg" class="text-green-400 text-xs mt-2 font-medium">✅ {{ successMsg }}</p>
         </div>
 
-        <!-- 王分類過濾按鈕 -->
         <div class="flex flex-wrap gap-2 mb-6 justify-center">
             <button 
                 v-for="tab in tabs" 
@@ -131,13 +118,11 @@
             </button>
         </div>
 
-        <!-- 空狀態提示 -->
         <div v-if="filteredBosses.length === 0" :class="isEventActive ? 'border-red-900/30 bg-red-950/5' : 'border-gray-800'" class="text-center py-12 text-gray-500 border border-dashed rounded-xl">
             <p class="text-sm">目前沒有正在倒數的首領 ⏳</p>
             <p class="text-xs mt-1 text-gray-600">直接輸入「王名 時間」或「王名」即可開始紀錄</p>
         </div>
 
-        <!-- 王怪列表 -->
         <div class="space-y-3">
             <div 
                 v-for="boss in filteredBosses" 
@@ -145,18 +130,15 @@
                 :class="getCardBg(boss)"
                 class="p-4 rounded-xl border shadow-lg transition-all flex items-center justify-between gap-2">
                 
-                <!-- 左側與中間：出生時間 + 王名稱 -->
                 <div class="flex items-center gap-4 flex-1 min-w-0">
-                    <!-- 出生時間欄位 -->
                     <div class="w-16 text-center shrink-0">
                         <span :class="boss.isFixed ? 'text-amber-400' : (isEventActive ? 'text-orange-400' : 'text-yellow-400')" class="text-xl font-mono font-bold">
                             {{ formatTime(boss.displayRespawnAt) }}
                         </span>
                     </div>
 
-                    <!-- 王怪名稱與CD -->
                     <div class="flex items-center gap-2 min-w-0">
-                        <span :class="boss.isFixed ? 'text-amber-100 font-extrabold' : (boss.localSkipCount > 0 ? 'text-red-500 font-extrabold' : 'text-white'" class="text-lg font-bold tracking-wide truncate transition-colors">
+                        <span :class="boss.isFixed ? 'text-amber-100 font-extrabold' : (boss.localSkipCount > 0 ? 'text-red-500 font-extrabold' : 'text-white')" class="text-lg font-bold tracking-wide truncate transition-colors">
                             {{ boss.displayName }}
                         </span>
                         <span :class="getCooldownBadgeColor(boss)" class="text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">
@@ -165,7 +147,6 @@
                     </div>
                 </div>
 
-                <!-- 右側：倒數計時 -->
                 <div class="flex items-center shrink-0 mr-1">
                     <div class="text-xl font-mono font-bold" :class="getCountdownColor(boss)">
                         {{ boss.countdownText }}
@@ -207,13 +188,13 @@
                     { label: '12H 王', value: 12 },
                 ];
 
-                // 1. 一般倒數型首領資料庫
+                // 1. 一般倒數型首領資料庫 (已在 id: 5 的卡司特王中加入了簡稱 "CW")
                 const bosses = ref([
                     { id: 1, displayName: "尼羅德", name: "尼羅德", aliases: ["野豬", "YG"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 2, displayName: "夫人", name: "夫人", aliases: ["FL"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 3, displayName: "飛龍3", name: "飛龍3", aliases: ["3"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 4, displayName: "飛龍4", name: "飛龍4", aliases: ["4"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
-                    { id: 5, displayName: "卡司特王", name: "卡司特王", aliases: ["卡王", "卡司特"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 5, displayName: "卡司特王", name: "卡司特王", aliases: ["卡王", "卡司特", "CW"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 }, // 成功加入
                     { id: 6, displayName: "大腳", name: "大腳", aliases: ["DJ"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 7, displayName: "黑虎", name: "黑虎", aliases: ["BT"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 8, displayName: "德雷克", name: "德雷克", aliases: ["海賊", "HJ"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
@@ -453,9 +434,8 @@
                         const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
                         boss.countdownText = `${hrs}:${mins}:${secs}`;
                         
-                        // 【狀態優先級修復】核心修正：將 critical (30秒內) 放在過期狀態 (overdue) 之前
                         if (diff <= 30 * 1000) {
-                            boss.status = 'critical'; // 30秒內一律進入黃金警戒狀態 (包含過1的王)
+                            boss.status = 'critical';
                         } else if (boss.localSkipCount > 0) {
                             boss.status = 'overdue';
                         } else if (diff < 15 * 60000) {
@@ -492,19 +472,19 @@
                 };
 
                 const getCardBg = (boss) => {
-                    if (boss.status === 'critical') return 'bg-red-950/20 card-critical border-2'; // 30秒警戒優先級最高
+                    if (boss.status === 'critical') return 'bg-red-950/20 card-critical border-2'; 
                     if (boss.isFixed) {
                         if (boss.status === 'ready') return 'bg-orange-950/40 border-orange-500 border-2 animate-pulse';
                         return 'bg-amber-950/20 border border-amber-600/50 hover:border-amber-500';
                     }
-                    if (boss.status === 'ready') return 'bg-red-940/40 border-red-500 animate-pulse';
+                    if (boss.status === 'ready') return 'bg-red-955/40 border-red-500 animate-pulse';
                     if (boss.status === 'overdue') return 'bg-red-950/20 border-red-900/60 border'; 
                     if (boss.status === 'warning') return 'bg-yellow-950/30 border-yellow-500/50';
                     return isEventActive.value ? 'bg-gray-800 border-red-900/30 hover:border-red-900/60' : 'bg-gray-800/80 border-gray-700';
                 };
                 
                 const getCountdownColor = (boss) => {
-                    if (boss.status === 'critical') return 'text-critical font-black scale-105'; // 30秒警戒優先級最高
+                    if (boss.status === 'critical') return 'text-critical font-black scale-105'; 
                     if (boss.status === 'ready') return 'text-red-400 font-black';
                     if (boss.status === 'overdue') return 'text-red-500 font-bold'; 
                     if (boss.status === 'warning') return 'text-yellow-500';
