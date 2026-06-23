@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天堂W 擊殺王及重生紀錄器 (雲端即時同步版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <style>
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen pb-10">
+
+    <div id="app" v-cloak class="max-w-md mx-auto px-4 pt-6">
+        
+        <header class="mb-4 text-center">
+            <h1 class="text-2xl font-bold text-yellow-500 tracking-wider">👑 天堂W 王怪計時看板</h1>
+            <p class="text-[10px] text-green-400 mt-1 flex items-center justify-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span> 雲端連線中 (多人即時同步)
+            </p>
+        </header>
+
+        <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md mb-6 relative">
+            <div class="flex justify-between items-center mb-2">
+                <label class="block text-xs font-bold text-yellow-500/80 uppercase tracking-wider">💬 指令輸入</label>
+                
+                <div class="relative">
+                    <button 
+                        @click="toggleSettingsMenu" 
+                        class="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors flex items-center justify-center text-sm gap-1"
+                        title="系統設定">
+                        <span>⚙️ 設定</span>
+                    </button>
+
+                    <div v-if="showSettingsMenu" class="absolute right-0 mt-2 w-56 bg-gray-950 border border-gray-700 rounded-xl shadow-2xl p-3 z-50 space-y-2">
+                        <p class="text-[10px] font-bold text-gray-500 border-b border-gray-800 pb-1 mb-2 uppercase tracking-wider">🛠️ 系統控制面版</p>
+                        
+                        <button 
+                            @click="toggleEventMode"
+                            :class="isEventActive ? 'bg-red-600 text-white border-red-500' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'"
+                            class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold border transition-colors flex justify-between items-center">
+                            <span>💥 王的逆襲活動</span>
+                            <span :class="isEventActive ? 'bg-white text-red-600' : 'bg-gray-900 text-gray-500'" class="px-1.5 py-0.5 rounded text-[10px] font-black">
+                                {{ isEventActive ? 'ON' : 'OFF' }}
+                            </span>
+                        </button>
+
+                        <button 
+                            @click="triggerRestart"
+                            class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 hover:bg-red-950/40 text-red-400 border border-gray-700 hover:border-red-900/60 transition-colors flex items-center gap-1.5">
+                            <span>🗑️ 清空所有紀錄</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <input 
+                    v-model="commandText" 
+                    @keyup.enter="parseCommand"
+                    type="text" 
+                    placeholder="格式: K 2G 1131 或 T 海賊 1141" 
+                    class="flex-1 bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-500 placeholder-gray-600"
+                />
+                <button 
+                    @click="parseCommand" 
+                    class="bg-yellow-600 hover:bg-yellow-500 text-gray-900 font-bold px-4 py-2 rounded-lg text-sm transition-colors">
+                    執行
+                </button>
+            </div>
+            <p v-if="errorMsg" class="text-red-400 text-xs mt-2 font-medium">⚠️ {{ errorMsg }}</p>
+            <p v-if="successMsg" class="text-green-400 text-xs mt-2 font-medium">✅ {{ successMsg }}</p>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-6 justify-center">
+            <button 
+                v-for="tab in tabs" 
+                @click="currentTab = tab.value"
+                :class="currentTab === tab.value ? 'bg-yellow-600 text-white' : 'bg-gray-800 text-gray-400'"
+                class="px-3 py-1 text-sm rounded-full font-medium transition-colors">
+                {{ tab.label }}
+            </button>
+        </div>
+
+        <div v-if="filteredBosses.length === 0" class="text-center py-12 text-gray-500 border border-dashed border-gray-800 rounded-xl">
+            <p class="text-sm">目前沒有正在倒數的首領 ⏳</p>
+            <p class="text-xs mt-1 text-gray-600">請利用上方輸入框輸入「K 王名」或「T 王名 時間」開始紀錄</p>
+        </div>
+
+        <div class="space-y-3">
+            <div 
+                v-for="boss in filteredBosses" 
+                :key="boss.id" 
+                :class="getCardBg(boss)"
+                class="p-4 rounded-xl border border-gray-700/50 shadow-lg transition-all flex items-center justify-between gap-2">
+                
+                <div class="flex items-center gap-4 flex-1 min-w-0">
+                    <div class="w-16 text-center shrink-0">
+                        <span class="text-xl font-mono font-bold text-yellow-400">
+                            {{ formatTime(boss.respawnAt) }}
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="font-bold text-lg text-white tracking-wide truncate">
+                            {{ boss.displayName }}
+                            <span v-if="boss.skipCount > 0" class="text-red-500 font-extrabold text-sm ml-1 animate-pulse">
+                                (過{{ boss.skipCount }})
+                            </span>
+                        </span>
+                        <span :class="getCooldownBadgeColor(boss.cooldown)" class="text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">
+                            {{ isEventActive ? boss.cooldown / 2 : boss.cooldown }}H
+                        </span>
+                    </div>
+                </div>
+
+                <div class="flex items-center shrink-0 mr-1">
+                    <div class="text-xl font-mono font-bold" :class="getCountdownColor(boss)">
+                        {{ boss.countdownText }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 已自動填入您的 Firebase 亞洲一區即時資料庫網址
+        const firebaseConfig = {
+            databaseURL: "https://lwopendata-default-rtdb.asia-southeast1.firebasedatabase.app/" 
+        };
+        
+        // 初始化 Firebase 連線
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const currentTab = ref('all');
+                const showSettingsMenu = ref(false);
+                
+                const commandText = ref('');
+                const errorMsg = ref('');
+                const successMsg = ref('');
+                
+                const isEventActive = ref(false);
+
+                const tabs = [
+                    { label: '全部', value: 'all' },
+                    { label: '4H 梯隊', value: 4 },
+                    { label: '6H 梯隊', value: 6 },
+                    { label: '8H 梯隊', value: 8 },
+                    { label: '12H 梯隊', value: 12 },
+                ];
+
+                const bosses = ref([
+                    { id: 1, displayName: "尼羅德", name: "尼羅德", aliases: ["野豬", "YG"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 2, displayName: "夫人", name: "夫人", aliases: ["FL"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 3, displayName: "飛龍3", name: "飛龍3", aliases: ["3"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 4, displayName: "飛龍4", name: "飛龍4", aliases: ["4"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 5, displayName: "卡司特王", name: "卡司特王", aliases: ["卡王", "卡司特"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 6, displayName: "大腳", name: "大腳", aliases: ["DJ"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 7, displayName: "黑虎", name: "黑虎", aliases: ["BT"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 8, displayName: "德雷克", name: "德雷克", aliases: ["海賊", "HJ"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 9, displayName: "莫莉提亞", name: "莫莉提亞", aliases: ["茉莉", "ML"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 10, displayName: "飛龍1", name: "飛龍1", aliases: ["1"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 11, displayName: "飛龍2", name: "飛龍2", aliases: ["2"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 12, displayName: "殺戮者", name: "殺戮者", aliases: ["PP", "胖胖"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 13, displayName: "麥肯", name: "麥肯", aliases: ["MK"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 14, displayName: "蜥蜴王", name: "蜥蜴王", aliases: ["CE", "蜥蜴"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 15, displayName: "庫約", name: "庫約", aliases: [], cooldown: 6, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 16, displayName: "烏勒庫斯", name: "烏勒庫斯", aliases: ["烏勒", "UL"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 17, displayName: "奈克諾斯", name: "奈克諾斯", aliases: ["奈克", "NK"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 18, displayName: "拉馬修", name: "拉馬修", aliases: ["蛇女", "SM"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 19, displayName: "庫爾託", name: "庫爾託", aliases: ["狼王"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 20, displayName: "四色", name: "四色", aliases: ["4S"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 21, displayName: "哈格瑪", name: "哈格瑪", aliases: ["頭目", "TM"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 22, displayName: "克洛林", name: "克洛林", aliases: [], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 23, displayName: "史前巨鱷", name: "史前巨鱷", aliases: ["鱷魚", "G2"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 24, displayName: "二巨", name: "二巨", aliases: ["2G"], cooldown: 12, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                ]);
+
+                // 載入一般與逆襲活動間隔(分鐘)
+                const restartSequence = [
+                    { id: 1, normal: 0, event: 0 }, { id: 2, normal: 0, event: 0 }, { id: 3, normal: 40, event: 20 },
+                    { id: 4, normal: 0, event: 0 }, { id: 5, normal: 20, event: 10 }, { id: 6, normal: 30, event: 15 },
+                    { id: 7, normal: 30, event: 15 }, { id: 8, normal: 10, event: 5 }, { id: 9, normal: 20, event: 10 },
+                    { id: 10, normal: 10, event: 5 }, { id: 11, normal: 0, event: 0 }, { id: 12, normal: 30, event: 15 },
+                    { id: 13, normal: 20, event: 10 }, { id: 14, normal: 10, event: 5 }, { id: 16, normal: 50, event: 25 },
+                    { id: 17, normal: 0, event: 0 }, { id: 24, normal: 0, event: 0 }, { id: 15, normal: 10, event: 5 },
+                    { id: 18, normal: 20, event: 10 }, { id: 19, normal: 10, event: 5 }, { id: 20, normal: 20, event: 10 },
+                    { id: 21, normal: 10, event: 5 }, { id: 22, normal: 20, event: 10 }, { id: 23, normal: 10, event: 5 }
+                ];
+
+                const filteredBosses = computed(() => {
+                    let list = bosses.value.filter(b => b.killedAt !== null);
+                    if (currentTab.value !== 'all') {
+                        list = list.filter(b => b.cooldown === currentTab.value);
+                    }
+                    return list.slice().sort((a, b) => a.respawnAt - b.respawnAt);
+                });
+
+                const toggleSettingsMenu = () => { showSettingsMenu.value = !showSettingsMenu.value; };
+
+                // 💥 雲端同步：更新活動模式
+                const toggleEventMode = () => {
+                    const nextState = !isEventActive.value;
+                    db.ref('eventActive').set(nextState);
+                };
+
+                // 🗑️ 雲端同步：清空全場紀錄
+                const triggerRestart = () => {
+                    let updates = { eventActive: false };
+                    bosses.value.forEach(b => {
+                        updates[`bosses/${b.id}`] = { killedAt: null, respawnAt: null, skipCount: 0 };
+                    });
+                    db.ref().update(updates);
+                    errorMsg.value = '';
+                    successMsg.value = "已成功連線雲端：清空全伺服器紀錄時間！";
+                    showSettingsMenu.value = false;
+                };
+
+                const parseCommand = () => {
+                    errorMsg.value = ''; successMsg.value = '';
+                    const str = commandText.value.trim();
+                    if (!str) return;
+
+                    if (str.toUpperCase() === 'RESTART') { triggerRestart(); commandText.value = ''; return; }
+
+                    const parts = str.split(/\s+/);
+                    const action = parts[0].toUpperCase();
+                    if (action !== 'K' && action !== 'T') { errorMsg.value = "未知前綴，請用 K 或 T。"; return; }
+                    if (parts.length < 2) { errorMsg.value = "請輸入首領名稱或別稱。"; return; }
+
+                    const inputName = parts[1].toUpperCase();
+                    const timePart = parts[2];
+
+                    const targetBoss = bosses.value.find(b => b.name.toUpperCase() === inputName || b.displayName.toUpperCase() === inputName || b.aliases.some(a => a.toUpperCase() === inputName));
+                    if (!targetBoss) { errorMsg.value = `找不到對應 [${parts[1]}] 的首領。`; return; }
+
+                    let parsedTime = new Date();
+                    if (timePart) {
+                        if (!/^\d{3,4}$/.test(timePart)) { errorMsg.value = "時間格式錯誤 (例: 1141)"; return; }
+                        const paddedTime = timePart.padStart(4, '0');
+                        const hours = parseInt(paddedTime.substring(0, 2), 10);
+                        const minutes = parseInt(paddedTime.substring(2, 4), 10);
+                        if (hours > 23 || minutes > 59) { errorMsg.value = "時間不合法！"; return; }
+                        parsedTime.setHours(hours, minutes, 0, 0);
+                        if (parsedTime > new Date()) parsedTime.setDate(parsedTime.getDate() - 1);
+                    }
+
+                    // T 指令雲端寫入
+                    if (action === 'T') {
+                        const seqIndex = restartSequence.findIndex(s => s.id === targetBoss.id);
+                        if (seqIndex === -1) { errorMsg.value = "該首領未在重啟序列中。"; return; }
+
+                        let tempTimes = {};
+                        let currentRefTime = new Date(parsedTime.getTime());
+                        tempTimes[targetBoss.id] = new Date(currentRefTime);
+
+                        for (let i = seqIndex + 1; i < restartSequence.length; i++) {
+                            const node = restartSequence[i];
+                            const currentInterval = isEventActive.value ? node.event : node.normal;
+                            currentRefTime = new Date(currentRefTime.getTime() + currentInterval * 60000);
+                            tempTimes[node.id] = new Date(currentRefTime);
+                        }
+                        currentRefTime = new Date(parsedTime.getTime());
+                        for (let i = seqIndex; i > 0; i--) {
+                            const currentNode = restartSequence[i]; const prevNode = restartSequence[i - 1];
+                            const currentInterval = isEventActive.value ? currentNode.event : currentNode.normal;
+                            currentRefTime = new Date(currentRefTime.getTime() - currentInterval * 60000);
+                            tempTimes[prevNode.id] = new Date(currentRefTime);
+                        }
+
+                        let updates = {};
+                        bosses.value.forEach(boss => {
+                            const nodeIdx = restartSequence.findIndex(s => s.id === boss.id);
+                            if (nodeIdx !== -1 && nodeIdx >= seqIndex) {
+                                const calculatedRespawn = tempTimes[boss.id];
+                                const actualCooldownHours = isEventActive.value ? (boss.cooldown / 2) : boss.cooldown;
+                                updates[`bosses/${boss.id}`] = {
+                                    killedAt: calculatedRespawn.getTime() - actualCooldownHours * 60 * 60000,
+                                    respawnAt: calculatedRespawn.getTime(),
+                                    skipCount: 0
+                                };
+                            } else {
+                                updates[`bosses/${boss.id}`] = { killedAt: null, respawnAt: null, skipCount: 0 };
+                            }
+                        });
+                        db.ref().update(updates);
+                        successMsg.value = "T指令已即時發送至雲端推算！";
+                        commandText.value = '';
+                        return;
+                    }
+
+                    // K 指令雲端寫入
+                    if (action === 'K') {
+                        const actualCooldownHours = isEventActive.value ? (targetBoss.cooldown / 2) : targetBoss.cooldown;
+                        db.ref(`bosses/${targetBoss.id}`).set({
+                            killedAt: parsedTime.getTime(),
+                            respawnAt: parsedTime.getTime() + actualCooldownHours * 60 * 60000,
+                            skipCount: 0
+                        });
+                        successMsg.value = `[${targetBoss.displayName}] 紀錄已同步上雲端。`;
+                        commandText.value = '';
+                    }
+                };
+
+                // 核心即時鐘
+                const updateCountdowns = () => {
+                    const now = new Date();
+                    bosses.value.forEach(boss => {
+                        if (!boss.respawnAt) return;
+                        let diff = boss.respawnAt - now;
+
+                        // 漏王機制
+                        if (diff <= 0) {
+                            const nextSkip = boss.skipCount + 1;
+                            const actualCooldownHours = isEventActive.value ? (boss.cooldown / 2) : boss.cooldown;
+                            const nextRespawn = boss.respawnAt.getTime() + actualCooldownHours * 60 * 60000;
+                            
+                            db.ref(`bosses/${boss.id}`).update({
+                                skipCount: nextSkip,
+                                respawnAt: nextRespawn
+                            });
+                        }
+
+                        const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
+                        const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+                        const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                        boss.countdownText = `${hrs}:${mins}:${secs}`;
+                        boss.status = diff < 15 * 60000 ? 'warning' : 'counting';
+                    });
+                };
+
+                const getCardBg = (boss) => {
+                    if (boss.skipCount > 0) return 'bg-gray-800 border-red-900/60';
+                    if (boss.status === 'warning') return 'bg-yellow-950/30 border-yellow-500/40';
+                    return 'bg-gray-800/80 border-gray-700';
+                };
+                const getCountdownColor = (boss) => boss.status === 'warning' ? 'text-yellow-500' : 'text-green-400';
+                const getCooldownBadgeColor = (cd) => {
+                    if (cd === 4) return 'bg-green-900 text-green-300';
+                    if (cd === 6) return 'bg-orange-900 text-orange-300';
+                    if (cd === 8) return 'bg-blue-900 text-blue-300';
+                    return 'bg-purple-900 text-purple-300';
+                };
+                const formatTime = (date) => {
+                    if (!date) return '';
+                    const d = new Date(date);
+                    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                };
+
+                // 雲端即時動態監聽
+                const listenToFirebase = () => {
+                    db.ref('eventActive').on('value', (snapshot) => {
+                        isEventActive.value = snapshot.val() || false;
+                    });
+                    db.ref('bosses').on('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            Object.keys(data).forEach(id => {
+                                const boss = bosses.value.find(b => b.id == id);
+                                if (boss) {
+                                    boss.killedAt = data[id].killedAt ? new Date(data[id].killedAt) : null;
+                                    boss.respawnAt = data[id].respawnAt ? new Date(data[id].respawnAt) : null;
+                                    boss.skipCount = data[id].skipCount || 0;
+                                }
+                            });
+                        }
+                    });
+                };
+
+                onMounted(() => {
+                    listenToFirebase();
+                    setInterval(updateCountdowns, 1000);
+                });
+
+                return {
+                    currentTab, tabs, filteredBosses, showSettingsMenu, toggleSettingsMenu,
+                    commandText, errorMsg, successMsg, parseCommand, triggerRestart,
+                    getCardBg, getCountdownColor, getCooldownBadgeColor, 
+                    formatTime, isEventActive, toggleEventMode
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
