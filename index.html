@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+/* Version: lineagew-20260624003 */
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -62,7 +63,7 @@
             <p v-if="isEventActive" class="text-xs text-orange-400 font-bold mt-2 tracking-wide bg-red-950/30 py-1.5 rounded-full border border-red-900/40">
                 ⚡ 雙倍重生速度已啟動，請盟友立刻就位！
             </p>
-            <p v-else class="text-[10px] text-green-400 mt-1 flex items-center justify-center gap-1">
+            <p class="text-[10px] text-green-400 mt-1 flex items-center justify-center gap-1">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
                 <span>{{ timeSyncStatus }}</span>
             </p>
@@ -102,7 +103,7 @@
                         </div>
                         
                         <div class="text-right border-t border-gray-900 pt-1">
-                            <span class="text-[9px] text-gray-600 font-mono tracking-tighter">lineagew-20260624001</span>
+                            <span class="text-xs text-gray-500 font-mono tracking-tighter">lineagew-20260624003</span>
                         </div>
                     </div>
                 </div>
@@ -199,7 +200,6 @@
                 const timeOffset = ref(0);
                 const timeSyncStatus = ref('正在同步 Google 雲端時間軸...');
                 
-                // 檢查瀏覽器是否支援通知
                 const isNotificationSupported = ref('Notification' in window);
                 const notificationPermission = ref(isNotificationSupported.value ? Notification.permission : 'denied');
                 const alertedBosses = ref({}); 
@@ -318,7 +318,6 @@
                         notificationPermission.value = permission;
                         if (permission === 'granted') {
                             try {
-                                // 升級 1：使用進階相容 ServiceWorker 架構註冊通知
                                 navigator.serviceWorker.ready.then(registration => {
                                     registration.showNotification("🎉 成功啟用背景推播提醒！");
                                 }).catch(() => {
@@ -332,17 +331,15 @@
                     });
                 };
 
-                // 【加強提醒核心修正】優化跨裝置與多環境相容
                 const triggerSystemAlert = (bossName, titleMsg) => {
                     playAlertSound();
                     if (notificationPermission.value === 'granted') {
                         try {
-                            // 優先嘗試最穩定的背景註冊通知
                             navigator.serviceWorker.ready.then(registration => {
                                 registration.showNotification(titleMsg, {
                                     body: `請血盟盟友立刻前往【${bossName}】重生點集合搶位！`,
                                     icon: 'https://cdn-icons-png.flaticon.com/512/3601/3601650.png',
-                                    tag: bossName // 防止同隻王重複塞爆通知列
+                                    tag: bossName
                                 });
                             }).catch(() => {
                                 new Notification(titleMsg, { body: `請血盟盟友立刻前往【${bossName}】重生點集合搶位！` });
@@ -639,7 +636,6 @@
                 };
 
                 onMounted(() => {
-                    // 升級 2：自動註冊空 ServiceWorker 取得底層 PWA 推播硬體綠色通道
                     if ('serviceWorker' in navigator) {
                         navigator.serviceWorker.register('data:text/javascript;base64,Ly8gU2VydmljZSBXb3JrZXIgZm9yIE5vdGlmaWNhdGlvbnM=')
                         .catch(err => console.log("SW Register Blank Pass"));
