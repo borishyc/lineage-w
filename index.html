@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天堂W 擊殺王及重生紀錄器</title>
+    <title>天堂W 擊殺王及重生紀錄器 (完美字詞修正版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -114,7 +114,7 @@
                 @click="currentTab = tab.value"
                 :class="currentTab === tab.value ? (isEventActive ? 'bg-red-600 text-white' : 'bg-yellow-600 text-white') : 'bg-gray-800 text-gray-400'"
                 class="px-3 py-1 text-sm rounded-full font-medium transition-colors">
-                {{ tab.value === 'all' ? tab.label : (isEventActive ? tab.value / 2 : tab.value) + 'H 梯隊' }}
+                {{ tab.value === 'all' ? tab.label : (isEventActive ? tab.value / 2 : tab.value) + 'H 王' }}
             </button>
         </div>
 
@@ -182,10 +182,10 @@
 
                 const tabs = [
                     { label: '全部', value: 'all' },
-                    { label: '4H 梯隊', value: 4 },
-                    { label: '6H 梯隊', value: 6 },
-                    { label: '8H 梯隊', value: 8 },
-                    { label: '12H 梯隊', value: 12 },
+                    { label: '4H 王', value: 4 },
+                    { label: '6H 王', value: 6 },
+                    { label: '8H 王', value: 8 },
+                    { label: '12H 王', value: 12 },
                 ];
 
                 // 1. 一般倒數型首領資料庫
@@ -271,7 +271,7 @@
                     let combined = [...list, ...activeFixed];
 
                     if (currentTab.value !== 'all') {
-                        // 固定王不歸屬於任何分頁，過濾時只留下對應梯隊的一般王
+                        // 固定王不歸屬於任何 H 王分類，點擊分頁過濾時只留下對應小時的一般王
                         combined = combined.filter(b => b.cooldown === currentTab.value);
                     }
                     
@@ -459,14 +459,14 @@
                         }
                     });
 
-                    // B. 計算今日固定排程王 (精確校對超過3分鐘隱形消失機制)
+                    // B. 計算今日固定排程王
                     todayFixedBosses.value.forEach(fb => {
                         let diff = fb.displayRespawnAt.getTime() - now.getTime();
 
                         if (diff <= 0) {
                             const passedMinutes = Math.abs(diff) / 60000;
                             if (passedMinutes >= 3) {
-                                fb.isExpiredAndHidden = true; // 3分鐘一到，在本地直接轉成 true 隱形消失
+                                fb.isExpiredAndHidden = true; // 超過3分鐘隱形消失
                             } else {
                                 fb.countdownText = `💥 已開門！(3分內)`;
                                 fb.status = 'ready';
