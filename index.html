@@ -3,29 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天堂W 擊殺王及重生紀錄器 (雲端絕對穩定版)</title>
+    <title>天堂W 擊殺王及重生紀錄器 (網路時間同步版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
         [v-cloak] { display: none; }
+        /* 活動期間標題專用的精緻呼吸燈特效 */
+        @keyframes firePulse {
+            0%, 100% { text-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+            50% { text-shadow: 0 0 12px rgba(249, 115, 22, 0.8); }
+        }
+        .event-title-active {
+            animation: firePulse 2s infinite ease-in-out;
+        }
+        /* 最後30秒卡片高頻震盪與外發光 */
+        @keyframes criticalDanger {
+            0%, 100% { border-color: rgba(239, 68, 68, 0.7); box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+            50% { border-color: rgba(249, 115, 22, 1); box-shadow: 0 0 18px rgba(249, 115, 22, 0.7); }
+        }
+        .card-critical {
+            animation: criticalDanger 0.5s infinite ease-in-out;
+        }
+        /* 倒數30秒文字急速閃爍 */
+        @keyframes textFlash {
+            0%, 100% { color: #ef4444; text-shadow: 0 0 2px rgba(239, 68, 68, 0.5); }
+            50% { color: #f97316; text-shadow: 0 0 8px rgba(249, 115, 22, 0.9); }
+        }
+        .text-critical {
+            animation: textFlash 0.3s infinite ease-in-out;
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen pb-10">
+<body class="bg-gray-900 text-gray-100 min-h-screen pb-10 transition-colors duration-500">
 
     <div id="app" v-cloak class="max-w-md mx-auto px-4 pt-6">
         
         <header class="mb-4 text-center">
-            <h1 class="text-2xl font-bold text-yellow-500 tracking-wider">👑 天堂W 王怪計時看板</h1>
-            <p class="text-[10px] text-green-400 mt-1 flex items-center justify-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span> 雲端連線中 (多人即時同步)
+            <h1 v-if="!isEventActive" class="text-2xl font-bold text-yellow-500 tracking-wider transition-all">👑 天堂W 王怪計時看板</h1>
+            <h1 v-else class="text-2xl font-black text-red-500 tracking-widest event-title-active transition-all flex items-center justify-center gap-1">
+                🔥 王的逆襲：首領瘋狂暴動！
+            </h1>
+            
+            <p v-if="isEventActive" class="text-xs text-orange-400 font-bold mt-2 tracking-wide bg-red-950/30 py-1.5 rounded-full border border-red-900/40">
+                ⚡ 雙倍重生速度已啟動，請盟友立刻就位！
+            </p>
+            <p v-else class="text-[10px] text-green-400 mt-1 flex items-center justify-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+                <span>{{ timeSyncStatus }}</span>
             </p>
         </header>
 
-        <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md mb-6 relative">
+        <div :class="isEventActive ? 'bg-gray-800/90 border-red-900/60 shadow-red-950/20' : 'bg-gray-800 border-gray-700'" class="p-4 rounded-xl border shadow-md mb-6 relative transition-colors duration-500">
             <div class="flex justify-between items-center mb-2">
-                <label class="block text-xs font-bold text-yellow-500/80 uppercase tracking-wider">💬 指令輸入</label>
+                <label :class="isEventActive ? 'text-red-400' : 'text-yellow-500/80'" class="block text-xs font-bold uppercase tracking-wider">💬 指令輸入</label>
                 
                 <div class="relative">
                     <button 
@@ -66,8 +98,9 @@
                     class="flex-1 bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-500 placeholder-gray-600"
                 />
                 <button 
+                    :class="isEventActive ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-yellow-600 hover:bg-yellow-500 text-gray-900'" 
                     @click="parseCommand" 
-                    class="bg-yellow-600 hover:bg-yellow-500 text-gray-900 font-bold px-4 py-2 rounded-lg text-sm transition-colors">
+                    class="font-bold px-4 py-2 rounded-lg text-sm transition-colors">
                     執行
                 </button>
             </div>
@@ -79,13 +112,13 @@
             <button 
                 v-for="tab in tabs" 
                 @click="currentTab = tab.value"
-                :class="currentTab === tab.value ? 'bg-yellow-600 text-white' : 'bg-gray-800 text-gray-400'"
+                :class="currentTab === tab.value ? (isEventActive ? 'bg-red-600 text-white' : 'bg-yellow-600 text-white') : 'bg-gray-800 text-gray-400'"
                 class="px-3 py-1 text-sm rounded-full font-medium transition-colors">
-                {{ tab.label }}
+                {{ tab.value === 'all' ? tab.label : (isEventActive ? tab.value / 2 : tab.value) + 'H 梯隊' }}
             </button>
         </div>
 
-        <div v-if="filteredBosses.length === 0" class="text-center py-12 text-gray-500 border border-dashed border-gray-800 rounded-xl">
+        <div v-if="filteredBosses.length === 0" :class="isEventActive ? 'border-red-900/30 bg-red-950/5' : 'border-gray-800'" class="text-center py-12 text-gray-500 border border-dashed rounded-xl">
             <p class="text-sm">目前沒有正在倒數的首領 ⏳</p>
             <p class="text-xs mt-1 text-gray-600">請利用上方輸入框輸入「K 王名」或「T 王名 時間」開始紀錄</p>
         </div>
@@ -95,21 +128,18 @@
                 v-for="boss in filteredBosses" 
                 :key="boss.id" 
                 :class="getCardBg(boss)"
-                class="p-4 rounded-xl border border-gray-700/50 shadow-lg transition-all flex items-center justify-between gap-2">
+                class="p-4 rounded-xl border shadow-lg transition-all flex items-center justify-between gap-2">
                 
                 <div class="flex items-center gap-4 flex-1 min-w-0">
                     <div class="w-16 text-center shrink-0">
-                        <span class="text-xl font-mono font-bold text-yellow-400">
+                        <span :class="isEventActive ? 'text-orange-400' : 'text-yellow-400'" class="text-xl font-mono font-bold">
                             {{ formatTime(boss.respawnAt) }}
                         </span>
                     </div>
 
                     <div class="flex items-center gap-2 min-w-0">
-                        <span class="font-bold text-lg text-white tracking-wide truncate">
+                        <span :class="boss.skipCount > 0 ? 'text-red-500 font-extrabold' : 'text-white'" class="text-lg font-bold tracking-wide truncate transition-colors">
                             {{ boss.displayName }}
-                            <span v-if="boss.skipCount > 0" class="text-red-500 font-extrabold text-sm ml-1 animate-pulse">
-                                (過{{ boss.skipCount }})
-                            </span>
                         </span>
                         <span :class="getCooldownBadgeColor(boss.cooldown)" class="text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">
                             {{ isEventActive ? boss.cooldown / 2 : boss.cooldown }}H
@@ -128,7 +158,6 @@
     </div>
 
     <script>
-        // 您的 Firebase 亞洲一區即時資料庫網址
         const firebaseConfig = {
             databaseURL: "https://lwopendata-default-rtdb.asia-southeast1.firebasedatabase.app/" 
         };
@@ -148,6 +177,10 @@
                 const successMsg = ref('');
                 
                 const isEventActive = ref(false);
+                
+                // 【新增變數】用於存放裝置時間與網路時間的誤差毫秒數，以及狀態文字
+                const timeOffset = ref(0);
+                const timeSyncStatus = ref('正在校對網路標準時間...');
 
                 const tabs = [
                     { label: '全部', value: 'all' },
@@ -203,6 +236,34 @@
                     return list.slice().sort((a, b) => a.respawnAt - b.respawnAt);
                 });
 
+                // 【核心新增】向網路 API 取得絕對標準時間，並算出本機誤差
+                const syncWithNetworkTime = async () => {
+                    try {
+                        const startTime = Date.now();
+                        const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+                        const data = await response.json();
+                        const endTime = Date.now();
+                        
+                        // 計算來回延遲
+                        const latency = (endTime - startTime) / 2;
+                        // 轉換 API 傳回的 ISO 時間為 Timestamp
+                        const targetNetworkTime = new Date(data.datetime).getTime() + latency;
+                        
+                        // 算出本機裝置與網路標準時間的差距
+                        timeOffset.value = targetNetworkTime - endTime;
+                        timeSyncStatus.value = `雲端多人即時同步中 (網路時間已校對，誤差 ${Math.abs(Math.round(timeOffset.value / 1000))} 秒)`;
+                    } catch (e) {
+                        console.error("網路時間校對失敗，轉用本機時間", e);
+                        timeOffset.value = 0;
+                        timeSyncStatus.value = "雲端多人即時同步中 (校對失敗，採用本機時間)";
+                    }
+                };
+
+                // 取得經過校正後的標準目前時間
+                const getCorrectedNow = () => {
+                    return new Date(Date.now() + timeOffset.value);
+                };
+
                 const toggleSettingsMenu = () => { showSettingsMenu.value = !showSettingsMenu.value; };
 
                 const toggleEventMode = () => {
@@ -239,7 +300,8 @@
                     const targetBoss = bosses.value.find(b => b.name.toUpperCase() === inputName || b.displayName.toUpperCase() === inputName || b.aliases.some(a => a.toUpperCase() === inputName));
                     if (!targetBoss) { errorMsg.value = `找不到對應 [${parts[1]}] 的首領。`; return; }
 
-                    let parsedTime = new Date();
+                    // 【調整】輸入無時間參數時，使用經網路校正後的時間作為基準
+                    let parsedTime = getCorrectedNow();
                     if (timePart) {
                         if (!/^\d{3,4}$/.test(timePart)) { errorMsg.value = "時間格式錯誤 (例: 1141)"; return; }
                         const paddedTime = timePart.padStart(4, '0');
@@ -247,7 +309,7 @@
                         const minutes = parseInt(paddedTime.substring(2, 4), 10);
                         if (hours > 23 || minutes > 59) { errorMsg.value = "時間不合法！"; return; }
                         parsedTime.setHours(hours, minutes, 0, 0);
-                        if (parsedTime > new Date()) parsedTime.setDate(parsedTime.getDate() - 1);
+                        if (parsedTime > getCorrectedNow()) parsedTime.setDate(parsedTime.getDate() - 1);
                     }
 
                     if (action === 'T') {
@@ -298,22 +360,21 @@
                         db.ref(`bosses/${targetBoss.id}`).set({
                             killedAt: parsedTime.getTime(),
                             respawnAt: parsedTime.getTime() + actualCooldownHours * 60 * 60000,
-                            skipCount: 0
+                            skipCount: 0 
                         });
                         successMsg.value = `[${targetBoss.displayName}] 紀錄已同步上雲端。`;
                         commandText.value = '';
                     }
                 };
 
-                // 【核心修正】前端純計時與純顯示，時間到了就顯示 00:00:00 並閃爍，絕不主動對雲端進行覆蓋與修改
                 const updateCountdowns = () => {
-                    const now = new Date();
+                    // 【調整】將倒數計時基礎從 new Date() 改為經過網路時間校正的 getCorrectedNow()
+                    const now = getCorrectedNow();
                     bosses.value.forEach(boss => {
                         if (!boss.respawnAt) return;
                         let diff = boss.respawnAt - now;
 
                         if (diff <= 0) {
-                            // 時間到了，固定顯示 00:00:00，不再呼叫 db.ref().update 進行修改
                             boss.countdownText = "00:00:00";
                             boss.status = 'ready';
                         } else {
@@ -321,22 +382,32 @@
                             const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
                             const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
                             boss.countdownText = `${hrs}:${mins}:${secs}`;
-                            boss.status = diff < 15 * 60000 ? 'warning' : 'counting';
+                            
+                            if (diff <= 30 * 1000) {
+                                boss.status = 'critical';
+                            } else if (diff < 15 * 60000) {
+                                boss.status = 'warning';
+                            } else {
+                                boss.status = 'counting';
+                            }
                         }
                     });
                 };
 
                 const getCardBg = (boss) => {
-                    if (boss.status === 'ready') return 'bg-red-950/30 border-red-500/50';
-                    if (boss.status === 'warning') return 'bg-yellow-950/30 border-yellow-500/40';
-                    return 'bg-gray-800/80 border-gray-700';
+                    if (boss.status === 'ready') return 'bg-red-950/40 border-red-500 animate-pulse';
+                    if (boss.status === 'critical') return 'bg-red-950/20 card-critical border-2'; 
+                    if (boss.status === 'warning') return 'bg-yellow-950/30 border-yellow-500/50';
+                    return isEventActive.value ? 'bg-gray-800 border-red-900/30 hover:border-red-900/60' : 'bg-gray-800/80 border-gray-700';
                 };
                 const getCountdownColor = (boss) => {
-                    if (boss.status === 'ready') return 'text-red-500 animate-pulse';
+                    if (boss.status === 'ready') return 'text-red-500 font-black animate-ping';
+                    if (boss.status === 'critical') return 'text-critical font-black scale-105'; 
                     if (boss.status === 'warning') return 'text-yellow-500';
-                    return 'text-green-400';
+                    return isEventActive.value ? 'text-orange-400' : 'text-green-400';
                 };
                 const getCooldownBadgeColor = (cd) => {
+                    if (isEventActive.value) return 'bg-red-950 text-red-400 border border-red-900/40';
                     if (cd === 4) return 'bg-green-900 text-green-300';
                     if (cd === 6) return 'bg-orange-900 text-orange-300';
                     if (cd === 8) return 'bg-blue-900 text-blue-300';
@@ -368,6 +439,8 @@
                 };
 
                 onMounted(() => {
+                    // 優先啟動時間對時，完成後再進入一般循環
+                    syncWithNetworkTime();
                     listenToFirebase();
                     setInterval(updateCountdowns, 1000);
                 });
@@ -376,7 +449,7 @@
                     currentTab, tabs, filteredBosses, showSettingsMenu, toggleSettingsMenu,
                     commandText, errorMsg, successMsg, parseCommand, triggerRestart,
                     getCardBg, getCountdownColor, getCooldownBadgeColor, 
-                    formatTime, isEventActive, toggleEventMode
+                    formatTime, isEventActive, toggleEventMode, timeSyncStatus
                 };
             }
         }).mount('#app');
