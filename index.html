@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天堂W 擊殺王及重生紀錄器 (雲端穩定同步版)</title>
+    <title>天堂W 擊殺王及重生紀錄器 (雲端絕對穩定版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -128,6 +128,7 @@
     </div>
 
     <script>
+        // 您的 Firebase 亞洲一區即時資料庫網址
         const firebaseConfig = {
             databaseURL: "https://lwopendata-default-rtdb.asia-southeast1.firebasedatabase.app/" 
         };
@@ -147,7 +148,6 @@
                 const successMsg = ref('');
                 
                 const isEventActive = ref(false);
-                const isCloudDataLoaded = ref(false); // 確保雲端資料載入後才執行漏王判斷
 
                 const tabs = [
                     { label: '全部', value: 'all' },
@@ -210,11 +210,10 @@
                     db.ref('eventActive').set(nextState);
                 };
 
-                // 強制在雲端建立完整節點的強效重設
                 const triggerRestart = () => {
                     let updates = { eventActive: false };
                     bosses.value.forEach(b => {
-                        updates[`bosses/${b.id}`] = { killedAt: 0, respawnAt: 0, skipCount: 0 }; // 0 代表完全清空
+                        updates[`bosses/${b.id}`] = { killedAt: 0, respawnAt: 0, skipCount: 0 };
                     });
                     db.ref().update(updates);
                     errorMsg.value = '';
@@ -306,39 +305,37 @@
                     }
                 };
 
+                // 【核心修正】前端純計時與純顯示，時間到了就顯示 00:00:00 並閃爍，絕不主動對雲端進行覆蓋與修改
                 const updateCountdowns = () => {
-                    if (!isCloudDataLoaded.value) return; // 雲端還沒下載完前，不執行時間鐘，避免錯亂
                     const now = new Date();
                     bosses.value.forEach(boss => {
                         if (!boss.respawnAt) return;
                         let diff = boss.respawnAt - now;
 
-                        // 漏王防呆自動跳輪
                         if (diff <= 0) {
-                            const nextSkip = boss.skipCount + 1;
-                            const actualCooldownHours = isEventActive.value ? (boss.cooldown / 2) : boss.cooldown;
-                            const nextRespawn = boss.respawnAt.getTime() + actualCooldownHours * 60 * 60000;
-                            
-                            db.ref(`bosses/${boss.id}`).update({
-                                skipCount: nextSkip,
-                                respawnAt: nextRespawn
-                            });
+                            // 時間到了，固定顯示 00:00:00，不再呼叫 db.ref().update 進行修改
+                            boss.countdownText = "00:00:00";
+                            boss.status = 'ready';
+                        } else {
+                            const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
+                            const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+                            const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                            boss.countdownText = `${hrs}:${mins}:${secs}`;
+                            boss.status = diff < 15 * 60000 ? 'warning' : 'counting';
                         }
-
-                        const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
-                        const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-                        const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                        boss.countdownText = `${hrs}:${mins}:${secs}`;
-                        boss.status = diff < 15 * 60000 ? 'warning' : 'counting';
                     });
                 };
 
                 const getCardBg = (boss) => {
-                    if (boss.skipCount > 0) return 'bg-gray-800 border-red-900/60';
+                    if (boss.status === 'ready') return 'bg-red-950/30 border-red-500/50';
                     if (boss.status === 'warning') return 'bg-yellow-950/30 border-yellow-500/40';
                     return 'bg-gray-800/80 border-gray-700';
                 };
-                const getCountdownColor = (boss) => boss.status === 'warning' ? 'text-yellow-500' : 'text-green-400';
+                const getCountdownColor = (boss) => {
+                    if (boss.status === 'ready') return 'text-red-500 animate-pulse';
+                    if (boss.status === 'warning') return 'text-yellow-500';
+                    return 'text-green-400';
+                };
                 const getCooldownBadgeColor = (cd) => {
                     if (cd === 4) return 'bg-green-900 text-green-300';
                     if (cd === 6) return 'bg-orange-900 text-orange-300';
@@ -361,14 +358,12 @@
                             Object.keys(data).forEach(id => {
                                 const boss = bosses.value.find(b => b.id == id);
                                 if (boss) {
-                                    // 判斷雲端數值是否為 0 (重設狀態)
                                     boss.killedAt = data[id].killedAt > 0 ? new Date(data[id].killedAt) : null;
                                     boss.respawnAt = data[id].respawnAt > 0 ? new Date(data[id].respawnAt) : null;
                                     boss.skipCount = data[id].skipCount || 0;
                                 }
                             });
                         }
-                        isCloudDataLoaded.value = true; // 雲端安全下載完畢開關
                     });
                 };
 
