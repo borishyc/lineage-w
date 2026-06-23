@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-/* Version: lineagew-20260624003 */
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天堂W 擊殺王及重生紀錄器 (智慧通知音效版)</title>
+    <title>天堂W 擊殺王及重生紀錄器</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -41,19 +40,6 @@
 
     <div id="app" v-cloak class="max-w-md mx-auto px-4 pt-6">
         
-        <div v-if="!isNotificationSupported" class="mb-4 bg-red-950/60 border border-red-500/40 rounded-xl p-3 text-center">
-            <p class="text-xs font-medium text-red-300">⚠️ 偵測到當前環境非加密連線(HTTPS)或瀏覽器不支援，無法彈出通知。請發布至 GitHub Pages 後測試。</p>
-        </div>
-        <div v-else-if="notificationPermission === 'default'" class="mb-4 bg-blue-950/60 border border-blue-500/40 rounded-xl p-3 text-center transition-all">
-            <p class="text-xs font-medium text-blue-300 mb-2">🔊 啟用網頁通知，即可在出王前 30 秒接收彈出視窗與警報音效！</p>
-            <button @click="requestNotificationPermission" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition-colors shadow-md">
-                🔔 開啟網頁通知提醒
-            </button>
-        </div>
-        <div v-else-if="notificationPermission === 'denied'" class="mb-4 bg-yellow-950/40 border border-yellow-600/30 rounded-xl p-2 text-center text-xs text-yellow-400">
-            🔒 通知權限已被瀏覽器封鎖，若需通知請至瀏覽器設定（網址左側鎖頭）重新允許。
-        </div>
-        
         <header class="mb-4 text-center">
             <h1 v-if="!isEventActive" class="text-2xl font-bold text-yellow-500 tracking-wider transition-all">👑 天堂W 王怪計時看板</h1>
             <h1 v-else class="text-2xl font-black text-red-500 tracking-widest event-title-active transition-all flex items-center justify-center gap-1">
@@ -63,7 +49,7 @@
             <p v-if="isEventActive" class="text-xs text-orange-400 font-bold mt-2 tracking-wide bg-red-950/30 py-1.5 rounded-full border border-red-900/40">
                 ⚡ 雙倍重生速度已啟動，請盟友立刻就位！
             </p>
-            <p class="text-[10px] text-green-400 mt-1 flex items-center justify-center gap-1">
+            <p v-else class="text-[10px] text-green-400 mt-1 flex items-center justify-center gap-1">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
                 <span>{{ timeSyncStatus }}</span>
             </p>
@@ -103,7 +89,7 @@
                         </div>
                         
                         <div class="text-right border-t border-gray-900 pt-1">
-                            <span class="text-xs text-gray-500 font-mono tracking-tighter">lineagew-20260624003</span>
+                            <span class="text-xs text-gray-500 font-mono tracking-tighter">lineagew-20260624004</span>
                         </div>
                     </div>
                 </div>
@@ -199,36 +185,6 @@
                 const isEventActive = ref(false);
                 const timeOffset = ref(0);
                 const timeSyncStatus = ref('正在同步 Google 雲端時間軸...');
-                
-                const isNotificationSupported = ref('Notification' in window);
-                const notificationPermission = ref(isNotificationSupported.value ? Notification.permission : 'denied');
-                const alertedBosses = ref({}); 
-
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const playAlertSound = () => {
-                    if (audioCtx.state === 'suspended') audioCtx.resume();
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
-                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.15); 
-                    
-                    setTimeout(() => {
-                        const osc2 = audioCtx.createOscillator();
-                        const gain2 = audioCtx.createGain();
-                        osc2.type = 'sine';
-                        osc2.frequency.setValueAtTime(880, audioCtx.currentTime);
-                        gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                        osc2.connect(gain2);
-                        gain2.connect(audioCtx.destination);
-                        osc2.start();
-                        osc2.stop(audioCtx.currentTime + 0.15);
-                    }, 250);
-                };
 
                 const tabs = [
                     { label: '全部', value: 'all' },
@@ -311,44 +267,6 @@
                     }
                     return combined.slice().sort((a, b) => a.displayRespawnAt - b.displayRespawnAt);
                 });
-
-                const requestNotificationPermission = () => {
-                    if (!isNotificationSupported.value) return;
-                    Notification.requestPermission().then(permission => {
-                        notificationPermission.value = permission;
-                        if (permission === 'granted') {
-                            try {
-                                navigator.serviceWorker.ready.then(registration => {
-                                    registration.showNotification("🎉 成功啟用背景推播提醒！");
-                                }).catch(() => {
-                                    new Notification("🎉 成功啟用天堂W王怪推播提醒！");
-                                });
-                            } catch (e) {
-                                new Notification("🎉 成功啟用天堂W王怪推播提醒！");
-                            }
-                            playAlertSound();
-                        }
-                    });
-                };
-
-                const triggerSystemAlert = (bossName, titleMsg) => {
-                    playAlertSound();
-                    if (notificationPermission.value === 'granted') {
-                        try {
-                            navigator.serviceWorker.ready.then(registration => {
-                                registration.showNotification(titleMsg, {
-                                    body: `請血盟盟友立刻前往【${bossName}】重生點集合搶位！`,
-                                    icon: 'https://cdn-icons-png.flaticon.com/512/3601/3601650.png',
-                                    tag: bossName
-                                });
-                            }).catch(() => {
-                                new Notification(titleMsg, { body: `請血盟盟友立刻前往【${bossName}】重生點集合搶位！` });
-                            });
-                        } catch (e) {
-                            new Notification(titleMsg, { body: `請血盟盟友立刻前往【${bossName}】重生點集合搶位！` });
-                        }
-                    }
-                };
 
                 const initFirebaseTimeSync = () => {
                     const offsetRef = db.ref(".info/serverTimeOffset");
@@ -488,11 +406,6 @@
                             respawnAt: parsedTime.getTime() + actualCooldownHours * 60 * 60000,
                             skipCount: 0 
                         });
-                        
-                        if (alertedBosses.value[targetBoss.id]) {
-                            delete alertedBosses.value[targetBoss.id];
-                        }
-                        
                         successMsg.value = `[${targetBoss.displayName}] 紀錄已同步上雲端。`;
                         commandText.value = '';
                     }
@@ -516,8 +429,6 @@
                             loops++;
                             diff = targetRespawn - now.getTime();
                         }
-                        
-                        const currentRoundKey = `${boss.id}_${targetRespawn}`;
 
                         boss.displayRespawnAt = new Date(targetRespawn);
                         boss.localSkipCount = boss.skipCount + loops;
@@ -526,11 +437,6 @@
                         const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
                         const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
                         boss.countdownText = `${hrs}:${mins}:${secs}`;
-                        
-                        if (diff <= 30 * 1000 && !alertedBosses.value[currentRoundKey]) {
-                            alertedBosses.value[currentRoundKey] = true; 
-                            triggerSystemAlert(boss.displayName, `⚠️ 【${boss.displayName}】即將在 30 秒內出生！`);
-                        }
 
                         if (diff <= 30 * 1000) {
                             boss.status = 'critical';
@@ -545,7 +451,6 @@
 
                     todayFixedBosses.value.forEach(fb => {
                         let diff = fb.displayRespawnAt.getTime() - now.getTime();
-                        const currentRoundKey = `${fb.id}`;
 
                         if (diff <= 0) {
                             const passedMinutes = Math.abs(diff) / 60000;
@@ -554,22 +459,12 @@
                             } else {
                                 fb.countdownText = `💥 已開門！(3分內)`;
                                 fb.status = 'ready';
-                                
-                                if (!alertedBosses.value[currentRoundKey]) {
-                                    alertedBosses.value[currentRoundKey] = true;
-                                    triggerSystemAlert(fb.displayName, `🔥 每日固定首領【${fb.displayName}】現在已經開門！`);
-                                }
                             }
                         } else {
                             const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
                             const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
                             const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
                             fb.countdownText = `${hrs}:${mins}:${secs}`;
-                            
-                            if (diff <= 30 * 1000 && !alertedBosses.value[currentRoundKey + '_30s']) {
-                                alertedBosses.value[currentRoundKey + '_30s'] = true;
-                                triggerSystemAlert(fb.displayName, `⚠️ 固定首領【${fb.displayName}】將在 30 秒後開門！`);
-                            }
 
                             if (diff <= 30 * 1000) {
                                 fb.status = 'critical';
@@ -636,10 +531,6 @@
                 };
 
                 onMounted(() => {
-                    if ('serviceWorker' in navigator) {
-                        navigator.serviceWorker.register('data:text/javascript;base64,Ly8gU2VydmljZSBXb3JrZXIgZm9yIE5vdGlmaWNhdGlvbnM=')
-                        .catch(err => console.log("SW Register Blank Pass"));
-                    }
                     initFirebaseTimeSync(); 
                     listenToFirebase(); 
                     setInterval(updateCountdowns, 1000); 
@@ -649,8 +540,7 @@
                     currentTab, tabs, filteredBosses, showSettingsMenu, toggleSettingsMenu,
                     commandText, errorMsg, successMsg, parseCommand, triggerRestart,
                     getCardBg, getCountdownColor, getCooldownBadgeColor, 
-                    formatTime, isEventActive, toggleEventMode, timeSyncStatus,
-                    notificationPermission, requestNotificationPermission, isNotificationSupported
+                    formatTime, isEventActive, toggleEventMode, timeSyncStatus
                 };
             }
         }).mount('#app');
