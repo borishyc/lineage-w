@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天堂W 擊殺王及重生紀錄器 (網路時間同步版)</title>
+    <title>天堂W 擊殺王及重生紀錄器 (完美跳輪同步版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -133,12 +133,12 @@
                 <div class="flex items-center gap-4 flex-1 min-w-0">
                     <div class="w-16 text-center shrink-0">
                         <span :class="isEventActive ? 'text-orange-400' : 'text-yellow-400'" class="text-xl font-mono font-bold">
-                            {{ formatTime(boss.respawnAt) }}
+                            {{ formatTime(boss.displayRespawnAt) }}
                         </span>
                     </div>
 
                     <div class="flex items-center gap-2 min-w-0">
-                        <span :class="boss.skipCount > 0 ? 'text-red-500 font-extrabold' : 'text-white'" class="text-lg font-bold tracking-wide truncate transition-colors">
+                        <span :class="boss.localSkipCount > 0 ? 'text-red-500 font-extrabold' : 'text-white'" class="text-lg font-bold tracking-wide truncate transition-colors">
                             {{ boss.displayName }}
                         </span>
                         <span :class="getCooldownBadgeColor(boss.cooldown)" class="text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">
@@ -177,10 +177,8 @@
                 const successMsg = ref('');
                 
                 const isEventActive = ref(false);
-                
-                // 【新增變數】用於存放裝置時間與網路時間的誤差毫秒數，以及狀態文字
                 const timeOffset = ref(0);
-                const timeSyncStatus = ref('正在校對網路標準時間...');
+                const timeSyncStatus = ref('正在同步 Google 雲端時間軸...');
 
                 const tabs = [
                     { label: '全部', value: 'all' },
@@ -191,36 +189,38 @@
                 ];
 
                 const bosses = ref([
-                    { id: 1, displayName: "尼羅德", name: "尼羅德", aliases: ["野豬", "YG"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 2, displayName: "夫人", name: "夫人", aliases: ["FL"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 3, displayName: "飛龍3", name: "飛龍3", aliases: ["3"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 4, displayName: "飛龍4", name: "飛龍4", aliases: ["4"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 5, displayName: "卡司特王", name: "卡司特王", aliases: ["卡王", "卡司特"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 6, displayName: "大腳", name: "大腳", aliases: ["DJ"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 7, displayName: "黑虎", name: "黑虎", aliases: ["BT"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 8, displayName: "德雷克", name: "德雷克", aliases: ["海賊", "HJ"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 9, displayName: "莫莉提亞", name: "莫莉提亞", aliases: ["茉莉", "ML"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 10, displayName: "飛龍1", name: "飛龍1", aliases: ["1"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 11, displayName: "飛龍2", name: "飛龍2", aliases: ["2"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 12, displayName: "殺戮者", name: "殺戮者", aliases: ["PP", "胖胖"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 13, displayName: "麥肯", name: "麥肯", aliases: ["MK"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 14, displayName: "蜥蜴王", name: "蜥蜴王", aliases: ["CE", "蜥蜴"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 15, displayName: "庫約", name: "庫約", aliases: [], cooldown: 6, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 16, displayName: "烏勒庫斯", name: "烏勒庫斯", aliases: ["烏勒", "UL"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 17, displayName: "奈克諾斯", name: "奈克諾斯", aliases: ["奈克", "NK"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 18, displayName: "拉馬修", name: "拉馬修", aliases: ["蛇女", "SM"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 19, displayName: "庫爾託", name: "庫爾託", aliases: ["狼王"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 20, displayName: "四色", name: "四色", aliases: ["4S"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 21, displayName: "哈格瑪", name: "哈格瑪", aliases: ["頭目", "TM"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 22, displayName: "克洛林", name: "克洛林", aliases: [], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 23, displayName: "史前巨鱷", name: "史前巨鱷", aliases: ["鱷魚", "G2"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
-                    { id: 24, displayName: "二巨", name: "二巨", aliases: ["2G"], cooldown: 12, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0 },
+                    { id: 1, displayName: "尼羅德", name: "尼羅德", aliases: ["野豬", "YG"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 2, displayName: "夫人", name: "夫人", aliases: ["FL"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 3, displayName: "飛龍3", name: "飛龍3", aliases: ["3"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 4, displayName: "飛龍4", name: "飛龍4", aliases: ["4"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 5, displayName: "卡司特王", name: "卡司特王", aliases: ["卡王", "卡司特"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 6, displayName: "大腳", name: "大腳", aliases: ["DJ"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 7, displayName: "黑虎", name: "黑虎", aliases: ["BT"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 8, displayName: "德雷克", name: "德雷克", aliases: ["海賊", "HJ"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 9, displayName: "莫莉提亞", name: "莫莉提亞", aliases: ["茉莉", "ML"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 25, displayName: "奧杜亞", name: "奧杜亞", aliases: ["ODY"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 }, 
+                    { id: 10, displayName: "飛龍1", name: "飛龍1", aliases: ["1"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 11, displayName: "飛龍2", name: "飛龍2", aliases: ["2"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 12, displayName: "殺戮者", name: "殺戮者", aliases: ["PP", "胖胖"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 13, displayName: "麥肯", name: "麥肯", aliases: ["MK"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 14, displayName: "蜥蜴王", name: "蜥蜴王", aliases: ["CE", "蜥蜴"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 15, displayName: "庫約", name: "庫約", aliases: [], cooldown: 6, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 16, displayName: "烏勒庫斯", name: "烏勒庫斯", aliases: ["烏勒", "UL"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 17, displayName: "奈克諾斯", name: "奈克諾斯", aliases: ["奈克", "NK"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 18, displayName: "拉馬修", name: "拉馬修", aliases: ["蛇女", "SM"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 19, displayName: "庫爾託", name: "庫爾託", aliases: ["狼王"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 20, displayName: "四色", name: "四色", aliases: ["4S"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 21, displayName: "哈格瑪", name: "哈格瑪", aliases: ["頭目", "TM"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 22, displayName: "克洛林", name: "克洛林", aliases: [], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 23, displayName: "史前巨鱷", name: "史前巨鱷", aliases: ["鱷魚", "G2"], cooldown: 8, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
+                    { id: 24, displayName: "二巨", name: "二巨", aliases: ["2G"], cooldown: 12, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                 ]);
 
                 const restartSequence = [
                     { id: 1, normal: 0, event: 0 }, { id: 2, normal: 0, event: 0 }, { id: 3, normal: 40, event: 20 },
                     { id: 4, normal: 0, event: 0 }, { id: 5, normal: 20, event: 10 }, { id: 6, normal: 30, event: 15 },
-                    { id: 7, normal: 30, event: 15 }, { id: 8, normal: 10, event: 5 }, { id: 9, normal: 20, event: 10 },
+                    { id: 7, normal: 30, event: 15 }, { id: 8, normal: 10, event: 5 }, 
+                    { id: 9, normal: 20, event: 10 }, { id: 25, normal: 0, event: 0 },  
                     { id: 10, normal: 10, event: 5 }, { id: 11, normal: 0, event: 0 }, { id: 12, normal: 30, event: 15 },
                     { id: 13, normal: 20, event: 10 }, { id: 14, normal: 10, event: 5 }, { id: 16, normal: 50, event: 25 },
                     { id: 17, normal: 0, event: 0 }, { id: 24, normal: 0, event: 0 }, { id: 15, normal: 10, event: 5 },
@@ -233,33 +233,19 @@
                     if (currentTab.value !== 'all') {
                         list = list.filter(b => b.cooldown === currentTab.value);
                     }
-                    return list.slice().sort((a, b) => a.respawnAt - b.respawnAt);
+                    // 依照當下推算後的下輪時間 displayRespawnAt 進行完美動態排序
+                    return list.slice().sort((a, b) => a.displayRespawnAt - b.displayRespawnAt);
                 });
 
-                // 【核心新增】向網路 API 取得絕對標準時間，並算出本機誤差
-                const syncWithNetworkTime = async () => {
-                    try {
-                        const startTime = Date.now();
-                        const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
-                        const data = await response.json();
-                        const endTime = Date.now();
-                        
-                        // 計算來回延遲
-                        const latency = (endTime - startTime) / 2;
-                        // 轉換 API 傳回的 ISO 時間為 Timestamp
-                        const targetNetworkTime = new Date(data.datetime).getTime() + latency;
-                        
-                        // 算出本機裝置與網路標準時間的差距
-                        timeOffset.value = targetNetworkTime - endTime;
-                        timeSyncStatus.value = `雲端多人即時同步中 (網路時間已校對，誤差 ${Math.abs(Math.round(timeOffset.value / 1000))} 秒)`;
-                    } catch (e) {
-                        console.error("網路時間校對失敗，轉用本機時間", e);
-                        timeOffset.value = 0;
-                        timeSyncStatus.value = "雲端多人即時同步中 (校對失敗，採用本機時間)";
-                    }
+                const initFirebaseTimeSync = () => {
+                    const offsetRef = db.ref(".info/serverTimeOffset");
+                    offsetRef.on("value", (snapshot) => {
+                        timeOffset.value = snapshot.val() || 0;
+                        const secDiff = Math.abs(Math.round(timeOffset.value / 1000));
+                        timeSyncStatus.value = `雲端多人即時同步中 (已自動校正微秒級誤差：${secDiff}秒)`;
+                    });
                 };
 
-                // 取得經過校正後的標準目前時間
                 const getCorrectedNow = () => {
                     return new Date(Date.now() + timeOffset.value);
                 };
@@ -300,7 +286,6 @@
                     const targetBoss = bosses.value.find(b => b.name.toUpperCase() === inputName || b.displayName.toUpperCase() === inputName || b.aliases.some(a => a.toUpperCase() === inputName));
                     if (!targetBoss) { errorMsg.value = `找不到對應 [${parts[1]}] 的首領。`; return; }
 
-                    // 【調整】輸入無時間參數時，使用經網路校正後的時間作為基準
                     let parsedTime = getCorrectedNow();
                     if (timePart) {
                         if (!/^\d{3,4}$/.test(timePart)) { errorMsg.value = "時間格式錯誤 (例: 1141)"; return; }
@@ -367,45 +352,61 @@
                     }
                 };
 
+                // 【核心跳輪與顯示重構】網頁只在本地運算下一輪，絕不偷偷塞資料回雲端！
                 const updateCountdowns = () => {
-                    // 【調整】將倒數計時基礎從 new Date() 改為經過網路時間校正的 getCorrectedNow()
                     const now = getCorrectedNow();
                     bosses.value.forEach(boss => {
                         if (!boss.respawnAt) return;
-                        let diff = boss.respawnAt - now;
+                        
+                        let targetRespawn = boss.respawnAt.getTime();
+                        let loops = 0;
+                        let diff = targetRespawn - now.getTime();
 
-                        if (diff <= 0) {
-                            boss.countdownText = "00:00:00";
-                            boss.status = 'ready';
+                        // 核心防打架跳輪邏輯：如果超過時間，本地端自己加上 CD 推算下一輪
+                        const actualCooldownMs = (isEventActive.value ? (boss.cooldown / 2) : boss.cooldown) * 60 * 60000;
+                        while (diff <= 0) {
+                            targetRespawn += actualCooldownMs;
+                            loops++;
+                            diff = targetRespawn - now.getTime();
+                        }
+
+                        // 將計算好的最新一輪時間與過期狀態指派給前端元件
+                        boss.displayRespawnAt = new Date(targetRespawn);
+                        boss.localSkipCount = boss.skipCount + loops; // 包含雲端已過輪數 + 本地推算過輪數
+
+                        // 格式化渲染倒數
+                        const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
+                        const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+                        const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                        boss.countdownText = `${hrs}:${mins}:${secs}`;
+                        
+                        // 狀態判定
+                        if (boss.localSkipCount > 0) {
+                            boss.status = 'overdue'; // 只要有本地過期，就給予過期狀態
+                        } else if (diff <= 30 * 1000) {
+                            boss.status = 'critical';
+                        } else if (diff < 15 * 60000) {
+                            boss.status = 'warning';
                         } else {
-                            const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
-                            const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-                            const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                            boss.countdownText = `${hrs}:${mins}:${secs}`;
-                            
-                            if (diff <= 30 * 1000) {
-                                boss.status = 'critical';
-                            } else if (diff < 15 * 60000) {
-                                boss.status = 'warning';
-                            } else {
-                                boss.status = 'counting';
-                            }
+                            boss.status = 'counting';
                         }
                     });
                 };
 
                 const getCardBg = (boss) => {
-                    if (boss.status === 'ready') return 'bg-red-950/40 border-red-500 animate-pulse';
+                    if (boss.status === 'overdue') return 'bg-red-950/20 border-red-900/60 border'; // 漏王卡片：暗紅底紅框
                     if (boss.status === 'critical') return 'bg-red-950/20 card-critical border-2'; 
                     if (boss.status === 'warning') return 'bg-yellow-950/30 border-yellow-500/50';
                     return isEventActive.value ? 'bg-gray-800 border-red-900/30 hover:border-red-900/60' : 'bg-gray-800/80 border-gray-700';
                 };
+                
                 const getCountdownColor = (boss) => {
-                    if (boss.status === 'ready') return 'text-red-500 font-black animate-ping';
+                    if (boss.status === 'overdue') return 'text-red-500 font-bold'; // 漏王倒數：正常顯示下一輪的綠/橘色，但維持穩固不卡死
                     if (boss.status === 'critical') return 'text-critical font-black scale-105'; 
                     if (boss.status === 'warning') return 'text-yellow-500';
                     return isEventActive.value ? 'text-orange-400' : 'text-green-400';
                 };
+                
                 const getCooldownBadgeColor = (cd) => {
                     if (isEventActive.value) return 'bg-red-950 text-red-400 border border-red-900/40';
                     if (cd === 4) return 'bg-green-900 text-green-300';
@@ -439,8 +440,7 @@
                 };
 
                 onMounted(() => {
-                    // 優先啟動時間對時，完成後再進入一般循環
-                    syncWithNetworkTime();
+                    initFirebaseTimeSync();
                     listenToFirebase();
                     setInterval(updateCountdowns, 1000);
                 });
