@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天堂W 擊殺王及重生紀錄器 (別稱更新版)</title>
+    <title>天堂W 擊殺王及重生紀錄器 (智慧通知音效版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -39,6 +39,13 @@
 <body class="bg-gray-900 text-gray-100 min-h-screen pb-10 transition-colors duration-500">
 
     <div id="app" v-cloak class="max-w-md mx-auto px-4 pt-6">
+        
+        <div v-if="notificationPermission === 'default'" class="mb-4 bg-blue-950/60 border border-blue-500/40 rounded-xl p-3 text-center transition-all">
+            <p class="text-xs font-medium text-blue-300 mb-2">🔊 啟用網頁通知，即可在出王前 30 秒接收彈出視窗與警報音效！</p>
+            <button @click="requestNotificationPermission" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition-colors shadow-md">
+                🔔 開啟網頁通知提醒
+            </button>
+        </div>
         
         <header class="mb-4 text-center">
             <h1 v-if="!isEventActive" class="text-2xl font-bold text-yellow-500 tracking-wider transition-all">👑 天堂W 王怪計時看板</h1>
@@ -179,6 +186,38 @@
                 const isEventActive = ref(false);
                 const timeOffset = ref(0);
                 const timeSyncStatus = ref('正在同步 Google 雲端時間軸...');
+                
+                // 【新增變數】用於掌控本機瀏覽器推播權限狀態，以及防止重複彈通知的冷卻庫
+                const notificationPermission = ref(Notification.permission);
+                const alertedBosses = ref({}); 
+
+                // 內建免免資源警報音效 (純粹逼嗶聲，不怕失效)
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const playAlertSound = () => {
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5高音
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15); // 逼叫 0.15 秒
+                    
+                    // 間隔一小段再嗶一聲，形成「逼逼」雙音
+                    setTimeout(() => {
+                        const osc2 = audioCtx.createOscillator();
+                        const gain2 = audioCtx.createGain();
+                        osc2.type = 'sine';
+                        osc2.frequency.setValueAtTime(880, audioCtx.currentTime);
+                        gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                        osc2.connect(gain2);
+                        gain2.connect(audioCtx.destination);
+                        osc2.start();
+                        osc2.stop(audioCtx.currentTime + 0.15);
+                    }, 250);
+                };
 
                 const tabs = [
                     { label: '全部', value: 'all' },
@@ -188,13 +227,12 @@
                     { label: '12H 王', value: 12 },
                 ];
 
-                // 1. 一般倒數型首領資料庫 (已在 id: 5 的卡司特王中加入了簡稱 "CW")
                 const bosses = ref([
                     { id: 1, displayName: "尼羅德", name: "尼羅德", aliases: ["野豬", "YG"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 2, displayName: "夫人", name: "夫人", aliases: ["FL"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 3, displayName: "飛龍3", name: "飛龍3", aliases: ["3"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 4, displayName: "飛龍4", name: "飛龍4", aliases: ["4"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
-                    { id: 5, displayName: "卡司特王", name: "卡司特王", aliases: ["卡王", "卡司特", "CW"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 }, // 成功加入
+                    { id: 5, displayName: "卡司特王", name: "卡司特王", aliases: ["卡王", "卡司特", "CW"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 6, displayName: "大腳", name: "大腳", aliases: ["DJ"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 7, displayName: "黑虎", name: "黑虎", aliases: ["BT"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 8, displayName: "德雷克", name: "德雷克", aliases: ["海賊", "HJ"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
@@ -217,7 +255,6 @@
                     { id: 24, displayName: "二巨", name: "二巨", aliases: ["2G"], cooldown: 12, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                 ]);
 
-                // 2. 固定時間出王排程資料庫
                 const fixedScheduleRaw = [
                     { w: 1, name: "巨蟻女皇", t: "15:00" }, { w: 1, name: "火焰5樓", t: "15:00" }, { w: 1, name: "克特", t: "18:10" }, { w: 1, name: "蜘蛛", t: "18:15" },
                     { w: 1, name: "變怪王", t: "19:10" }, { w: 1, name: "巫師", t: "19:10" }, { w: 1, name: "死亡騎士", t: "19:20" }, { w: 1, name: "萊奧斯", t: "19:20" },
@@ -263,6 +300,32 @@
                     }
                     return combined.slice().sort((a, b) => a.displayRespawnAt - b.displayRespawnAt);
                 });
+
+                // 【新增功能】主動向使用者索取推播允許權限
+                const requestNotificationPermission = () => {
+                    Notification.requestPermission().then(permission => {
+                        notificationPermission.value = permission;
+                        if (permission === 'granted') {
+                            // 權限一開，測試發送一發通知，並順便激活語音解鎖限制
+                            new Notification("🎉 成功啟用天堂W王怪推播提醒！");
+                            playAlertSound();
+                        }
+                    });
+                };
+
+                // 【新增功能】核心發送訊息通知與播放音效控制
+                const triggerSystemAlert = (bossName, titleMsg) => {
+                    // 1. 播放「逼逼」音效提醒
+                    playAlertSound();
+                    
+                    // 2. 如果瀏覽器有允許權限，發送頂層懸浮通知視窗
+                    if (notificationPermission.value === 'granted') {
+                        new Notification(titleMsg, {
+                            body: `請血盟盟友立刻前往【${bossName}】重生點集合搶位！`,
+                            icon: 'https://cdn-icons-png.flaticon.com/512/3601/3601650.png'
+                        });
+                    }
+                };
 
                 const initFirebaseTimeSync = () => {
                     const offsetRef = db.ref(".info/serverTimeOffset");
@@ -317,8 +380,6 @@
                     const str = commandText.value.trim();
                     if (!str) return;
 
-                    if (str.toUpperCase() === 'RESTART') { triggerRestart(); commandText.value = ''; return; }
-
                     const parts = str.split(/\s+/);
                     let action = parts[0].toUpperCase();
                     let inputName = '';
@@ -330,7 +391,7 @@
                         timePart = parts[2];
                     } else {
                         if (action === 'K') {
-                            if (parts.length < 2) { errorMsg.value = "請輸入首領名稱。"; return; }
+                            if (parts.length < 2) { errorMsg.value = "請輸入首領名稱.。"; return; }
                             inputName = parts[1].toUpperCase();
                             timePart = parts[2];
                         } else {
@@ -404,6 +465,12 @@
                             respawnAt: parsedTime.getTime() + actualCooldownHours * 60 * 60000,
                             skipCount: 0 
                         });
+                        
+                        // 【智慧警報防重複重置】當重新輸入K指令時，清空這隻王的已警報狀態，下一輪才可以再度警報
+                        if (alertedBosses.value[targetBoss.id]) {
+                            delete alertedBosses.value[targetBoss.id];
+                        }
+                        
                         successMsg.value = `[${targetBoss.displayName}] 紀錄已同步上雲端。`;
                         commandText.value = '';
                     }
@@ -415,17 +482,24 @@
                         generateTodayFixedSchedule();
                     }
 
+                    // A. 一般王計時與提醒監聽
                     bosses.value.forEach(boss => {
                         if (!boss.respawnAt) return;
                         let targetRespawn = boss.respawnAt.getTime();
                         let loops = 0;
                         let diff = targetRespawn - now.getTime();
                         const actualCooldownMs = (isEventActive.value ? (boss.cooldown / 2) : boss.cooldown) * 60 * 60000;
+                        
+                        // 智慧本地過期進輪
                         while (diff <= 0) {
                             targetRespawn += actualCooldownMs;
                             loops++;
                             diff = targetRespawn - now.getTime();
                         }
+                        
+                        // 當過期進輪發生、或者手動輸入更新時，重置單輪警報鎖
+                        const currentRoundKey = `${boss.id}_${targetRespawn}`;
+
                         boss.displayRespawnAt = new Date(targetRespawn);
                         boss.localSkipCount = boss.skipCount + loops;
 
@@ -434,6 +508,12 @@
                         const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
                         boss.countdownText = `${hrs}:${mins}:${secs}`;
                         
+                        // 【智慧警報觸發核心】如果倒數小於等於 30 秒，且這一輪還沒發過通知
+                        if (diff <= 30 * 1000 && !alertedBosses.value[currentRoundKey]) {
+                            alertedBosses.value[currentRoundKey] = true; // 上鎖
+                            triggerSystemAlert(boss.displayName, `⚠️ 【${boss.displayName}】即將在 30 秒內出生！`);
+                        }
+
                         if (diff <= 30 * 1000) {
                             boss.status = 'critical';
                         } else if (boss.localSkipCount > 0) {
@@ -445,8 +525,11 @@
                         }
                     });
 
+                    // B. 固定王計時與提醒監聽
                     todayFixedBosses.value.forEach(fb => {
                         let diff = fb.displayRespawnAt.getTime() - now.getTime();
+                        const currentRoundKey = `${fb.id}`;
+
                         if (diff <= 0) {
                             const passedMinutes = Math.abs(diff) / 60000;
                             if (passedMinutes >= 3) {
@@ -454,12 +537,25 @@
                             } else {
                                 fb.countdownText = `💥 已開門！(3分內)`;
                                 fb.status = 'ready';
+                                
+                                // 【固定王開門即時警報】
+                                if (!alertedBosses.value[currentRoundKey]) {
+                                    alertedBosses.value[currentRoundKey] = true;
+                                    triggerSystemAlert(fb.displayName, `🔥 每日固定首領【${fb.displayName}】現在已經開門！`);
+                                }
                             }
                         } else {
                             const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
                             const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
                             const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
                             fb.countdownText = `${hrs}:${mins}:${secs}`;
+                            
+                            // 【固定王出前30秒警報】
+                            if (diff <= 30 * 1000 && !alertedBosses.value[currentRoundKey + '_30s']) {
+                                alertedBosses.value[currentRoundKey + '_30s'] = true;
+                                triggerSystemAlert(fb.displayName, `⚠️ 固定首領【${fb.displayName}】將在 30 秒後開門！`);
+                            }
+
                             if (diff <= 30 * 1000) {
                                 fb.status = 'critical';
                             } else if (diff < 15 * 60000) {
@@ -530,7 +626,8 @@
                     currentTab, tabs, filteredBosses, showSettingsMenu, toggleSettingsMenu,
                     commandText, errorMsg, successMsg, parseCommand, triggerRestart,
                     getCardBg, getCountdownColor, getCooldownBadgeColor, 
-                    formatTime, isEventActive, toggleEventMode, timeSyncStatus
+                    formatTime, isEventActive, toggleEventMode, timeSyncStatus,
+                    notificationPermission, requestNotificationPermission
                 };
             }
         }).mount('#app');
