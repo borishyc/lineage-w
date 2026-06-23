@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天堂W 擊殺王及重生紀錄器 (完美跳輪同步版)</title>
+    <title>天堂W 擊殺王及重生紀錄器 (固定排程完美隱藏版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -132,17 +132,17 @@
                 
                 <div class="flex items-center gap-4 flex-1 min-w-0">
                     <div class="w-16 text-center shrink-0">
-                        <span :class="isEventActive ? 'text-orange-400' : 'text-yellow-400'" class="text-xl font-mono font-bold">
+                        <span :class="boss.isFixed ? 'text-amber-400' : (isEventActive ? 'text-orange-400' : 'text-yellow-400')" class="text-xl font-mono font-bold">
                             {{ formatTime(boss.displayRespawnAt) }}
                         </span>
                     </div>
 
                     <div class="flex items-center gap-2 min-w-0">
-                        <span :class="boss.localSkipCount > 0 ? 'text-red-500 font-extrabold' : 'text-white'" class="text-lg font-bold tracking-wide truncate transition-colors">
+                        <span :class="boss.isFixed ? 'text-amber-100 font-extrabold' : (boss.localSkipCount > 0 ? 'text-red-500 font-extrabold' : 'text-white')" class="text-lg font-bold tracking-wide truncate transition-colors">
                             {{ boss.displayName }}
                         </span>
-                        <span :class="getCooldownBadgeColor(boss.cooldown)" class="text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">
-                            {{ isEventActive ? boss.cooldown / 2 : boss.cooldown }}H
+                        <span :class="getCooldownBadgeColor(boss)" class="text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">
+                            {{ boss.isFixed ? '固定' : (isEventActive ? boss.cooldown / 2 : boss.cooldown) + 'H' }}
                         </span>
                     </div>
                 </div>
@@ -188,6 +188,7 @@
                     { label: '12H 梯隊', value: 12 },
                 ];
 
+                // 1. 一般倒數型首領資料庫
                 const bosses = ref([
                     { id: 1, displayName: "尼羅德", name: "尼羅德", aliases: ["野豬", "YG"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                     { id: 2, displayName: "夫人", name: "夫人", aliases: ["FL"], cooldown: 4, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
@@ -216,25 +217,65 @@
                     { id: 24, displayName: "二巨", name: "二巨", aliases: ["2G"], cooldown: 12, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                 ]);
 
+                // 2. 固定時間出王排程資料庫 (isFixed: true)
+                const fixedScheduleRaw = [
+                    // 星期一 (1)
+                    { w: 1, name: "巨蟻女皇", t: "15:00" }, { w: 1, name: "火焰5樓", t: "15:00" }, { w: 1, name: "克特", t: "18:10" }, { w: 1, name: "蜘蛛", t: "18:15" },
+                    { w: 1, name: "變怪王", t: "19:10" }, { w: 1, name: "巫師", t: "19:10" }, { w: 1, name: "死亡騎士", t: "19:20" }, { w: 1, name: "萊奧斯", t: "19:20" },
+                    { w: 1, name: "鑽石高倫", t: "19:20" }, { w: 1, name: "魔族戰場", t: "19:50" },
+                    // 星期二 (2)
+                    { w: 2, name: "巨蟻女皇", t: "15:00" }, { w: 2, name: "炎魔5樓", t: "15:00" }, { w: 2, name: "克特", t: "18:10" }, { w: 2, name: "蜘蛛", t: "18:15" },
+                    { w: 2, name: "變怪王", t: "19:10" }, { w: 2, name: "巫師", t: "19:10" }, { w: 2, name: "死亡騎士", t: "19:20" }, { w: 2, name: "萊奧斯", t: "19:20" },
+                    { w: 2, name: "船長卡利索", t: "19:20" }, { w: 2, name: "魔族戰場", t: "19:50" },
+                    // 星期三 (3)
+                    { w: 3, name: "巨蟻女皇", t: "15:00" }, { w: 3, name: "火焰5樓", t: "15:00" }, { w: 3, name: "克特", t: "18:10" }, { w: 3, name: "蜘蛛", t: "18:15" },
+                    { w: 3, name: "變怪王", t: "19:10" }, { w: 3, name: "巫師", t: "19:10" }, { w: 3, name: "死亡騎士", t: "19:20" }, { w: 3, name: "萊奧斯", t: "19:20" },
+                    { w: 3, name: "巨大飛龍", t: "19:20" },
+                    // 星期四 (4)
+                    { w: 4, name: "巨蟻女皇", t: "15:00" }, { w: 4, name: "炎魔5樓", t: "15:00" }, { w: 4, name: "克特", t: "18:10" }, { w: 4, name: "蜘蛛", t: "18:15" },
+                    { w: 4, name: "變怪王", t: "19:10" }, { w: 4, name: "巫師", t: "19:10" }, { w: 4, name: "死亡騎士", t: "19:20" }, { w: 4, name: "萊奧斯", t: "19:20" },
+                    { w: 4, name: "巨大蜈蚣", t: "19:20" }, { w: 4, name: "哈汀", t: "20:00" },
+                    // 星期五 (5)
+                    { w: 5, name: "巨蟻女皇", t: "15:00" }, { w: 5, name: "象塔8樓", t: "15:00" }, { w: 5, name: "克特", t: "18:10" }, { w: 5, name: "蜘蛛", t: "18:15" },
+                    { w: 5, name: "變怪王", t: "19:10" }, { w: 5, name: "巫師", t: "19:10" }, { w: 5, name: "死亡騎士", t: "19:20" }, { w: 5, name: "萊奧斯", t: "19:20" },
+                    { w: 5, name: "大黑長者", t: "19:20" },
+                    // 星期六 (6)
+                    { w: 6, name: "克特", t: "18:10" }, { w: 6, name: "蜘蛛", t: "18:15" }, { w: 6, name: "變怪王", t: "19:10" }, { w: 6, name: "巫師", t: "19:10" },
+                    { w: 6, name: "死亡騎士", t: "19:20" }, { w: 6, name: "萊奧斯", t: "19:20" }, { w: 6, name: "夏斯奇", t: "19:20" },
+                    // 星期日 (0)
+                    { w: 0, name: "克特", t: "18:10" }, { w: 0, name: "蜘蛛", t: "18:15" }, { w: 0, name: "變怪王", t: "19:10" }, { w: 0, name: "巫師", t: "19:10" },
+                    { w: 0, name: "漆黑死騎", t: "19:20" }, { w: 0, name: "萊奧斯", t: "19:20" }
+                ];
+
+                const todayFixedBosses = ref([]);
+
                 const restartSequence = [
                     { id: 1, normal: 0, event: 0 }, { id: 2, normal: 0, event: 0 }, { id: 3, normal: 40, event: 20 },
                     { id: 4, normal: 0, event: 0 }, { id: 5, normal: 20, event: 10 }, { id: 6, normal: 30, event: 15 },
-                    { id: 7, normal: 30, event: 15 }, { id: 8, normal: 10, event: 5 }, 
-                    { id: 9, normal: 20, event: 10 }, { id: 25, normal: 0, event: 0 },  
-                    { id: 10, normal: 10, event: 5 }, { id: 11, normal: 0, event: 0 }, { id: 12, normal: 30, event: 15 },
-                    { id: 13, normal: 20, event: 10 }, { id: 14, normal: 10, event: 5 }, { id: 16, normal: 50, event: 25 },
-                    { id: 17, normal: 0, event: 0 }, { id: 24, normal: 0, event: 0 }, { id: 15, normal: 10, event: 5 },
-                    { id: 18, normal: 20, event: 10 }, { id: 19, normal: 10, event: 5 }, { id: 20, normal: 20, event: 10 },
-                    { id: 21, normal: 10, event: 5 }, { id: 22, normal: 20, event: 10 }, { id: 23, normal: 10, event: 5 }
+                    { id: 7, normal: 30, event: 15 }, { id: 8, normal: 10, event: 5 }, { id: 9, normal: 20, event: 10 },
+                    { id: 25, normal: 0, event: 0 }, { id: 10, normal: 10, event: 5 }, { id: 11, normal: 0, event: 0 },
+                    { id: 12, normal: 30, event: 15 }, { id: 13, normal: 20, event: 10 }, { id: 14, normal: 10, event: 5 },
+                    { id: 16, normal: 50, event: 25 }, { id: 17, normal: 0, event: 0 }, { id: 24, normal: 0, event: 0 },
+                    { id: 15, normal: 10, event: 5 }, { id: 18, normal: 20, event: 10 }, { id: 19, normal: 10, event: 5 },
+                    { id: 20, normal: 20, event: 10 }, { id: 21, normal: 10, event: 5 }, { id: 22, normal: 20, event: 10 },
+                    { id: 23, normal: 10, event: 5 }
                 ];
 
+                // 混合一般型王怪與「尚未隱形消失」的固定排程王
                 const filteredBosses = computed(() => {
                     let list = bosses.value.filter(b => b.killedAt !== null);
+                    
+                    // 過濾掉已經過期超過 3 分鐘需要被消失的固定王
+                    let activeFixed = todayFixedBosses.value.filter(fb => fb.isExpiredAndHidden === false);
+                    
+                    let combined = [...list, ...activeFixed];
+
                     if (currentTab.value !== 'all') {
-                        list = list.filter(b => b.cooldown === currentTab.value);
+                        // 固定王不歸屬於任何分頁，過濾時只留下對應梯隊的一般王
+                        combined = combined.filter(b => b.cooldown === currentTab.value);
                     }
-                    // 依照當下推算後的下輪時間 displayRespawnAt 進行完美動態排序
-                    return list.slice().sort((a, b) => a.displayRespawnAt - b.displayRespawnAt);
+                    
+                    return combined.slice().sort((a, b) => a.displayRespawnAt - b.displayRespawnAt);
                 });
 
                 const initFirebaseTimeSync = () => {
@@ -243,11 +284,35 @@
                         timeOffset.value = snapshot.val() || 0;
                         const secDiff = Math.abs(Math.round(timeOffset.value / 1000));
                         timeSyncStatus.value = `雲端多人即時同步中 (已自動校正微秒級誤差：${secDiff}秒)`;
+                        generateTodayFixedSchedule();
                     });
                 };
 
                 const getCorrectedNow = () => {
                     return new Date(Date.now() + timeOffset.value);
+                };
+
+                const generateTodayFixedSchedule = () => {
+                    const now = getCorrectedNow();
+                    const todayDay = now.getDay();
+                    
+                    const filteredRaw = fixedScheduleRaw.filter(item => item.w === todayDay);
+                    
+                    todayFixedBosses.value = filteredRaw.map((item, index) => {
+                        const [hrsStr, minsStr] = item.t.split(':');
+                        const targetDate = getCorrectedNow();
+                        targetDate.setHours(parseInt(hrsStr, 10), parseInt(minsStr, 10), 0, 0);
+
+                        return {
+                            id: `fixed_${todayDay}_${index}_${item.name}`,
+                            displayName: item.name,
+                            isFixed: true,
+                            displayRespawnAt: targetDate,
+                            countdownText: '',
+                            status: 'counting',
+                            isExpiredAndHidden: false
+                        };
+                    });
                 };
 
                 const toggleSettingsMenu = () => { showSettingsMenu.value = !showSettingsMenu.value; };
@@ -352,9 +417,15 @@
                     }
                 };
 
-                // 【核心跳輪與顯示重構】網頁只在本地運算下一輪，絕不偷偷塞資料回雲端！
                 const updateCountdowns = () => {
                     const now = getCorrectedNow();
+
+                    // 每日 00:00 自動刷新洗牌今日固定王
+                    if (now.getHours() === 0 && now.getMinutes() === 0 && now.getSeconds() === 0) {
+                        generateTodayFixedSchedule();
+                    }
+
+                    // A. 計算一般手動型王怪
                     bosses.value.forEach(boss => {
                         if (!boss.respawnAt) return;
                         
@@ -362,7 +433,6 @@
                         let loops = 0;
                         let diff = targetRespawn - now.getTime();
 
-                        // 核心防打架跳輪邏輯：如果超過時間，本地端自己加上 CD 推算下一輪
                         const actualCooldownMs = (isEventActive.value ? (boss.cooldown / 2) : boss.cooldown) * 60 * 60000;
                         while (diff <= 0) {
                             targetRespawn += actualCooldownMs;
@@ -370,19 +440,16 @@
                             diff = targetRespawn - now.getTime();
                         }
 
-                        // 將計算好的最新一輪時間與過期狀態指派給前端元件
                         boss.displayRespawnAt = new Date(targetRespawn);
-                        boss.localSkipCount = boss.skipCount + loops; // 包含雲端已過輪數 + 本地推算過輪數
+                        boss.localSkipCount = boss.skipCount + loops;
 
-                        // 格式化渲染倒數
                         const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
                         const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
                         const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
                         boss.countdownText = `${hrs}:${mins}:${secs}`;
                         
-                        // 狀態判定
                         if (boss.localSkipCount > 0) {
-                            boss.status = 'overdue'; // 只要有本地過期，就給予過期狀態
+                            boss.status = 'overdue';
                         } else if (diff <= 30 * 1000) {
                             boss.status = 'critical';
                         } else if (diff < 15 * 60000) {
@@ -391,29 +458,66 @@
                             boss.status = 'counting';
                         }
                     });
+
+                    // B. 計算今日固定排程王 (精確校對超過3分鐘隱形消失機制)
+                    todayFixedBosses.value.forEach(fb => {
+                        let diff = fb.displayRespawnAt.getTime() - now.getTime();
+
+                        if (diff <= 0) {
+                            const passedMinutes = Math.abs(diff) / 60000;
+                            if (passedMinutes >= 3) {
+                                fb.isExpiredAndHidden = true; // 3分鐘一到，在本地直接轉成 true 隱形消失
+                            } else {
+                                fb.countdownText = `💥 已開門！(3分內)`;
+                                fb.status = 'ready';
+                            }
+                        } else {
+                            const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
+                            const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+                            const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                            fb.countdownText = `${hrs}:${mins}:${secs}`;
+                            
+                            if (diff <= 30 * 1000) {
+                                fb.status = 'critical';
+                            } else if (diff < 15 * 60000) {
+                                fb.status = 'warning';
+                            } else {
+                                fb.status = 'counting';
+                            }
+                        }
+                    });
                 };
 
                 const getCardBg = (boss) => {
-                    if (boss.status === 'overdue') return 'bg-red-950/20 border-red-900/60 border'; // 漏王卡片：暗紅底紅框
+                    if (boss.isFixed) {
+                        if (boss.status === 'ready') return 'bg-orange-950/40 border-orange-500 border-2 animate-pulse';
+                        return 'bg-amber-950/20 border border-amber-600/50 hover:border-amber-500';
+                    }
+                    if (boss.status === 'ready') return 'bg-red-950/40 border-red-500 animate-pulse';
+                    if (boss.status === 'overdue') return 'bg-red-950/20 border-red-900/60 border'; 
                     if (boss.status === 'critical') return 'bg-red-950/20 card-critical border-2'; 
                     if (boss.status === 'warning') return 'bg-yellow-950/30 border-yellow-500/50';
                     return isEventActive.value ? 'bg-gray-800 border-red-900/30 hover:border-red-900/60' : 'bg-gray-800/80 border-gray-700';
                 };
                 
                 const getCountdownColor = (boss) => {
-                    if (boss.status === 'overdue') return 'text-red-500 font-bold'; // 漏王倒數：正常顯示下一輪的綠/橘色，但維持穩固不卡死
+                    if (boss.status === 'ready') return 'text-red-400 font-black';
+                    if (boss.status === 'overdue') return 'text-red-500 font-bold'; 
                     if (boss.status === 'critical') return 'text-critical font-black scale-105'; 
                     if (boss.status === 'warning') return 'text-yellow-500';
+                    if (boss.isFixed) return 'text-amber-400';
                     return isEventActive.value ? 'text-orange-400' : 'text-green-400';
                 };
                 
-                const getCooldownBadgeColor = (cd) => {
+                const getCooldownBadgeColor = (boss) => {
+                    if (boss.isFixed) return 'bg-amber-900 text-amber-200 border border-amber-600/30';
                     if (isEventActive.value) return 'bg-red-950 text-red-400 border border-red-900/40';
-                    if (cd === 4) return 'bg-green-900 text-green-300';
-                    if (cd === 6) return 'bg-orange-900 text-orange-300';
-                    if (cd === 8) return 'bg-blue-900 text-blue-300';
+                    if (boss.cooldown === 4) return 'bg-green-900 text-green-300';
+                    if (boss.cooldown === 6) return 'bg-orange-900 text-orange-300';
+                    if (boss.cooldown === 8) return 'bg-blue-900 text-blue-300';
                     return 'bg-purple-900 text-purple-300';
                 };
+                
                 const formatTime = (date) => {
                     if (!date) return '';
                     const d = new Date(date);
