@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>天堂W 擊殺王及重生紀錄器 (智慧通知音效版)</title>
-    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- 引入 Firebase App 和 Database SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
@@ -43,22 +40,25 @@
 
     <div id="app" v-cloak class="max-w-md mx-auto px-4 pt-6">
         
-        <!-- 【智慧通知權限啟用橫幅】 -->
-        <div v-if="notificationPermission === 'default'" class="mb-4 bg-blue-950/60 border border-blue-500/40 rounded-xl p-3 text-center transition-all">
+        <div v-if="!isNotificationSupported" class="mb-4 bg-red-950/60 border border-red-500/40 rounded-xl p-3 text-center">
+            <p class="text-xs font-medium text-red-300">⚠️ 偵測到當前環境非加密連線(HTTPS)或瀏覽器不支援，無法彈出通知。請發布至 GitHub Pages 後測試。</p>
+        </div>
+        <div v-else-if="notificationPermission === 'default'" class="mb-4 bg-blue-950/60 border border-blue-500/40 rounded-xl p-3 text-center transition-all">
             <p class="text-xs font-medium text-blue-300 mb-2">🔊 啟用網頁通知，即可在出王前 30 秒接收彈出視窗與警報音效！</p>
             <button @click="requestNotificationPermission" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition-colors shadow-md">
                 🔔 開啟網頁通知提醒
             </button>
         </div>
+        <div v-else-if="notificationPermission === 'denied'" class="mb-4 bg-yellow-950/40 border border-yellow-600/30 rounded-xl p-2 text-center text-xs text-yellow-400">
+            🔒 通知權限已被瀏覽器封鎖，若需通知請至瀏覽器設定（網址左側鎖頭）重新允許。
+        </div>
         
-        <!-- 頁首標題 -->
         <header class="mb-4 text-center">
             <h1 v-if="!isEventActive" class="text-2xl font-bold text-yellow-500 tracking-wider transition-all">👑 天堂W 王怪計時看板</h1>
             <h1 v-else class="text-2xl font-black text-red-500 tracking-widest event-title-active transition-all flex items-center justify-center gap-1">
                 🔥 王的逆襲：首領瘋狂暴動！
             </h1>
             
-            <!-- 活動跑馬燈小標 -->
             <p v-if="isEventActive" class="text-xs text-orange-400 font-bold mt-2 tracking-wide bg-red-950/30 py-1.5 rounded-full border border-red-900/40">
                 ⚡ 雙倍重生速度已啟動，請盟友立刻就位！
             </p>
@@ -68,12 +68,10 @@
             </p>
         </header>
 
-        <!-- 指令輸入區塊 -->
         <div :class="isEventActive ? 'bg-gray-800/90 border-red-900/60 shadow-red-950/20' : 'bg-gray-800 border-gray-700'" class="p-4 rounded-xl border shadow-md mb-6 relative transition-colors duration-500">
             <div class="flex justify-between items-center mb-2">
                 <label :class="isEventActive ? 'text-red-400' : 'text-yellow-500/80'" class="block text-xs font-bold uppercase tracking-wider">💬 指令輸入</label>
                 
-                <!-- 全域設定齒輪按鈕 -->
                 <div class="relative">
                     <button 
                         @click="toggleSettingsMenu" 
@@ -82,12 +80,10 @@
                         <span>⚙️ 設定</span>
                     </button>
 
-                    <!-- 齒輪下拉選單 -->
                     <div v-if="showSettingsMenu" class="absolute right-0 mt-2 w-56 bg-gray-950 border border-gray-700 rounded-xl shadow-2xl p-3 z-50 space-y-2 flex flex-col justify-between">
                         <div>
                             <p class="text-[10px] font-bold text-gray-500 border-b border-gray-800 pb-1 mb-2 uppercase tracking-wider">🛠️ 系統控制面版</p>
                             
-                            <!-- 齒輪內按鈕 1: 王的逆襲開關 -->
                             <button 
                                 @click="toggleEventMode"
                                 :class="isEventActive ? 'bg-red-600 text-white border-red-500' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'"
@@ -98,7 +94,6 @@
                                 </span>
                             </button>
 
-                            <!-- 齒輪內按鈕 2: 一鍵重設 -->
                             <button 
                                 @click="triggerRestart"
                                 class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 hover:bg-red-950/40 text-red-400 border border-gray-700 hover:border-red-900/60 transition-colors flex items-center gap-1.5 mb-4">
@@ -106,7 +101,6 @@
                             </button>
                         </div>
                         
-                        <!-- 設定頁面右下角版本號 -->
                         <div class="text-right border-t border-gray-900 pt-1">
                             <span class="text-[9px] text-gray-600 font-mono tracking-tighter">lineagew-20260624001</span>
                         </div>
@@ -114,7 +108,6 @@
                 </div>
             </div>
 
-            <!-- 輸入框核心 -->
             <div class="flex gap-2">
                 <input 
                     v-model="commandText" 
@@ -130,12 +123,10 @@
                     執行
                 </button>
             </div>
-            <!-- 狀態/提示訊息 -->
             <p v-if="errorMsg" class="text-red-400 text-xs mt-2 font-medium">⚠️ {{ errorMsg }}</p>
             <p v-if="successMsg" class="text-green-400 text-xs mt-2 font-medium">✅ {{ successMsg }}</p>
         </div>
 
-        <!-- 王分類過濾按鈕 -->
         <div class="flex flex-wrap gap-2 mb-6 justify-center">
             <button 
                 v-for="tab in tabs" 
@@ -146,13 +137,11 @@
             </button>
         </div>
 
-        <!-- 空狀態提示 -->
         <div v-if="filteredBosses.length === 0" :class="isEventActive ? 'border-red-900/30 bg-red-950/5' : 'border-gray-800'" class="text-center py-12 text-gray-500 border border-dashed rounded-xl">
             <p class="text-sm">目前沒有正在倒數的首領 ⏳</p>
             <p class="text-xs mt-1 text-gray-600">直接輸入「王名 時間」或「王名」即可開始紀錄</p>
         </div>
 
-        <!-- 王怪列表 -->
         <div class="space-y-3">
             <div 
                 v-for="boss in filteredBosses" 
@@ -160,16 +149,13 @@
                 :class="getCardBg(boss)"
                 class="p-4 rounded-xl border shadow-lg transition-all flex items-center justify-between gap-2">
                 
-                <!-- 左側與中間：出生時間 + 王名稱 -->
                 <div class="flex items-center gap-4 flex-1 min-w-0">
-                    <!-- 出生時間欄位 -->
                     <div class="w-16 text-center shrink-0">
                         <span :class="boss.isFixed ? 'text-amber-400' : (isEventActive ? 'text-orange-400' : 'text-yellow-400')" class="text-xl font-mono font-bold">
                             {{ formatTime(boss.displayRespawnAt) }}
                         </span>
                     </div>
 
-                    <!-- 王怪名稱與CD -->
                     <div class="flex items-center gap-2 min-w-0">
                         <span :class="boss.isFixed ? 'text-amber-100 font-extrabold' : (boss.localSkipCount > 0 ? 'text-red-500 font-extrabold' : 'text-white')" class="text-lg font-bold tracking-wide truncate transition-colors">
                             {{ boss.displayName }}
@@ -180,7 +166,6 @@
                     </div>
                 </div>
 
-                <!-- 右側：倒數計時 -->
                 <div class="flex items-center shrink-0 mr-1">
                     <div class="text-xl font-mono font-bold" :class="getCountdownColor(boss)">
                         {{ boss.countdownText }}
@@ -214,7 +199,9 @@
                 const timeOffset = ref(0);
                 const timeSyncStatus = ref('正在同步 Google 雲端時間軸...');
                 
-                const notificationPermission = ref(Notification.permission);
+                // 檢查瀏覽器是否支援通知
+                const isNotificationSupported = ref('Notification' in window);
+                const notificationPermission = ref(isNotificationSupported.value ? Notification.permission : 'denied');
                 const alertedBosses = ref({}); 
 
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -326,22 +313,43 @@
                 });
 
                 const requestNotificationPermission = () => {
+                    if (!isNotificationSupported.value) return;
                     Notification.requestPermission().then(permission => {
                         notificationPermission.value = permission;
                         if (permission === 'granted') {
-                            new Notification("🎉 成功啟用天堂W王怪推播提醒！");
+                            try {
+                                // 升級 1：使用進階相容 ServiceWorker 架構註冊通知
+                                navigator.serviceWorker.ready.then(registration => {
+                                    registration.showNotification("🎉 成功啟用背景推播提醒！");
+                                }).catch(() => {
+                                    new Notification("🎉 成功啟用天堂W王怪推播提醒！");
+                                });
+                            } catch (e) {
+                                new Notification("🎉 成功啟用天堂W王怪推播提醒！");
+                            }
                             playAlertSound();
                         }
                     });
                 };
 
+                // 【加強提醒核心修正】優化跨裝置與多環境相容
                 const triggerSystemAlert = (bossName, titleMsg) => {
                     playAlertSound();
                     if (notificationPermission.value === 'granted') {
-                        new Notification(titleMsg, {
-                            body: `請血盟盟友立刻前往【${bossName}】重生點集合搶位！`,
-                            icon: 'https://cdn-icons-png.flaticon.com/512/3601/3601650.png'
-                        });
+                        try {
+                            // 優先嘗試最穩定的背景註冊通知
+                            navigator.serviceWorker.ready.then(registration => {
+                                registration.showNotification(titleMsg, {
+                                    body: `請血盟盟友立刻前往【${bossName}】重生點集合搶位！`,
+                                    icon: 'https://cdn-icons-png.flaticon.com/512/3601/3601650.png',
+                                    tag: bossName // 防止同隻王重複塞爆通知列
+                                });
+                            }).catch(() => {
+                                new Notification(titleMsg, { body: `請血盟盟友立刻前往【${bossName}】重生點集合搶位！` });
+                            });
+                        } catch (e) {
+                            new Notification(titleMsg, { body: `請血盟盟友立刻前往【${bossName}】重生點集合搶位！` });
+                        }
                     }
                 };
 
@@ -630,14 +638,23 @@
                     });
                 };
 
-                onMounted(() => { initFirebaseTimeSync(); listenToFirebase(); setInterval(updateCountdowns, 1000); });
+                onMounted(() => {
+                    // 升級 2：自動註冊空 ServiceWorker 取得底層 PWA 推播硬體綠色通道
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.register('data:text/javascript;base64,Ly8gU2VydmljZSBXb3JrZXIgZm9yIE5vdGlmaWNhdGlvbnM=')
+                        .catch(err => console.log("SW Register Blank Pass"));
+                    }
+                    initFirebaseTimeSync(); 
+                    listenToFirebase(); 
+                    setInterval(updateCountdowns, 1000); 
+                });
 
                 return {
                     currentTab, tabs, filteredBosses, showSettingsMenu, toggleSettingsMenu,
                     commandText, errorMsg, successMsg, parseCommand, triggerRestart,
                     getCardBg, getCountdownColor, getCooldownBadgeColor, 
                     formatTime, isEventActive, toggleEventMode, timeSyncStatus,
-                    notificationPermission, requestNotificationPermission
+                    notificationPermission, requestNotificationPermission, isNotificationSupported
                 };
             }
         }).mount('#app');
