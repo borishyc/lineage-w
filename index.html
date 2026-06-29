@@ -1,11 +1,16 @@
+<!-- Version: lineagew-20260624006 -->
 <!DOCTYPE html>
+<!-- Version: lineagew-20260624006 -->
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天堂W 擊殺王及重生紀錄器 (雲端資料安全防護版)</title>
+    <title>天堂W 擊殺王及重生紀錄器 (巨蟻女皇排程修正版)</title>
+    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 引入 Firebase App 和 Database SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
@@ -40,12 +45,14 @@
 
     <div id="app" v-cloak class="max-w-md mx-auto px-4 pt-6">
         
+        <!-- 頁首標題 -->
         <header class="mb-4 text-center">
             <h1 v-if="!isEventActive" class="text-2xl font-bold text-yellow-500 tracking-wider transition-all">👑 天堂W 王怪計時看板</h1>
             <h1 v-else class="text-2xl font-black text-red-500 tracking-widest event-title-active transition-all flex items-center justify-center gap-1">
                 🔥 王的逆襲：首領瘋狂暴動！
             </h1>
             
+            <!-- 活動跑馬燈小標 -->
             <p v-if="isEventActive" class="text-xs text-orange-400 font-bold mt-2 tracking-wide bg-red-950/30 py-1.5 rounded-full border border-red-900/40">
                 ⚡ 雙倍重生速度已啟動，請盟友立刻就位！
             </p>
@@ -55,10 +62,12 @@
             </p>
         </header>
 
+        <!-- 指令輸入區塊 -->
         <div :class="isEventActive ? 'bg-gray-800/90 border-red-900/60 shadow-red-950/20' : 'bg-gray-800 border-gray-700'" class="p-4 rounded-xl border shadow-md mb-6 relative transition-colors duration-500">
             <div class="flex justify-between items-center mb-2">
                 <label :class="isEventActive ? 'text-red-400' : 'text-yellow-500/80'" class="block text-xs font-bold uppercase tracking-wider">💬 指令輸入</label>
                 
+                <!-- 全域設定齒輪按鈕 -->
                 <div class="relative">
                     <button 
                         @click="toggleSettingsMenu" 
@@ -67,10 +76,12 @@
                         <span>⚙️ 設定</span>
                     </button>
 
+                    <!-- 齒輪下拉選單 -->
                     <div v-if="showSettingsMenu" class="absolute right-0 mt-2 w-56 bg-gray-950 border border-gray-700 rounded-xl shadow-2xl p-3 z-50 space-y-2 flex flex-col justify-between">
                         <div>
                             <p class="text-[10px] font-bold text-gray-500 border-b border-gray-800 pb-1 mb-2 uppercase tracking-wider">🛠️ 系統控制面版</p>
                             
+                            <!-- 齒輪內按鈕 1: 王的逆襲開關 -->
                             <button 
                                 @click="toggleEventMode"
                                 :class="isEventActive ? 'bg-red-600 text-white border-red-500' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'"
@@ -81,6 +92,7 @@
                                 </span>
                             </button>
 
+                            <!-- 齒輪內按鈕 2: 一鍵重設 -->
                             <button 
                                 @click="triggerRestart"
                                 class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 hover:bg-red-950/40 text-red-400 border border-gray-700 hover:border-red-900/60 transition-colors flex items-center gap-1.5 mb-4">
@@ -88,13 +100,15 @@
                             </button>
                         </div>
                         
+                        <!-- 版本號安全遞增更新為 006 -->
                         <div class="text-right border-t border-gray-900 pt-1">
-                            <span class="text-xs text-gray-500 font-mono tracking-tighter">lineagew-20260624005</span>
+                            <span class="text-xs text-gray-500 font-mono tracking-tighter">lineagew-20260624006</span>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- 輸入框核心 -->
             <div class="flex gap-2">
                 <input 
                     v-model="commandText" 
@@ -110,10 +124,12 @@
                     執行
                 </button>
             </div>
+            <!-- 狀態/提示訊息 -->
             <p v-if="errorMsg" class="text-red-400 text-xs mt-2 font-medium">⚠️ {{ errorMsg }}</p>
             <p v-if="successMsg" class="text-green-400 text-xs mt-2 font-medium">✅ {{ successMsg }}</p>
         </div>
 
+        <!-- 王分類過濾按鈕 -->
         <div class="flex flex-wrap gap-2 mb-6 justify-center">
             <button 
                 v-for="tab in tabs" 
@@ -124,11 +140,13 @@
             </button>
         </div>
 
+        <!-- 空狀態提示 -->
         <div v-if="filteredBosses.length === 0" :class="isEventActive ? 'border-red-900/30 bg-red-950/5' : 'border-gray-800'" class="text-center py-12 text-gray-500 border border-dashed rounded-xl">
             <p class="text-sm">目前沒有正在倒數的首領 ⏳</p>
             <p class="text-xs mt-1 text-gray-600">直接輸入「王名 時間」或「王名」即可開始紀錄</p>
         </div>
 
+        <!-- 王怪列表 -->
         <div class="space-y-3">
             <div 
                 v-for="boss in filteredBosses" 
@@ -136,13 +154,16 @@
                 :class="getCardBg(boss)"
                 class="p-4 rounded-xl border shadow-lg transition-all flex items-center justify-between gap-2">
                 
+                <!-- 左側與中間：出生時間 + 王名稱 -->
                 <div class="flex items-center gap-4 flex-1 min-w-0">
+                    <!-- 出生時間欄位 -->
                     <div class="w-16 text-center shrink-0">
                         <span :class="boss.isFixed ? 'text-amber-400' : (isEventActive ? 'text-orange-400' : 'text-yellow-400')" class="text-xl font-mono font-bold">
                             {{ formatTime(boss.displayRespawnAt) }}
                         </span>
                     </div>
 
+                    <!-- 王怪名稱與CD -->
                     <div class="flex items-center gap-2 min-w-0">
                         <span :class="boss.isFixed ? 'text-amber-100 font-extrabold' : (boss.localSkipCount > 0 ? 'text-red-500 font-extrabold' : 'text-white')" class="text-lg font-bold tracking-wide truncate transition-colors">
                             {{ boss.displayName }}
@@ -153,6 +174,7 @@
                     </div>
                 </div>
 
+                <!-- 右側：倒數計時 -->
                 <div class="flex items-center shrink-0 mr-1">
                     <div class="text-xl font-mono font-bold" :class="getCountdownColor(boss)">
                         {{ boss.countdownText }}
@@ -222,24 +244,32 @@
                     { id: 24, displayName: "二巨", name: "二巨", aliases: ["2G"], cooldown: 12, killedAt: null, respawnAt: null, countdownText: '', status: 'none', skipCount: 0, displayRespawnAt: null, localSkipCount: 0 },
                 ]);
 
+                // 2. 固定時間出王排程資料庫 (已移除週六、週日的巨蟻女皇)
                 const fixedScheduleRaw = [
+                    // 星期一 (1)
                     { w: 1, name: "巨蟻女皇", t: "15:00" }, { w: 1, name: "火焰5樓", t: "15:00" }, { w: 1, name: "克特", t: "18:10" }, { w: 1, name: "蜘蛛", t: "18:15" },
                     { w: 1, name: "變怪王", t: "19:10" }, { w: 1, name: "巫師", t: "19:10" }, { w: 1, name: "死亡騎士", t: "19:20" }, { w: 1, name: "萊奧斯", t: "19:20" },
                     { w: 1, name: "鑽石高倫", t: "19:20" }, { w: 1, name: "魔族戰場", t: "19:50" },
+                    // 星期二 (2)
                     { w: 2, name: "巨蟻女皇", t: "15:00" }, { w: 2, name: "炎魔5樓", t: "15:00" }, { w: 2, name: "克特", t: "18:10" }, { w: 2, name: "蜘蛛", t: "18:15" },
                     { w: 2, name: "變怪王", t: "19:10" }, { w: 2, name: "巫師", t: "19:10" }, { w: 2, name: "死亡騎士", t: "19:20" }, { w: 2, name: "萊奧斯", t: "19:20" },
                     { w: 2, name: "船長卡利索", t: "19:20" }, { w: 2, name: "魔族戰場", t: "19:50" },
+                    // 星期三 (3)
                     { w: 3, name: "巨蟻女皇", t: "15:00" }, { w: 3, name: "火焰5樓", t: "15:00" }, { w: 3, name: "克特", t: "18:10" }, { w: 3, name: "蜘蛛", t: "18:15" },
                     { w: 3, name: "變怪王", t: "19:10" }, { w: 3, name: "巫師", t: "19:10" }, { w: 3, name: "死亡騎士", t: "19:20" }, { w: 3, name: "萊奧斯", t: "19:20" },
                     { w: 3, name: "巨大飛龍", t: "19:20" },
+                    // 星期四 (4)
                     { w: 4, name: "巨蟻女皇", t: "15:00" }, { w: 4, name: "炎魔5樓", t: "15:00" }, { w: 4, name: "克特", t: "18:10" }, { w: 4, name: "蜘蛛", t: "18:15" },
                     { w: 4, name: "變怪王", t: "19:10" }, { w: 4, name: "巫師", t: "19:10" }, { w: 4, name: "死亡騎士", t: "19:20" }, { w: 4, name: "萊奧斯", t: "19:20" },
                     { w: 4, name: "巨大蜈蚣", t: "19:20" }, { w: 4, name: "哈汀", t: "20:00" },
+                    // 星期五 (5)
                     { w: 5, name: "巨蟻女皇", t: "15:00" }, { w: 5, name: "象塔8樓", t: "15:00" }, { w: 5, name: "克特", t: "18:10" }, { w: 5, name: "蜘蛛", t: "18:15" },
                     { w: 5, name: "變怪王", t: "19:10" }, { w: 5, name: "巫師", t: "19:10" }, { w: 5, name: "死亡騎士", t: "19:20" }, { w: 5, name: "萊奧斯", t: "19:20" },
                     { w: 5, name: "大黑長者", t: "19:20" },
+                    // 星期六 (6) -> 已將 15:00 巨蟻女皇剔除，只保留 15:00 欄位空白或不顯示
                     { w: 6, name: "克特", t: "18:10" }, { w: 6, name: "蜘蛛", t: "18:15" }, { w: 6, name: "變怪王", t: "19:10" }, { w: 6, name: "巫師", t: "19:10" },
                     { w: 6, name: "死亡騎士", t: "19:20" }, { w: 6, name: "萊奧斯", t: "19:20" }, { w: 6, name: "夏斯奇", t: "19:20" },
+                    // 星期日 (0) -> 已確認不包含巨蟻女皇
                     { w: 0, name: "克特", t: "18:10" }, { w: 0, name: "蜘蛛", t: "18:15" }, { w: 0, name: "變怪王", t: "19:10" }, { w: 0, name: "巫師", t: "19:10" },
                     { w: 0, name: "漆黑死騎", t: "19:20" }, { w: 0, name: "萊奧斯", t: "19:20" }
                 ];
@@ -378,7 +408,6 @@
                             tempTimes[prevNode.id] = new Date(currentRefTime);
                         }
 
-                        // 【安全漏洞修復】：只推算有在重啟名單中且大於等於 seqIndex 的王，其餘沒輸入的王怪絕對不能被洗成 0
                         let updates = {};
                         bosses.value.forEach(boss => {
                             const nodeIdx = restartSequence.findIndex(s => s.id === boss.id);
@@ -391,7 +420,6 @@
                                     skipCount: 0
                                 };
                             }
-                            // 移除原有的隨意覆蓋 else 清空邏輯，確保雲端未列入重啟的正常排程王不受打擾
                         });
                         db.ref().update(updates);
                         successMsg.value = "T指令已即時發送至雲端推算！";
