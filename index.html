@@ -85,7 +85,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 <div class="mt-2 text-[10px] text-gray-500 command-hint">K＝記錄死亡　T＝時間軸推算　#RESTART＝重置　#LIST＝目前倒數　#TODAY＝今日固定王</div>
 <p v-if="errorMsg" class="text-red-400 text-xs mt-2">⚠️ {{errorMsg}}</p><p v-if="successMsg" class="text-green-400 text-xs mt-2">✅ {{successMsg}}</p>
 <div v-if="showSettings" class="mt-3 bg-gray-950 border border-gray-700 rounded-xl p-3 space-y-2">
-<div class="rounded-xl border border-amber-700/30 bg-gray-900 p-3 space-y-3"><div class="flex items-center justify-between"><div><div class="font-bold text-sm text-amber-300">🔔 首領提醒設定</div><div class="text-[11px] text-gray-400 mt-1">所有野外首領及固定首領使用相同提前時間</div></div><span class="text-[10px] text-amber-400">第一階段</span></div><label class="block text-xs text-gray-300">提前提醒（分鐘）<input type="number" min="0" max="1440" step="1" v-model.number="reminderMinutes" @change="saveReminderSettings" class="mt-2 w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-white"></label><div class="flex flex-wrap gap-2"><button @click="saveReminderSettings" class="bg-amber-600 text-gray-950 font-bold rounded-lg px-3 py-2 text-xs">儲存提醒設定</button><button @click="enableNotifications" class="bg-gray-700 rounded-lg px-3 py-2 text-xs">啟用背景推播</button></div><p class="text-[11px] text-gray-400">{{notificationStatus}}</p><p class="text-[11px] text-amber-200/80">手機註冊成功後，可接收後端測試推播；首領自動推播尚未啟用。</p></div><button @click="showAdmin=!showAdmin" class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 border border-gray-700">🛠️ {{showAdmin?'關閉':'開啟'}} V2.1 資料庫管理</button>
+<div class="rounded-xl border border-amber-700/30 bg-gray-900 p-3 space-y-3"><div class="flex items-center justify-between"><div><div class="font-bold text-sm text-amber-300">🔔 首領提醒設定</div><div class="text-[11px] text-gray-400 mt-1">所有野外首領及固定首領使用相同提前時間</div></div><span class="text-[10px] text-amber-400">第一階段</span></div><label class="block text-xs text-gray-300">提前提醒（分鐘）<input type="number" min="0" max="1440" step="1" v-model.number="reminderMinutes" @change="saveReminderSettings" class="mt-2 w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-white"></label><div class="flex flex-wrap gap-2"><button @click="saveReminderSettings" class="bg-amber-600 text-gray-950 font-bold rounded-lg px-3 py-2 text-xs">儲存提醒設定</button><button @click="enableNotifications" class="bg-gray-700 rounded-lg px-3 py-2 text-xs">啟用背景推播</button></div><div v-if="deviceUid" class="flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-950 p-2"><div class="flex-1 min-w-0"><div class="text-[10px] text-gray-400 mb-1">此裝置 UID</div><div class="text-xs text-gray-200 font-mono truncate">{{deviceUid}}</div></div><button type="button" @click="copyUID" class="shrink-0 bg-amber-600 hover:bg-amber-500 text-gray-950 font-bold rounded-lg px-3 py-2 text-xs">{{uidCopied?'✓ 已複製':'📋 複製 UID'}}</button></div><p v-if="copyUidError" class="text-[11px] text-red-400">{{copyUidError}}</p><p class="text-[11px] text-gray-400">{{notificationStatus}}</p><p class="text-[11px] text-amber-200/80">手機註冊成功後，可接收後端測試推播；首領自動推播尚未啟用。</p></div><button @click="showAdmin=!showAdmin" class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 border border-gray-700">🛠️ {{showAdmin?'關閉':'開啟'}} V2.1 資料庫管理</button>
 <button @click="toggleEventMode" class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 border border-gray-700 flex justify-between"><span>💥 活動狀態</span><span :class="isEventActive?'text-red-400':'text-gray-500'">{{isEventActive?'ON':'OFF'}}</span></button>
 <button @click="triggerRestart" class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 border border-red-900 text-red-400">🔄 #RESTART</button>
 <button @click="showHistory=!showHistory" class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 border border-gray-700 text-blue-400">📜 {{showHistory?'關閉':'開啟'}}死亡歷史</button>
@@ -122,6 +122,26 @@ const SEED_TIMELINE=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,24,15,18,19,20,21,22
 const app=createApp({setup(){
 const countdownTick=ref(Date.now()),autoSkipPending=new Set(),currentTab=ref('all'),showSettings=ref(false),showAdmin=ref(false),showHistory=ref(false),adminTab=ref('bosses'),commandText=ref(''),errorMsg=ref(''),successMsg=ref(''),timeOffset=ref(0),timeSyncStatus=ref('同步 Firebase 雲端時間...'),historyRecords=ref([]),configReady=ref(false),seedBusy=ref(false),isEventActive=ref(false),configBosses=ref([]),schedules=ref([]),scheduleGroups=ref([]),timeline=ref([]),eventConfig=ref({name:'王的逆襲',enabled:true,cooldownMultiplier:0.5}),bossStates=ref({}),todayFixedBosses=ref([]),activeEventName=ref('王的逆襲');
 const reminderMinutes=ref(Number(localStorage.getItem('lw_reminder_minutes')??10)),notificationStatus=ref('尚未測試通知權限');
+ const deviceUid=ref(auth.currentUser?.uid||''),uidCopied=ref(false),copyUidError=ref('');
+ auth.onAuthStateChanged(user=>{deviceUid.value=user?.uid||'';uidCopied.value=false;});
+ async function copyUID(){
+   const uid=deviceUid.value||auth.currentUser?.uid;
+   if(!uid){copyUidError.value='請先啟用背景推播';return;}
+   copyUidError.value='';
+   try{
+     await navigator.clipboard.writeText(uid);
+     uidCopied.value=true;
+   }catch(e){
+     // Fallback for older PWA clipboard implementations.
+     try{
+       const el=document.createElement('textarea');el.value=uid;el.style.position='fixed';el.style.opacity='0';document.body.appendChild(el);el.focus();el.select();
+       const ok=document.execCommand('copy');el.remove();
+       if(!ok)throw new Error('copy command rejected');
+       uidCopied.value=true;
+     }catch(err){copyUidError.value='複製失敗，請長按 UID 手動複製';}
+   }
+ }
+
  async function saveReminderSettings(){const v=Number(reminderMinutes.value);if(!Number.isInteger(v)||v<0||v>1440){errorMsg.value='提醒分鐘數必須是 0 至 1440 的整數';return}localStorage.setItem('lw_reminder_minutes',String(v));try{if(auth.currentUser){await db.ref('pushSubscriptions/'+auth.currentUser.uid+'/reminderMinutes').set(v)}}catch(e){errorMsg.value='本機已儲存，但雲端同步失敗：'+e.message;return}successMsg.value=`已儲存：所有首領統一提前 ${v} 分鐘提醒（此裝置設定）`;errorMsg.value=''}
  async function enableNotifications(){
   if(!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window)){
@@ -139,7 +159,7 @@ const reminderMinutes=ref(Number(localStorage.getItem('lw_reminder_minutes')??10
     if(!token)throw new Error('FCM 未傳回 Token');
     let user=auth.currentUser;
     if(!user){const credential=await auth.signInAnonymously();user=credential.user;}
-    const uid=user.uid;
+    const uid=user.uid;deviceUid.value=uid;uidCopied.value=false;
     const minutes=Number(reminderMinutes.value);
     await db.ref('pushSubscriptions/'+uid).update({token,reminderMinutes:minutes,enabled:true,updatedAt:firebase.database.ServerValue.TIMESTAMP});
     notificationStatus.value='背景推播已註冊成功（UID：'+uid+'）。請勿公開 UID 或 Token。';
@@ -187,7 +207,7 @@ function getCountdownColor(b){if(b.status==='skipped')return'text-red-300 font-b
 function getCooldownBadgeColor(b){if(b.isFixed)return'bg-amber-900 text-amber-200';if(isEventActive.value)return'bg-red-950 text-red-400';if(b.cooldown===4)return'bg-green-900 text-green-300';if(b.cooldown===6)return'bg-orange-900 text-orange-300';if(b.cooldown===8)return'bg-blue-900 text-blue-300';return'bg-purple-900 text-purple-300'}
 
 onMounted(()=>{if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('PWA worker:',e));initTime();loadConfig();loadHistory();setInterval(updateCountdowns,1000);setInterval(()=>{if(showHistory.value)loadHistory()},15000)});
-return{reminderMinutes,notificationStatus,saveReminderSettings,enableNotifications,currentTab,tabs,showSettings,showAdmin,showHistory,adminTab,commandText,errorMsg,successMsg,configReady,seedBusy,isEventActive,activeEventName,activeEventMultiplier,timeSyncStatus,historyRecords,configBosses,schedules,scheduleGroups,timeline,eventConfig,weekOptions,filteredBosses,parseCommand,killNow,triggerRestart,toggleEventMode,loadHistory,seedConfig,saveBoss,addSchedule,saveScheduleGroup,deleteScheduleGroup,saveTimeline,saveEventConfig,getCardBg,getCountdownColor,getCooldownBadgeColor,formatTime,formatDateTime};
+return{reminderMinutes,notificationStatus,deviceUid,uidCopied,copyUidError,copyUID,saveReminderSettings,enableNotifications,currentTab,tabs,showSettings,showAdmin,showHistory,adminTab,commandText,errorMsg,successMsg,configReady,seedBusy,isEventActive,activeEventName,activeEventMultiplier,timeSyncStatus,historyRecords,configBosses,schedules,scheduleGroups,timeline,eventConfig,weekOptions,filteredBosses,parseCommand,killNow,triggerRestart,toggleEventMode,loadHistory,seedConfig,saveBoss,addSchedule,saveScheduleGroup,deleteScheduleGroup,saveTimeline,saveEventConfig,getCardBg,getCountdownColor,getCooldownBadgeColor,formatTime,formatDateTime};
 }});app.mount('#app');
 </script>
 </body></html>
