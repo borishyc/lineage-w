@@ -1,7 +1,7 @@
 /* FCM-only service worker; intentionally separate from the existing PWA sw.js. */
 importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js');
-firebase.initializeApp({"apiKey": "AIzaSyDBeZoh8YPH1laR9uK3mnnb0jAvBUxqFzQ", "authDomain": "lwopendata.firebaseapp.com", "databaseURL": "https://lwopendata-default-rtdb.asia-southeast1.firebasedatabase.app/", "projectId": "lwopendata", "storageBucket": "lwopendata.firebasestorage.app", "messagingSenderId": "133221637621", "appId": "1:133221637621:web:623bf5e1da065071f194bc"});
+firebase.initializeApp({"apiKey": "AIzaSyDBeZoh8YPH1laR9uK3mnbb0jAvBUxqFzQ", "authDomain": "lwopendata.firebaseapp.com", "databaseURL": "https://lwopendata-default-rtdb.asia-southeast1.firebasedatabase.app/", "projectId": "lwopendata", "storageBucket": "lwopendata.firebasestorage.app", "messagingSenderId": "133221637621", "appId": "1:133221637621:web:623bf5e1da065071f194bc"});
 const messaging=firebase.messaging();
 messaging.onBackgroundMessage(payload=>{
   const data=payload.data||{};
