@@ -37,6 +37,14 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: node scripts/check-firebase.cjs
 
+      # 新增：手動執行時，發送 FCM 單機測試通知
+      - name: Send single-device FCM test
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TEST_FCM_UID: ${{ secrets.TEST_FCM_UID }}
+        run: node scripts/send-test-fcm.cjs
+
       - name: Scheduled run placeholder
         if: github.event_name == 'schedule'
         run: |
