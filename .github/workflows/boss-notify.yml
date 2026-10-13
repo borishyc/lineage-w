@@ -27,8 +27,18 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Check notification backend
+      - name: Install Firebase Admin SDK
+        if: github.event_name == 'workflow_dispatch'
+        run: npm install --no-save --no-package-lock firebase-admin@13
+
+      - name: Test Firebase connection
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/check-firebase.cjs
+
+      - name: Scheduled run placeholder
+        if: github.event_name == 'schedule'
         run: |
-          echo "Lineage W notification scheduler is ready."
-          echo "Current UTC time: $(date -u)"
-          echo "FCM sending is not enabled yet."
+          echo "Boss notification schedule triggered."
+          echo "Actual FCM sending is not enabled yet."
