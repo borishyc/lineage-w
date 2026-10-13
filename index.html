@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="天堂W首領">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
 <title>天堂W · BOSS WATCH | 王怪計時看板</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -77,7 +83,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 <div class="mt-2 text-[10px] text-gray-500 command-hint">K＝記錄死亡　T＝時間軸推算　#RESTART＝重置　#LIST＝目前倒數　#TODAY＝今日固定王</div>
 <p v-if="errorMsg" class="text-red-400 text-xs mt-2">⚠️ {{errorMsg}}</p><p v-if="successMsg" class="text-green-400 text-xs mt-2">✅ {{successMsg}}</p>
 <div v-if="showSettings" class="mt-3 bg-gray-950 border border-gray-700 rounded-xl p-3 space-y-2">
-<button @click="showAdmin=!showAdmin" class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 border border-gray-700">🛠️ {{showAdmin?'關閉':'開啟'}} V2.1 資料庫管理</button>
+<div class="rounded-xl border border-amber-700/30 bg-gray-900 p-3 space-y-3"><div class="flex items-center justify-between"><div><div class="font-bold text-sm text-amber-300">🔔 首領提醒設定</div><div class="text-[11px] text-gray-400 mt-1">所有野外首領及固定首領使用相同提前時間</div></div><span class="text-[10px] text-amber-400">第一階段</span></div><label class="block text-xs text-gray-300">提前提醒（分鐘）<input type="number" min="0" max="1440" step="1" v-model.number="reminderMinutes" @change="saveReminderSettings" class="mt-2 w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-white"></label><div class="flex flex-wrap gap-2"><button @click="saveReminderSettings" class="bg-amber-600 text-gray-950 font-bold rounded-lg px-3 py-2 text-xs">儲存提醒設定</button><button @click="enableNotifications" class="bg-gray-700 rounded-lg px-3 py-2 text-xs">測試通知權限</button></div><p class="text-[11px] text-gray-400">{{notificationStatus}}</p><p class="text-[11px] text-amber-200/80">目前僅提供設定與裝置通知測試；關閉 APP 後的自動推播，仍需部署 FCM 訂閱及後端排程。</p></div><button @click="showAdmin=!showAdmin" class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 border border-gray-700">🛠️ {{showAdmin?'關閉':'開啟'}} V2.1 資料庫管理</button>
 <button @click="toggleEventMode" class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 border border-gray-700 flex justify-between"><span>💥 活動狀態</span><span :class="isEventActive?'text-red-400':'text-gray-500'">{{isEventActive?'ON':'OFF'}}</span></button>
 <button @click="triggerRestart" class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 border border-red-900 text-red-400">🔄 #RESTART</button>
 <button @click="showHistory=!showHistory" class="w-full text-left px-3 py-2 rounded-lg text-xs font-bold bg-gray-800 border border-gray-700 text-blue-400">📜 {{showHistory?'關閉':'開啟'}}死亡歷史</button>
@@ -113,7 +119,10 @@ const SEED_SCHEDULE=[['巨蟻女皇',1,'15:00'],['火焰5樓',1,'15:00'],['克�
 const SEED_TIMELINE=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,24,15,18,19,20,21,22,23].map((id,i)=>({id:'t_'+String(i+1).padStart(3,'0'),bossId:id,offsetMinutes:[0,0,40,0,20,30,30,10,20,10,0,30,20,10,50,0,0,10,20,10,20,10,20,10][i]||0}));
 const app=createApp({setup(){
 const countdownTick=ref(Date.now()),autoSkipPending=new Set(),currentTab=ref('all'),showSettings=ref(false),showAdmin=ref(false),showHistory=ref(false),adminTab=ref('bosses'),commandText=ref(''),errorMsg=ref(''),successMsg=ref(''),timeOffset=ref(0),timeSyncStatus=ref('同步 Firebase 雲端時間...'),historyRecords=ref([]),configReady=ref(false),seedBusy=ref(false),isEventActive=ref(false),configBosses=ref([]),schedules=ref([]),scheduleGroups=ref([]),timeline=ref([]),eventConfig=ref({name:'王的逆襲',enabled:true,cooldownMultiplier:0.5}),bossStates=ref({}),todayFixedBosses=ref([]),activeEventName=ref('王的逆襲');
-const tabs=[{label:'全部',value:'all'},{label:'野外首領',value:'field'},{label:'固定首領',value:'fixed'}],weekOptions=[{v:1,t:'一'},{v:2,t:'二'},{v:3,t:'三'},{v:4,t:'四'},{v:5,t:'五'},{v:6,t:'六'},{v:0,t:'日'}];
+const reminderMinutes=ref(Number(localStorage.getItem('lw_reminder_minutes')??10)),notificationStatus=ref('尚未測試通知權限');
+ function saveReminderSettings(){const v=Number(reminderMinutes.value);if(!Number.isInteger(v)||v<0||v>1440){errorMsg.value='提醒分鐘數必須是 0 至 1440 的整數';return}localStorage.setItem('lw_reminder_minutes',String(v));successMsg.value=`已儲存：所有首領統一提前 ${v} 分鐘提醒（此裝置設定）`;errorMsg.value=''}
+ async function enableNotifications(){if(!('Notification' in window)){notificationStatus.value='此瀏覽器不支援通知';return}try{const p=await Notification.requestPermission();notificationStatus.value=p==='granted'?'已允許通知（尚未連接背景推播）':p==='denied'?'通知遭拒絕，請至瀏覽器設定重新開啟':'尚未允許通知';if(p==='granted'&&'serviceWorker' in navigator){const reg=await navigator.serviceWorker.ready;await reg.showNotification('天堂W 首領提醒測試',{body:`設定為提前 ${reminderMinutes.value} 分鐘提醒`,icon:'./icons/icon-192.png',tag:'lw-test'})}}catch(e){notificationStatus.value='通知測試失敗：'+e.message}}
+ const tabs=[{label:'全部',value:'all'},{label:'野外首領',value:'field'},{label:'固定首領',value:'fixed'}],weekOptions=[{v:1,t:'一'},{v:2,t:'二'},{v:3,t:'三'},{v:4,t:'四'},{v:5,t:'五'},{v:6,t:'六'},{v:0,t:'日'}];
 const activeEventMultiplier=computed(()=>isEventActive.value?Number(eventConfig.value.cooldownMultiplier||1):1);
 const getNow=()=>new Date(Date.now()+timeOffset.value), id=()=>`${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
 function operator(){let x=localStorage.getItem('lw_operator_id');if(!x){x='user_'+Math.random().toString(36).slice(2,10);localStorage.setItem('lw_operator_id',x)}return x}
@@ -150,8 +159,8 @@ function getCardBg(b){if(b.status==='skipped')return'bg-red-950/70 border-red-60
 function getCountdownColor(b){if(b.status==='skipped')return'text-red-300 font-black';if(b.status==='critical')return'text-critical font-black';if(b.status==='ready')return'text-red-400 font-black';if(b.status==='warning')return'text-yellow-500';if(b.isFixed)return'text-amber-400';return isEventActive.value?'text-orange-400':'text-green-400'}
 function getCooldownBadgeColor(b){if(b.isFixed)return'bg-amber-900 text-amber-200';if(isEventActive.value)return'bg-red-950 text-red-400';if(b.cooldown===4)return'bg-green-900 text-green-300';if(b.cooldown===6)return'bg-orange-900 text-orange-300';if(b.cooldown===8)return'bg-blue-900 text-blue-300';return'bg-purple-900 text-purple-300'}
 
-onMounted(()=>{initTime();loadConfig();loadHistory();setInterval(updateCountdowns,1000);setInterval(()=>{if(showHistory.value)loadHistory()},15000)});
-return{currentTab,tabs,showSettings,showAdmin,showHistory,adminTab,commandText,errorMsg,successMsg,configReady,seedBusy,isEventActive,activeEventName,activeEventMultiplier,timeSyncStatus,historyRecords,configBosses,schedules,scheduleGroups,timeline,eventConfig,weekOptions,filteredBosses,parseCommand,killNow,triggerRestart,toggleEventMode,loadHistory,seedConfig,saveBoss,addSchedule,saveScheduleGroup,deleteScheduleGroup,saveTimeline,saveEventConfig,getCardBg,getCountdownColor,getCooldownBadgeColor,formatTime,formatDateTime};
+onMounted(()=>{if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('PWA worker:',e));initTime();loadConfig();loadHistory();setInterval(updateCountdowns,1000);setInterval(()=>{if(showHistory.value)loadHistory()},15000)});
+return{reminderMinutes,notificationStatus,saveReminderSettings,enableNotifications,currentTab,tabs,showSettings,showAdmin,showHistory,adminTab,commandText,errorMsg,successMsg,configReady,seedBusy,isEventActive,activeEventName,activeEventMultiplier,timeSyncStatus,historyRecords,configBosses,schedules,scheduleGroups,timeline,eventConfig,weekOptions,filteredBosses,parseCommand,killNow,triggerRestart,toggleEventMode,loadHistory,seedConfig,saveBoss,addSchedule,saveScheduleGroup,deleteScheduleGroup,saveTimeline,saveEventConfig,getCardBg,getCountdownColor,getCooldownBadgeColor,formatTime,formatDateTime};
 }});app.mount('#app');
 </script>
 </body></html>
