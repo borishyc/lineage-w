@@ -1,8 +1,6 @@
 name: Lineage W Boss Notifications
 
 on:
-
-on:
   workflow_dispatch:
 
 permissions:
