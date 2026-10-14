@@ -1,4 +1,3 @@
-
 name: Lineage W Boss Notifications
 
 on:
@@ -28,7 +27,6 @@ jobs:
           node-version: "22"
 
       - name: Install Firebase Admin SDK
-        if: github.event_name == 'workflow_dispatch'
         run: npm install --no-save --no-package-lock firebase-admin@13
 
       - name: Test Firebase connection
@@ -37,7 +35,6 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: node scripts/check-firebase.cjs
 
-      # 新增：手動執行時，發送 FCM 單機測試通知
       - name: Send single-device FCM test
         if: github.event_name == 'workflow_dispatch'
         env:
@@ -45,8 +42,7 @@ jobs:
           TEST_FCM_UID: ${{ secrets.TEST_FCM_UID }}
         run: node scripts/send-test-fcm.cjs
 
-      - name: Scheduled run placeholder
-        if: github.event_name == 'schedule'
-        run: |
-          echo "Boss notification schedule triggered."
-          echo "Actual FCM sending is not enabled yet."
+      - name: Send scheduled boss reminders
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/boss-notify.cjs
