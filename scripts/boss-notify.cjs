@@ -60,15 +60,26 @@ async function main() {
   const testSub=subs[testUid];
   console.log(JSON.stringify({diagnostic:'subscription-check',totalSubscriptions:Object.keys(subs).length,testUidConfigured:!!testUid,testUidFound:!!testSub,testUidEnabled:testSub?.enabled===true,testUidHasToken:validToken(testSub?.token),testUidMinutes:testSub?.reminderMinutes??null,occurrences:occurrences.length}));
   const perDevice={};
+  let testDeviceDetail=null;
   for (const [uid,sub] of Object.entries(subs)) {
     if (!/^[A-Za-z0-9_-]{8,128}$/.test(uid) || sub?.enabled!==true || !validToken(sub.token) || !validMinutes(sub.reminderMinutes)) continue;
     const advance=Number(sub.reminderMinutes);
     const isTestDevice=uid===testUid;
     const stats={candidates:0,sent:0,skipped:0,failed:0};
     perDevice[digest(uid).slice(0,8)+(isTestDevice?'-TEST':'')] = stats;
+    const reasons={tooEarly:0,spawnPassed:0,over10MinutesLate:0,inWindow:0};
+    const upcoming=[];
+    if(isTestDevice) testDeviceDetail={advanceMinutes:advance,reasons,upcoming};
     for (const boss of occurrences) {
       const desired=boss.target-advance*60000;
       // Don't send before desired time; allow late checks, but never after spawn.
+      if (isTestDevice) {
+        const minutesUntilSpawn=Math.round((boss.target-now)/60000);
+        const minutesUntilReminder=Math.round((desired-now)/60000);
+        const reason=now<desired?'tooEarly':now>=boss.target?'spawnPassed':now-desired>MAX_LATE_MS?'over10MinutesLate':'inWindow';
+        reasons[reason]++;
+        if (upcoming.length<8 && (reason==='inWindow'||minutesUntilSpawn<=120)) upcoming.push({boss:boss.name,kind:boss.kind,spawnTime:fmt(boss.target),minutesUntilSpawn,minutesUntilReminder,reason});
+      }
       if (now<desired || now>=boss.target || now-desired>MAX_LATE_MS) continue;
       candidates++;stats.candidates++;
       if (candidates>MAX_MESSAGES) throw new Error(`Safety cap exceeded (${MAX_MESSAGES})`);
@@ -100,7 +111,7 @@ async function main() {
       }
     }
   }
-  console.log(JSON.stringify({at:new Date(now).toISOString(),occurrences:occurrences.length,candidates,sent,skipped,failed,perDevice}));
+  console.log(JSON.stringify({at:new Date(now).toISOString(),occurrences:occurrences.length,candidates,sent,skipped,failed,perDevice,testDeviceDetail}));
   if (failed) process.exitCode=1;
 }
 main().catch(e=>{console.error('Boss notify failed:',e);process.exitCode=1;}).finally(async()=>{await Promise.all(admin.apps.map(app=>app.delete()));});
