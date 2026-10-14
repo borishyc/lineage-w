@@ -56,14 +56,21 @@ async function main() {
   const occurrences=[...fieldOccurrences(bSnap.val()||{},sSnap.val()||{}),...fixedOccurrences(fSnap.val()||{})];
   const subs=uSnap.val()||{};
   let candidates=0,sent=0,skipped=0,failed=0;
+  const testUid=process.env.TEST_FCM_UID||'';
+  const testSub=subs[testUid];
+  console.log(JSON.stringify({diagnostic:'subscription-check',totalSubscriptions:Object.keys(subs).length,testUidConfigured:!!testUid,testUidFound:!!testSub,testUidEnabled:testSub?.enabled===true,testUidHasToken:validToken(testSub?.token),testUidMinutes:testSub?.reminderMinutes??null,occurrences:occurrences.length}));
+  const perDevice={};
   for (const [uid,sub] of Object.entries(subs)) {
     if (!/^[A-Za-z0-9_-]{8,128}$/.test(uid) || sub?.enabled!==true || !validToken(sub.token) || !validMinutes(sub.reminderMinutes)) continue;
     const advance=Number(sub.reminderMinutes);
+    const isTestDevice=uid===testUid;
+    const stats={candidates:0,sent:0,skipped:0,failed:0};
+    perDevice[digest(uid).slice(0,8)+(isTestDevice?'-TEST':'')] = stats;
     for (const boss of occurrences) {
       const desired=boss.target-advance*60000;
       // Don't send before desired time; allow late checks, but never after spawn.
       if (now<desired || now>=boss.target || now-desired>MAX_LATE_MS) continue;
-      candidates++;
+      candidates++;stats.candidates++;
       if (candidates>MAX_MESSAGES) throw new Error(`Safety cap exceeded (${MAX_MESSAGES})`);
       const ref=db.ref(`notificationDedupe/${uid}/${digest(boss.id)}`);
       const reservation=now;
@@ -72,17 +79,17 @@ async function main() {
         if (old?.status==='sending' && Number(old.reservedAt)>now-10*60000) return;
         return {status:'sending',reservedAt:reservation,occurrence:boss.id,expiresAt:boss.target};
       },undefined,false);
-      if (!tx.committed){skipped++;continue;}
+      if (!tx.committed){skipped++;stats.skipped++;continue;}
       const remain=Math.max(1,Math.ceil((boss.target-now)/60000));
       const title='天堂W 首領即將重生';
       const body=`${boss.name}｜${fmt(boss.target)} 重生，約剩 ${remain} 分鐘（設定提前 ${advance} 分鐘）`;
       try {
         await admin.messaging().send({token:sub.token,data:{title,body,tag:`lw-${digest(boss.id)}`,url:SITE_URL},webpush:{headers:{Urgency:'high',TTL:'300'}}});
         await ref.set({status:'sent',sentAt:admin.database.ServerValue.TIMESTAMP,occurrence:boss.id,expiresAt:boss.target});
-        sent++;
-        console.log(`Sent ${boss.kind} ${boss.name} -> ${uid.slice(0,5)}***`);
+        sent++;stats.sent++;
+        console.log(`Sent ${boss.kind} ${boss.name} -> ${uid.slice(0,5)}***${isTestDevice?' [TEST_FCM_UID]':''} (${fmt(boss.target)})`);
       } catch (e) {
-        failed++;
+        failed++;stats.failed++;
         console.error(`Send failed (${boss.name}): ${e.code||e.message}`);
         // Release only our own reservation; don't erase another run's status.
         await ref.transaction(old=>old?.status==='sending'&&old.reservedAt===reservation?null:undefined,undefined,false);
@@ -93,7 +100,7 @@ async function main() {
       }
     }
   }
-  console.log(JSON.stringify({at:new Date(now).toISOString(),occurrences:occurrences.length,candidates,sent,skipped,failed}));
+  console.log(JSON.stringify({at:new Date(now).toISOString(),occurrences:occurrences.length,candidates,sent,skipped,failed,perDevice}));
   if (failed) process.exitCode=1;
 }
 main().catch(e=>{console.error('Boss notify failed:',e);process.exitCode=1;}).finally(async()=>{await Promise.all(admin.apps.map(app=>app.delete()));});
