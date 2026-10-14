@@ -45,6 +45,7 @@ jobs:
       - name: Send scheduled boss reminders
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TEST_FCM_UID: ${{ secrets.TEST_FCM_UID }}
         run: node scripts/boss-notify.cjs
 
       - name: Diagnose boss-format FCM push
