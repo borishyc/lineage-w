@@ -10,4 +10,14 @@ async function main(){
   const result=await admin.messaging().send({token:entry.token,data:{title:'天堂W FCM 背景推播測試',body:'這是 GitHub Actions 發出的真正背景通知',tag:'lw-fcm-single-test',url:'https://borishyc.github.io/lineage-w/'},webpush:{headers:{Urgency:'high',TTL:'300'}}});
   console.log('已送出單機 FCM 測試，訊息 ID：'+result);
 }
-main().catch(e=>{console.error('FCM 測試失敗：'+e.message);process.exitCode=1;});
+main()
+  .catch(e => {
+    console.error('FCM 測試失敗：' + e.message);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await Promise.all(
+      admin.apps.map(app => app.delete())
+    );
+  });
+
