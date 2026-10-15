@@ -317,6 +317,11 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
  .v37-pending-rows .v26-swipe-row{height:62px}
  body:has(.v37-pending-dock) #app.app-shell{padding-bottom:calc(410px + env(safe-area-inset-bottom,0px))!important}
 }
+
+/* V3.7 test: separator line below the pending-kill section, mobile only. */
+@media(max-width:760px){
+ .v37-pending-dock{border-bottom:2px solid #a78a60!important;}
+}
 </style>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen pb-10">
