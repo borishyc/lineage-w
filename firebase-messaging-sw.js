@@ -5,8 +5,10 @@ firebase.initializeApp({"apiKey": "AIzaSyDBeZoh8YPH1laR9uK3mnbb0jAvBUxqFzQ", "au
 const messaging=firebase.messaging();
 messaging.onBackgroundMessage(payload=>{
   const data=payload.data||{};
-    title: "",
-    body: `${boss.name}｜${fmt(boss.target)}\n距離出現還有 ${remain} 分鐘，請準備！`,
+
+    const title=data.title ?? '';
+    return self.registration.showNotification(title,{
+    body:data.body||'首領即將重生',
     icon:'../icons/icon-192.png',
     badge:'../icons/icon-192.png',
     tag:data.tag||'lineagew-fcm-test',
