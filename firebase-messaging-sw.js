@@ -6,7 +6,7 @@ const messaging=firebase.messaging();
 messaging.onBackgroundMessage(payload=>{
   const data=payload.data||{};
 
-    const title=data.title ?? '';
+    const title = '通知測試新版';
     return self.registration.showNotification(title,{
     body:data.body||'首領即將重生',
     icon:'../icons/icon-192.png',
