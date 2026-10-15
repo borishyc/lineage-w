@@ -6,7 +6,7 @@ const messaging=firebase.messaging();
 messaging.onBackgroundMessage(payload=>{
   const data=payload.data||{};
 
-    const title = '通知測試新版';
+    const title = data.title || '天堂W 首領提醒';
     return self.registration.showNotification(title,{
     body:data.body||'首領即將重生',
     icon:'../icons/icon-192.png',
