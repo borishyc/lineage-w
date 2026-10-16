@@ -315,7 +315,11 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
  .v37-pending-rows{max-height:min(30vh,230px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
  .v37-pending-rows .boss-grid{gap:6px!important}
  .v37-pending-rows .v26-swipe-row{height:62px}
- body:has(.v37-pending-dock) #app.app-shell{padding-bottom:calc(410px + env(safe-area-inset-bottom,0px))!important}
+ /* Reserve only the actual dock height instead of a permanent 410px gap. */
+ body:has(.v37-pending-dock) #app.app-shell{padding-bottom:calc(168px + env(safe-area-inset-bottom,0px))!important}
+ body:has(.v37-pending-dock .v26-swipe-row:nth-child(2)) #app.app-shell{padding-bottom:calc(236px + env(safe-area-inset-bottom,0px))!important}
+ body:has(.v37-pending-dock .v26-swipe-row:nth-child(3)) #app.app-shell{padding-bottom:calc(304px + env(safe-area-inset-bottom,0px))!important}
+ body:has(.v37-pending-dock .v26-swipe-row:nth-child(4)) #app.app-shell{padding-bottom:calc(min(37vh,350px) + env(safe-area-inset-bottom,0px))!important}
 }
 
 /* V3.7 test: separator line below the pending-kill section, mobile only. */
