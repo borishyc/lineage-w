@@ -1,7 +1,7 @@
-<!doctype html><html lang="zh-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>天堂W｜A隊首領王表（唯讀測試）</title><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script><style>body{background:#10151d;color:#eee;font-family:system-ui,'Noto Sans TC',sans-serif;max-width:720px;margin:0 auto;padding:16px}header{background:#294e72;padding:20px;border-radius:12px}h1{margin:0;font-size:25px}small{color:#e7d9c3}.warn{border:1px solid #a98b52;padding:12px;border-radius:9px;margin:14px 0;color:#efce94}.row{padding:13px 8px;border-bottom:1px solid #394352;display:flex;justify-content:space-between;gap:12px}.time{font-weight:700;color:#e6b968}button{padding:10px 16px;margin:5px 4px 5px 0;background:#303d4f;color:white;border:1px solid #536078;border-radius:7px}button.active{background:#85633d}.muted{color:#aeb9c9;font-size:12px}.alias{color:#aeb9c9;font-size:12px}</style></head><body><header><h1>天堂W｜A 隊首領王表</h1><small>LINE A 隊專屬・V15 唯讀測試版</small></header><div class="warn">此頁僅讀取 A 隊資料，無法 K／Z／T／RESTART 或變更設定。請勿將此頁誤認為正式操作版。</div><p id="status" class="muted">連線中…</p><div><button data-tab="all" class="active">全部</button><button data-tab="field">野外首領</button><button data-tab="fixed">固定首領</button></div><div id="list"></div><details style="margin-top:20px;border:1px solid #536078;border-radius:8px;padding:10px"><summary>野王資料診斷（不含 UID 或 Token）</summary><pre id="diag" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px"></pre></details><p class="muted">此頁與原本王表完全分離；固定王時段來自原始共用排程，此測試版不讀取團隊別名與固定王啟用設定；固定王可能與 LINE 不一致。請以 LINE 查詢為準。</p><script>
+<!doctype html><html lang="zh-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>天堂W｜A隊首領王表（唯讀測試）</title><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script><style>body{background:#10151d;color:#eee;font-family:system-ui,'Noto Sans TC',sans-serif;max-width:720px;margin:0 auto;padding:16px}header{background:#294e72;padding:20px;border-radius:12px}h1{margin:0;font-size:25px}small{color:#e7d9c3}.warn{border:1px solid #a98b52;padding:12px;border-radius:9px;margin:14px 0;color:#efce94}.row{padding:13px 8px;border-bottom:1px solid #394352;display:flex;justify-content:space-between;gap:12px}.time{font-weight:700;color:#e6b968}button{padding:10px 16px;margin:5px 4px 5px 0;background:#303d4f;color:white;border:1px solid #536078;border-radius:7px}button.active{background:#85633d}.muted{color:#aeb9c9;font-size:12px}.alias{color:#aeb9c9;font-size:12px}</style></head><body><header><h1>天堂W｜A 隊首領王表</h1><small>LINE A 隊專屬・V15.3 資料來源診斷版</small></header><div class="warn">此頁僅讀取 A 隊資料，無法 K／Z／T／RESTART 或變更設定。請勿將此頁誤認為正式操作版。</div><p id="status" class="muted">連線中…</p><div><button data-tab="all" class="active">全部</button><button data-tab="field">野外首領</button><button data-tab="fixed">固定首領</button></div><div id="list"></div><details style="margin-top:20px;border:1px solid #536078;border-radius:8px;padding:10px"><summary>資料來源診斷（不含 UID 或 Token）</summary><pre id="diag" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px"></pre></details><p class="muted">此頁與原本王表完全分離；固定王時段來自原始共用排程，此測試版不讀取團隊別名與固定王啟用設定；固定王可能與 LINE 不一致。請以 LINE 查詢為準。</p><script>
 const TEAM='A', BASE='lineBot/groups/'+TEAM;
 const cfg={apiKey:'AIzaSyDBeZoh8YPH1laR9uK3mnbb0jAvBUxqFzQ',authDomain:'lwopendata.firebaseapp.com',databaseURL:'https://lwopendata-default-rtdb.asia-southeast1.firebasedatabase.app/',projectId:'lwopendata',appId:'1:133221637621:web:623bf5e1da065071f194bc'};
-firebase.initializeApp(cfg);const db=firebase.database(),data={states:{},bosses:{},schedule:{},aliases:{},fixedEnabled:{}};let tab='all';
+firebase.initializeApp(cfg);const db=firebase.database(),data={states:{},bosses:{},schedule:{},aliases:{},fixedEnabled:{}};let tab='all';const readChecks={states:{status:'等待讀取'},bosses:{status:'等待讀取'},schedule:{status:'等待讀取'}};
 const status=document.getElementById('status'),list=document.getElementById('list');
 function safe(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function time(v){const n=Number(v);if(!Number.isFinite(n)||n<=0)return '--:--';const d=new Date(n);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
@@ -10,7 +10,7 @@ function render(){const now=new Date(),rows=[];
 const stateEntries=Object.entries(data.states);
 const bossEntries=Object.entries(data.bosses);
 const sample=stateEntries.slice(0,4).map(([k,v])=>({key:k,fields:v&&typeof v==='object'?Object.keys(v):[],bossMatched:!!data.bosses[k]}));
-document.getElementById('diag').textContent=JSON.stringify({team:TEAM,stateCount:stateEntries.length,bossCount:bossEntries.length,stateSample:sample,bossSample:bossEntries.slice(0,3).map(([k,v])=>({key:k,id:v?.id,name:v?.name}))},null,2);
+document.getElementById('diag').textContent=JSON.stringify({team:TEAM,stateCount:stateEntries.length,sourceChecks:readChecks,expectedStatePath:BASE+'/bossStates',bossCount:bossEntries.length,stateSample:sample,bossSample:bossEntries.slice(0,3).map(([k,v])=>({key:k,id:v?.id,name:v?.name}))},null,2);
 if(tab!=='fixed')for(const [id,s] of stateEntries){
 const b=data.bosses[id]||bossEntries.map(([key,value])=>value).find(x=>String(x?.id)===String(id)||String(x?.name)===String(id));
 if(!s||typeof s!=='object'||b?.enabled===false)continue;
@@ -21,6 +21,21 @@ rows.push({name:b?.name||s.bossName||s.name||id,when:time(ts),ts,alias:aliasFor(
 }
 if(tab!=='field')for(const [id,s] of Object.entries(data.schedule)){if(!s||s.enabled===false||Number(s.weekday)!==now.getDay()||!/^([01]\d|2[0-3]):[0-5]\d$/.test(s.time||''))continue;const e=data.fixedEnabled[s.bossName];if(e===false||e===0||e?.enabled===false)continue;const [h,m]=s.time.split(':').map(Number),d=new Date(now);d.setHours(h,m,0,0);if(d.getTime()<now.getTime())continue;rows.push({name:s.bossName,when:s.time,ts:d.getTime(),kind:'固定'})}
 rows.sort((a,b)=>a.ts-b.ts);list.innerHTML=rows.length?rows.map(r=>'<div class="row"><div><strong>'+safe(r.name)+'</strong><div class="alias">'+r.kind+(r.alias?' · 別名：'+safe(r.alias):'')+'</div></div><span class="time">'+safe(r.when)+'</span></div>').join(''):'<p class="muted">目前沒有可顯示的王怪時間</p>'}
-for(const [key,path] of Object.entries({states:BASE+'/bossStates',bosses:'config/bosses',schedule:'config/fixedSchedules'}))db.ref(path).on('value',snap=>{data[key]=snap.val()||{};status.textContent=TEAM+' 隊資料同步中／已收到更新（'+new Date().toLocaleTimeString('zh-TW')+'）';render()},err=>{status.textContent='讀取失敗（'+path+'）：'+err.message+'；此頁無法確認同步完整'});
+function refreshStatus(){
+ const parts=Object.entries(readChecks).map(([k,v])=>k+': '+v.status);
+ status.textContent=TEAM+' 隊讀取狀態｜'+parts.join('｜');
+}
+for(const [key,path] of Object.entries({states:BASE+'/bossStates',bosses:'config/bosses',schedule:'config/fixedSchedules'})){
+ readChecks[key]={path,status:'等待讀取'};
+ db.ref(path).on('value',snap=>{
+  const val=snap.val();data[key]=val||{};
+  readChecks[key]={path,status:snap.exists()?'讀取成功':'路徑不存在或資料為空',exists:snap.exists(),children:snap.numChildren(),valueType:val===null?'null':Array.isArray(val)?'array':typeof val,updatedAt:new Date().toLocaleTimeString('zh-TW')};
+  refreshStatus();render();
+ },err=>{
+  data[key]={};readChecks[key]={path,status:'讀取失敗',errorCode:err.code||'',errorMessage:err.message||String(err)};
+  refreshStatus();render();
+ });
+}
+refreshStatus();
 document.querySelectorAll('button[data-tab]').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.tab;document.querySelectorAll('button[data-tab]').forEach(x=>x.classList.toggle('active',x===b));render()}));setInterval(render,30000);
 </script></body></html>
