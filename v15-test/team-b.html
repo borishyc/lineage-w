@@ -22,13 +22,56 @@ header{background:linear-gradient(120deg,#27354a,#132033);border:1px solid #5260
 .boss-card.field.pickable{cursor:pointer;transition:border-color .15s,box-shadow .15s}
 .boss-card.field.pickable:hover,.boss-card.field.pickable:focus-visible{border-color:#83adf2;box-shadow:0 0 0 2px rgba(93,154,232,.3);outline:none}
 .pick-hint{font-size:12px;color:#bad4fb;margin:4px 0 10px}
-.write-zone{margin:12px 0;padding:12px;border:1px solid #9b7541;border-radius:9px;background:#1f2531}.write-zone label{display:block;margin-bottom:8px}.write-check{display:flex!important;gap:8px;align-items:center;font-size:13px}.write-check input{width:18px;height:18px;flex:none}.write-zone button:disabled{opacity:.45;cursor:not-allowed}</style></head><body class="team-b"><header><h1>天堂W｜B 隊首領王表</h1><div class="subtitle">V16.1 深色計時看板・記住連線設定・指令預覽・每 30 秒自動同步・授權寫入測試</div></header><div class="notice">此頁 K／Z 可在獨立寫入金鑰與再次確認後執行；T／RESTART 尚未開放。請只在受信任的裝置操作，不要分享寫入金鑰。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>B 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住此隊金鑰（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="actions"><button class="primary" id="go">讀取 B 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
+.write-zone{margin:12px 0;padding:12px;border:1px solid #9b7541;border-radius:9px;background:#1f2531}.write-zone label{display:block;margin-bottom:8px}.write-check{display:flex!important;gap:8px;align-items:center;font-size:13px}.write-check input{width:18px;height:18px;flex:none}.write-zone button:disabled{opacity:.45;cursor:not-allowed}
+
+/* V16.2 layout confirmation only: bottom dock and swipe preview. */
+body{padding-bottom:118px} .cmd-panel,.pick-hint{display:none!important}
+.command-dock{position:fixed;bottom:0;left:0;right:0;z-index:1000;background:#111b2c;border-top:1px solid #3b4c63;box-shadow:0 -10px 28px #0008;padding:8px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));}
+.dock-inner{max-width:880px;margin:auto}.dock-log{height:22px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:12px;line-height:22px;color:#aebfd7}.dock-log.good{color:#61d9a6}.dock-log.bad{color:#ff8787}.dock-log.working{color:#ffcd69}
+.dock-row{display:flex;align-items:center;gap:8px}.dock-row input{flex:1;min-width:0;margin:0;height:44px;border-radius:22px;background:#182437;padding:9px 14px;font-size:15px}.dock-row button{height:44px;border-radius:12px;background:var(--tone);border-color:var(--tone);flex:none}
+.swipe-wrap{position:relative;overflow:hidden;border-radius:8px;margin:8px 0;touch-action:pan-y}.swipe-wrap .boss-card{margin:0;position:relative;z-index:1;width:100%;background:var(--panel);transition:transform .18s ease;touch-action:pan-y}.swipe-wrap .boss-card.fixed{background:#152d2a}.swipe-wrap .boss-card.near{background:#332d1d}.swipe-wrap .boss-card.swiped{transform:translateX(86px)}.swipe-kill{position:absolute;left:0;top:0;bottom:0;width:86px;display:flex;align-items:center;justify-content:center;background:#167453;color:white;border:0;border-radius:8px 0 0 8px;font-size:15px;font-weight:750}.swipe-kill:focus-visible{outline:2px solid white;outline-offset:-3px}
+@media(max-width:480px){body{padding-bottom:120px}.command-dock{padding-left:8px;padding-right:8px}.dock-row input{font-size:14px}}
+
+/* V16.3 temporary pending-kill shelf: display-only; no Firebase writes. */
+body{padding-bottom:calc(var(--dock-height,130px) + 20px)!important}
+.wait-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 5px;color:#f0ca7e;font-size:12px}
+.wait-demo{width:auto;padding:3px 7px;margin-left:auto;background:#283b55;border:1px solid #547092;color:#d9e9ff;border-radius:6px;font-size:11px}.wait-header label{display:flex;align-items:center;gap:6px;margin:0;font-size:11px;font-weight:500;color:#b9cbe0}
+.wait-header select{width:auto;min-width:78px;padding:3px 6px;margin:0;background:#1e2d40;color:#fff;border:1px solid #52647d;border-radius:6px;font-size:12px}
+.waiting-area{max-height:166px;overflow-y:auto;overscroll-behavior:contain;margin-bottom:5px}
+.wait-empty{font-size:11px;color:#8ea1b9;height:18px;line-height:18px}
+.wait-item{display:flex;align-items:center;gap:8px;background:#302919;border:1px solid #9c762d;border-radius:8px;padding:6px 8px;margin:4px 0;min-height:45px}
+.wait-name{flex:1;min-width:0}.wait-name strong{font-size:13px}.wait-name small{display:block;font-size:10px;color:#eecf88;margin-top:2px}
+.wait-kill{background:#17805a;border:1px solid #2aa475;color:#fff;border-radius:7px;min-height:33px;padding:4px 11px;font-weight:700;flex:none}
+.waiting-area[hidden]{display:none}
+
+/* V16.4 session-only write arming. */
+.write-arming{margin:12px 0;padding:10px 12px;background:#162235;border:1px solid #607590;border-radius:9px}
+.write-arming .remember-toggle{margin:10px 0}.write-arming input[type=password]{margin-top:6px}
+.command-dock.busy .dock-row button,.command-dock.busy .swipe-kill,.command-dock.busy .wait-kill{opacity:.5;pointer-events:none}
+/* V16.3.1 header toggles configuration panel; board and bottom dock remain visible. */
+header.settings-toggle{cursor:pointer;position:relative;padding-right:47px;user-select:none}
+header.settings-toggle:focus-visible{outline:2px solid #88bafb;outline-offset:3px}
+header.settings-toggle::after{content:'⚙';position:absolute;right:17px;top:19px;font-size:22px;color:#c5d6ec;opacity:.85}
+header.settings-toggle[aria-expanded="true"]::after{content:'✕'}
+#setupPanel[hidden]{display:none!important}
+#setupPanel{padding:1px 0 8px;margin-bottom:6px}
+#setupPanel details{margin:10px 0}
+</style></head><body class="team-b"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜B 隊首領王表</h1><div class="subtitle">V16.4 操作測試｜右滑擊殺・固定指令列・待擊殺區</div></header><div id="setupPanel" hidden><div class="notice">預設唯讀。啟用本次寫入並填入獨立寫入金鑰後，右滑擊殺和 K／Z 指令會直接更新本隊 Firebase；操作前請核對隊伍。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>B 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住此隊金鑰（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><label>本隊獨立寫入金鑰（僅本次頁面，不儲存）<input id="dockWriteKey" type="password" autocomplete="new-password" placeholder="BOARD_WRITE_KEY：至少 32 字元"></label><label class="remember-toggle"><input id="dockArm" type="checkbox"> 啟用本次 K／Z 寫入（擊殺按下後不再二次確認）</label><p class="remember-hint">預設唯讀；需每次重新開啟網頁時重新授權。送出後會先由 Worker 檢查，再進行寫入。T 仍未開放。請勿在共用裝置啟用。</p></div><div class="actions"><button class="primary" id="go">讀取 B 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
 <p>這裡只組合指令並檢查輸入格式。按預覽不會呼叫 Worker、不會寫入 Firebase，也不會改動 LINE 時間。K 是擊殺、Z 是強制修正；T 目前僅供未來介面討論。</p>
 <div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算（未開放）</button></div>
 <div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
 <datalist id="cmdBossNames"></datalist><button type="button" id="cmdPreview">檢查指令（不執行）</button>
 <div class="write-zone"><label>此隊獨立寫入金鑰（不儲存）<input id="writeKey" type="password" autocomplete="off" placeholder="BOARD_WRITE_KEY 專用，不是讀取金鑰"></label><label class="write-check"><input id="writeAgree" type="checkbox"> 我已核對隊伍、首領及擊殺時間</label><button type="button" id="cmdCommit" disabled>確認並執行 K／Z 寫入</button><p class="muted">必須先通過「檢查指令」，才能執行。寫入後會同步至 LINE 王表。</p></div><p class="cmd-label">驗證／執行結果</p><div class="cmd-output" id="cmdOutput" role="status" aria-live="polite">請先選擇指令、輸入首領及時間。</div>
-<p>注意：本版 K／Z 在寫入金鑰、檢查與二次確認後將修改此隊 Firebase 與 LINE 共用的王表資料。T 仍僅預覽。寫入金鑰不儲存。</p></section><div class="pick-hint">提示：點選野外首領卡片，可帶入下方 K／Z／T 預覽欄位（不會執行指令）。</div><div class="filters"><button data-filter="all" class="active">全部</button><button data-filter="field">野外首領</button><button data-filter="fixed">固定首領</button></div><div class="stats"><span>首領列表（台灣時間）</span><span id="count">0 筆</span></div><main id="list"></main><details><summary>安全診斷（不顯示金鑰）</summary><pre id="diag"></pre></details><script>const TEAM='B';
+<p>注意：本版 K／Z 在寫入金鑰、檢查與二次確認後將修改此隊 Firebase 與 LINE 共用的王表資料。T 仍僅預覽。寫入金鑰不儲存。</p></section><div class="pick-hint">提示：點選野外首領卡片，可帶入下方 K／Z／T 預覽欄位（不會執行指令）。</div><div class="filters"><button data-filter="all" class="active">全部</button><button data-filter="field">野外首領</button><button data-filter="fixed">固定首領</button></div><div class="stats"><span>首領列表（台灣時間）</span><span id="count">0 筆</span></div><main id="list"></main><details><summary>安全診斷（不顯示金鑰）</summary><pre id="diag"></pre></details><div class="command-dock" aria-label="固定指令操作列"><div class="dock-inner"><div class="wait-header"><strong>⚔ 待擊殺區</strong><button id="waitDemo" type="button" class="wait-demo">示範</button><label>保留時間 <select id="waitMinutes" aria-label="待擊殺區保留時間"><option value="5">5 分鐘</option><option value="10">10 分鐘</option></select></label></div><div id="waitingArea" class="waiting-area" aria-live="polite"></div><div id="dockLog" class="dock-log" role="status" aria-live="polite">唯讀模式｜可輸入 K／Z，啟用寫入後才會執行</div><div class="dock-row"><input id="dockCommand" placeholder="輸入指令，例如 K 德雷克 1502" autocomplete="off" aria-label="輸入指令"><button id="dockSend" type="button">送出</button></div></div></div><script>(function(){
+ const header=document.getElementById('settingsHeader');
+ const panel=document.getElementById('setupPanel');
+ const diag=document.querySelector('details');
+ if(diag)panel.appendChild(diag);
+ const toggle=()=>{const opened=panel.hidden;panel.hidden=!opened;header.setAttribute('aria-expanded',String(opened));};
+ header.addEventListener('click',toggle);
+ header.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
+})();
+const TEAM='B';
 const names={1:'尼羅德',2:'夫人',3:'飛龍3',4:'飛龍4',5:'卡司特王',6:'大腳',7:'黑虎',8:'德雷克',9:'莫莉提亞',10:'飛龍1',11:'飛龍2',12:'殺戮者',13:'麥肯',14:'蜥蜴王',15:'庫約',16:'烏勒庫斯',17:'奈克諾斯',18:'拉馬修',19:'庫爾託',20:'四色',21:'哈格瑪',22:'克洛林',23:'史前巨鱷',24:'二巨',25:'奧杜亞'};
 const $=id=>document.getElementById(id);const safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let hasConnected=false;let fetching=false;let lastSync=0;let syncError=false;
@@ -58,7 +101,7 @@ function restoreSaved(){
 $('clearSaved').addEventListener('click',()=>{
  try{localStorage.removeItem(URL_STORE);localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE)}catch(e){}
  $('url').value='';$('key').value='';$('rememberKey').checked=false;
- hasConnected=false;syncError=false;lastSync=0;liveRows=[];renderBoard();updateSyncUI();
+ hasConnected=false;syncError=false;lastSync=0;liveRows=[];waiting.clear();observed.clear();waitingSignature="";renderWaiting();renderBoard();updateSyncUI();
  $('rememberStatus').textContent='已清除本隊金鑰與網址；自動同步已停止';$('status').textContent='等待重新輸入連線設定';
 });
 $('rememberKey').addEventListener('change',()=>{
@@ -72,6 +115,65 @@ function updateSyncUI(){const elapsed=lastSync?Math.floor((Date.now()-lastSync)/
  $('syncDetail').textContent=syncError?'保留上次成功讀取資料':hidden&&hasConnected?'返回此頁後會視需要更新':hasConnected?'每 30 秒自動同步':'首次讀取成功後啟用';
  $('syncClock').textContent=lastSync?'上次成功 '+elapsed+' 秒前':'尚無同步紀錄';
 }
+// V16.3: per-team local presentation preference only; never stored in Firebase.
+const WAIT_STORE='lw-v163-wait-minutes-'+TEAM;
+let waiting=new Map();
+let demoWaiting=false;
+let observed=new Map();
+let waitingSignature='';
+let waitingLimit=5;
+try{waitingLimit=localStorage.getItem(WAIT_STORE)==='10'?10:5}catch(_){waitingLimit=5}
+$('waitMinutes').value=String(waitingLimit);
+$('waitDemo').onclick=()=>{demoWaiting=!demoWaiting;$('waitDemo').textContent=demoWaiting?'結束示範':'示範';renderWaiting()};
+$('waitMinutes').addEventListener('change',()=>{waitingLimit=Number($('waitMinutes').value)===10?10:5;try{localStorage.setItem(WAIT_STORE,String(waitingLimit))}catch(_){}tickWaiting(true)});
+function isWaiting(id){return id!=null&&waiting.has(String(id))}
+function taiwanHHMM(){return new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date()).replace(':','')}
+function waitingPreview(name){const hhmm=taiwanHHMM();submitDock('K '+name+' '+hhmm,'待擊殺區')}
+function reconcileWaiting(rows){
+ const now=Date.now(),next=new Map();
+ for(const r of rows){
+  if(r.fixed)continue;
+  const id=String(r.id), old=observed.get(id), sig=String(r.respawnAt);
+  if(old&&old.sig!==sig){waiting.delete(id);next.set(id,{sig,when:r.when});continue} // LINE or website recorded a new kill
+  const previous=old?.sig===sig?old.when:(r.when-r.cycle);
+  const due=Number(previous), recentlyDue=Number.isFinite(due)&&due<=now&&now-due<10*60000;
+  if(recentlyDue && due>=Number(r.respawnAt)){
+   const current=waiting.get(id);
+   if(!current||current.sig===sig)waiting.set(id,{id,name:r.name,due,sig});
+  }
+  next.set(id,{sig,when:r.when});
+ }
+ observed=next;
+ tickWaiting(false);
+}
+function tickWaiting(force){
+ const now=Date.now();let changed=!!force;
+ for(const [id,w] of waiting){if(now-w.due>=waitingLimit*60000||now<w.due){waiting.delete(id);changed=true}}
+ // Detect locally when a boss reaches zero, even before the next server sync.
+ for(const r of liveRows){if(r.fixed||waiting.has(String(r.id)))continue;
+  const old=observed.get(String(r.id));
+  if(old&&old.sig===String(r.respawnAt)&&r.when<=now&&now-r.when<waitingLimit*60000){waiting.set(String(r.id),{id:String(r.id),name:r.name,due:r.when,sig:old.sig});changed=true}
+ }
+ const signature=[...waiting.values()].sort((a,b)=>a.due-b.due).map(x=>x.id+':'+x.due).join('|');
+ if(signature!==waitingSignature){waitingSignature=signature;changed=true}
+ if(changed){renderWaiting();if(typeof renderBoard==='function')renderBoard()}
+ else{for(const w of waiting.values()){const node=$('waitingArea').querySelector('[data-wait-id="'+CSS.escape(w.id)+'"] small');if(node)node.textContent='已出現 '+duration(now-w.due)+'｜保留 '+Math.max(0,Math.ceil((waitingLimit*60000-(now-w.due))/1000))+' 秒'}}
+}
+function renderWaiting(){
+ const area=$('waitingArea');area.replaceChildren();const now=Date.now();
+ const rows=[...waiting.values()].sort((a,b)=>a.due-b.due);if(demoWaiting&&!rows.length)rows.push({id:'demo',name:'德雷克（示範）',due:now-65000,sig:'demo'});
+ if(!rows.length){const e=document.createElement('div');e.className='wait-empty';e.textContent='目前沒有待擊殺首領';area.appendChild(e)}
+ for(const w of rows){const wrap=document.createElement('div');wrap.className='wait-item';wrap.dataset.waitId=w.id;
+  const name=document.createElement('div');name.className='wait-name';const strong=document.createElement('strong');strong.textContent=w.name;const info=document.createElement('small');info.textContent='已出現 '+duration(now-w.due)+'｜保留 '+Math.max(0,Math.ceil((waitingLimit*60000-(now-w.due))/1000))+' 秒';name.append(strong,info);
+  const btn=document.createElement('button');btn.className='wait-kill';btn.type='button';btn.textContent='擊殺';btn.setAttribute('aria-label','擊殺 '+w.name);btn.onclick=()=>w.id==='demo'?dockMessage('示範按鈕｜不會寫入','good'):waitingPreview(w.name);
+  wrap.append(name,btn);area.appendChild(wrap)
+ }
+}
+// Dock height can change as waiting bosses enter/leave; keep page bottom scrollable.
+const dockObserver=new ResizeObserver(entries=>{const size=entries[0]?.target.getBoundingClientRect().height||130;document.body.style.setProperty('--dock-height',Math.ceil(size)+'px')});
+dockObserver.observe(document.querySelector('.command-dock'));
+setInterval(()=>tickWaiting(false),1000);
+renderWaiting();
 async function refreshBoard(manual=false){
  if(fetching)return;
  if(!manual&&(!hasConnected||document.hidden))return;const url=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;if(!/^https:\/\//.test(url)||!key){if(manual)$('status').textContent='請填入 HTTPS Worker 網址及金鑰';return}
@@ -80,14 +182,14 @@ async function refreshBoard(manual=false){
  const rows=[];for(const [id,st] of entries){const b=bosses[id]||Object.values(bosses).find(x=>String(x?.id)===String(id));if(!b||b.enabled===false)continue;
  const cycle=Number(b.cooldownHours)*mult*3600000;let when=Number(st?.respawnAt);if(!Number.isFinite(when)||!when||!Number.isFinite(cycle)||cycle<=0)continue;
  if(when<=now)when+=(Math.floor((now-when)/cycle)+1)*cycle;
- rows.push({name:b.name||names[id]||'王 '+id,when,fixed:false});}
+ rows.push({id:String(id),name:b.name||names[id]||'王 '+id,when,fixed:false,respawnAt:Number(st?.respawnAt),cycle});}
  const today=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',weekday:'short'}).format(new Date());const weekday=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(today);
  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const val=k=>parts.find(x=>x.type===k)?.value;
  for(const item of Object.values(fixed)){if(!item||item.enabled===false||Number(item.weekday)!==weekday||!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(item.time||'')))continue;
  const when=Date.parse(`${val('year')}-${val('month')}-${val('day')}T${item.time}:00+08:00`);if(Number.isFinite(when)&&when>=now)rows.push({name:item.bossName||'固定首領',when,fixed:true});}
  rows.sort((a,b)=>a.when-b.when||a.name.localeCompare(b.name,'zh-TW'));
  $('diag').textContent=JSON.stringify({team:TEAM,stateCount:entries.length,projectedField:rows.filter(x=>!x.fixed).length,fixedToday:rows.filter(x=>x.fixed).length,eventActive:j.eventActive,multiplier:mult,firstKeys:entries.slice(0,3).map(([k,v])=>({key:k,fields:Object.keys(v||{})}))},null,2);
- liveRows=rows; renderBoard();
+ liveRows=rows; reconcileWaiting(rows); renderBoard();
  hasConnected=true;lastSync=Date.now();syncError=false;saveOnSuccess();
  $('status').textContent='同步成功（每 30 秒自動更新）：'+entries.length+' 筆原始狀態｜野外首領 '+rows.filter(x=>!x.fixed).length+' 筆｜今日固定首領 '+rows.filter(x=>x.fixed).length+' 筆';
  $('lastFetch').textContent='最後讀取：'+new Date().toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour12:false});
@@ -101,12 +203,12 @@ setInterval(updateSyncUI,1000);updateSyncUI();
 let liveRows=[];let filter='all';
 const fmtTime=ms=>new Date(ms).toLocaleString('zh-TW',{timeZone:'Asia/Taipei',hour12:false,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
 const duration=ms=>{const sec=Math.floor(Math.abs(ms)/1000),h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return (ms<0?'已過 ':'')+(h?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')};
-function renderBoard(){const now=Date.now();let shown=liveRows.filter(r=>filter==='all'||(filter==='fixed' ? r.fixed:!r.fixed));
+function renderBoard(){const now=Date.now();let shown=liveRows.filter(r=>!isWaiting(r.id)&&(filter==='all'||(filter==='fixed' ? r.fixed:!r.fixed)));
  $('list').innerHTML=shown.length?'':'<div class="empty">目前沒有符合篩選條件的首領</div>';
- shown.forEach(row=>{const diff=row.when-now, el=document.createElement('article');el.className='boss-card '+(row.fixed?'fixed':'field')+(diff>=0&&diff<=60000?' danger':diff>60000&&diff<=180000?' near':'');el.innerHTML='<div class="name"><span class="dot"></span><strong>'+safe(row.name)+'</strong><small>'+(row.fixed?'固定首領':'野外首領')+'</small></div><div class="time-area"><div class="birth">'+safe(fmtTime(row.when))+'</div><div class="countdown">'+safe(duration(diff))+'</div></div>';if(!row.fixed){el.classList.add('pickable');el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','選擇 '+row.name+' 進行指令預覽');const pick=()=>{ resetApproval();$('cmdBoss').value=row.name; $('cmdTime').value=''; $('cmdOutput').classList.remove('warn'); $('cmdOutput').textContent='已選取 '+row.name+'（'+TEAM+' 隊）。請輸入台灣時間 HHMM，再按「檢查指令（不執行）」。';document.querySelector('.cmd-panel').scrollIntoView({behavior:'smooth',block:'start'});$('cmdTime').focus({preventScroll:true});};el.addEventListener('click',pick);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick()}})}$('list').append(el)});
+ shown.forEach(row=>{const diff=row.when-now, el=document.createElement('article');el.className='boss-card '+(row.fixed?'fixed':'field')+(diff>=0&&diff<=60000?' danger':diff>60000&&diff<=180000?' near':'');el.innerHTML='<div class="name"><span class="dot"></span><strong>'+safe(row.name)+'</strong><small>'+(row.fixed?'固定首領':'野外首領')+'</small></div><div class="time-area"><div class="birth">'+safe(fmtTime(row.when))+'</div><div class="countdown">'+safe(duration(diff))+'</div></div>';if(!row.fixed){el.classList.add('pickable');el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','選擇 '+row.name+' 進行指令預覽');const pick=()=>{ resetApproval();$('cmdBoss').value=row.name; $('cmdTime').value=''; $('cmdOutput').classList.remove('warn'); $('cmdOutput').textContent='已選取 '+row.name+'（'+TEAM+' 隊）。請輸入台灣時間 HHMM，再按「檢查指令（不執行）」。';document.querySelector('.cmd-panel').scrollIntoView({behavior:'smooth',block:'start'});$('cmdTime').focus({preventScroll:true});};}$('list').append(el)});
  $('count').textContent=shown.length+' 筆';}
  document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));renderBoard()}));
- setInterval(()=>{if(liveRows.length)renderBoard()},1000);
+ setInterval(()=>{const cards=$('list').querySelectorAll('.boss-card');cards.forEach(el=>{const birth=el.querySelector('.birth'),clock=el.querySelector('.countdown');if(!birth||!clock)return;const stamp=el.dataset.when;const diff=Number(stamp)-Date.now();clock.textContent=duration(diff);el.classList.toggle('near',diff>60000&&diff<=180000);el.classList.toggle('danger',diff>=0&&diff<=60000);});},1000);
 
 // V16.1 write route requires separate per-team secret and explicit confirmation.
 let selectedCmd='K';
@@ -138,22 +240,66 @@ $('cmdPreview').addEventListener('click',async()=>{resetApproval();
  }catch(e){output.classList.add('warn');output.textContent='伺服器驗證失敗：'+e.message+'。請確認已更新獨立 Worker。'}
  finally{$('cmdPreview').disabled=false} 
 });
-$('cmdCommit').addEventListener('click',async()=>{
- const approved=approvedPreview;
- if(!approved||!$('writeAgree').checked||!$('writeKey').value){alert('請先完成驗證、勾選確認並填入此隊寫入金鑰');return}
- if(approved.action!==selectedCmd||approved.boss!==$('cmdBoss').value.trim()||approved.hhmm!==$('cmdTime').value.trim()){resetApproval();alert('指令已變更，請重新驗證');return}
- if(!confirm(`即將真正寫入 ${TEAM} 隊王表：\n${approved.action} ${approved.boss} ${approved.hhmm}\n\n這會影響 LINE 查詢與歷史紀錄。確定執行？`))return;
- $('cmdCommit').disabled=true;$('cmdPreview').disabled=true;
- const requestId=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
- const writeSecret=$('writeKey').value;
- $('cmdOutput').textContent='正在正式寫入，請勿重新操作…';
+// Hidden legacy command panel has no write handler in this visual-preview version.
+
+// V16.4: write remains disabled until the user deliberately arms this session.
+const dockLog=$('dockLog'), dockCommand=$('dockCommand');
+let submitting=false;let lastActionAt=0;
+function dockMessage(msg,kind=''){dockLog.textContent=msg;dockLog.className='dock-log '+kind;}
+function isArmed(){return $('dockArm').checked&&$('dockWriteKey').value.length>=32}
+$('dockArm').addEventListener('change',()=>{dockMessage(isArmed()?'已啟用本次寫入｜點擊擊殺將直接執行':'唯讀模式｜輸入有效寫入金鑰後才可啟用',isArmed()?'good':'bad')});
+$('dockWriteKey').addEventListener('input',()=>{if($('dockArm').checked&&!isArmed()){$('dockArm').checked=false;dockMessage('寫入金鑰不足 32 字元，已關閉寫入','bad')}});
+function parseDock(raw){
+ const match=raw.trim().match(/^([KZT])\s+(.+?)\s+(\d{4})$/i);
+ if(!match)throw Error('格式錯誤｜例如 K 德雷克 1502');
+ const action=match[1].toUpperCase(),boss=match[2].trim(),hhmm=match[3];
+ if(action==='T')throw Error('T 推算尚未開放');
+ if(+hhmm.slice(0,2)>23||+hhmm.slice(2)>59)throw Error('時間錯誤｜請輸入 HHMM');
+ return {team:TEAM,action,boss,hhmm};
+}
+async function submitDock(raw,source='指令'){
+ if(submitting)return;
+ let cmd;try{cmd=parseDock(raw)}catch(e){dockMessage(e.message,'bad');return}
+ if(!isArmed()){dockMessage('尚未授權寫入｜請點標題設定本隊寫入金鑰並啟用','bad');return}
+ if(!hasConnected){dockMessage('請先成功讀取此隊王表','bad');return}
+ const url=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;
+ if(!url.startsWith('https://')||!key){dockMessage('請先設定 Worker 網址及讀取金鑰','bad');return}
+ if(Date.now()-lastActionAt<1200){dockMessage('操作太快，請稍後再試','bad');return}
+ submitting=true;lastActionAt=Date.now();$('dockSend').disabled=true;document.querySelector('.command-dock').classList.add('busy');
+ dockMessage('檢查中｜'+cmd.action+' '+cmd.boss+' '+cmd.hhmm,'working');
  try{
-  const r=await fetch($('url').value.trim().replace(/\/$/,'')+'/api/command-commit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+writeSecret},body:JSON.stringify({...approved,requestId}),cache:'no-store'});
-  const j=await r.json();if(!r.ok)throw Error(j.error||'HTTP '+r.status);
-  $('cmdOutput').classList.remove('warn');$('cmdOutput').textContent='【'+(j.alreadyCommitted?'已完成（重複請求）':'寫入成功')+'】\n'+TEAM+' 隊 '+j.action+' '+j.boss+' '+approved.hhmm+'\n重生時間：'+fmtTime(j.respawnAt)+'\n歷史紀錄：'+j.recordId;
-  resetApproval();await refreshBoard(true);
- }catch(e){$('cmdOutput').classList.add('warn');$('cmdOutput').textContent='未確認成功：'+e.message+'。請先刷新王表及 LINE 查詢確認是否已寫入，勿立即重複執行。';resetApproval()}
- finally{$('cmdPreview').disabled=false}
-});
+  const check=await fetch(url+'/api/command-check',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify(cmd),cache:'no-store'});
+  const c=await check.json();if(!check.ok)throw Error('檢查失敗：'+(c.error||check.status));
+  if(!c.valid)throw Error('未通過 K／Z 驗證：'+(c.warnings||[]).join('；'));
+  if(!isArmed())throw Error('本次寫入授權已關閉');
+  dockMessage('寫入中｜'+cmd.action+' '+c.boss+' '+cmd.hhmm,'working');
+  const requestId=crypto.randomUUID().replace(/-/g,'');
+  const res=await fetch(url+'/api/command-commit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+$('dockWriteKey').value},body:JSON.stringify({...cmd,requestId}),cache:'no-store'});
+  const j=await res.json();if(!res.ok)throw Error('寫入失敗：'+(j.error||res.status));
+  if(!j.ok)throw Error('Worker 未回報成功，請確認 LINE 王表');
+  dockMessage('成功｜'+cmd.action+' '+j.boss+' '+cmd.hhmm+'｜重生 '+new Date(j.respawnAt).toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour12:false}),'good');
+  dockCommand.value='';closeSwipe();
+  waiting.clear();observed.clear();waitingSignature='';renderWaiting();
+  await refreshBoard(true);
+ }catch(e){dockMessage(e.message+'｜不明結果請先查 LINE，勿直接重送','bad')}
+ finally{submitting=false;$('dockSend').disabled=false;document.querySelector('.command-dock').classList.remove('busy')}
+}
+$('dockSend').onclick=()=>submitDock(dockCommand.value);
+dockCommand.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitDock(dockCommand.value)}});
+let swipeOpen=null;
+function closeSwipe(){if(swipeOpen){swipeOpen.classList.remove('swiped');swipeOpen=null}}
+function decorateSwipe(el,row){
+ const wrap=document.createElement('div');wrap.className='swipe-wrap';
+ const btn=document.createElement('button');btn.type='button';btn.className='swipe-kill';btn.textContent='擊殺';btn.setAttribute('aria-label','擊殺 '+row.name);
+ el.parentNode.insertBefore(wrap,el);wrap.appendChild(btn);wrap.appendChild(el);
+ let startX=0,startY=0;
+ el.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY},{passive:true});
+ el.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3){e.preventDefault();if(dx>0){closeSwipe();el.classList.add('swiped');swipeOpen=el}else if(swipeOpen===el){closeSwipe()}}},{passive:false});
+ el.addEventListener('click',e=>{if(swipeOpen===el){closeSwipe();e.stopPropagation()}else{closeSwipe();el.classList.add('swiped');swipeOpen=el;e.stopPropagation()}},true);
+ btn.addEventListener('click',()=>{const hhmm=taiwanHHMM();closeSwipe();submitDock('K '+row.name+' '+hhmm,'右滑擊殺')});
+}
+const originalRenderBoard=renderBoard;
+renderBoard=function(){closeSwipe();originalRenderBoard();const fieldItems=[...$('list').querySelectorAll('.boss-card.field')];const shown=liveRows.filter(r=>!isWaiting(r.id)&&(filter==='all'||(filter==='fixed'?r.fixed:!r.fixed))).filter(r=>!r.fixed);fieldItems.forEach((el,i)=>{const row=shown[i];if(!row)return;el.dataset.when=String(row.when);el.classList.remove('pickable');el.removeAttribute('role');el.removeAttribute('tabindex');decorateSwipe(el,row);});};
+
 window.addEventListener('DOMContentLoaded',restoreSaved);
 </script></body></html>
