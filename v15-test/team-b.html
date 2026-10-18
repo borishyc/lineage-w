@@ -7,14 +7,17 @@ header{background:linear-gradient(120deg,#27354a,#132033);border:1px solid #5260
 @media(max-width:480px){body{padding:8px}header{padding:14px}h1{font-size:21px}.boss-card{padding:10px 8px}.name strong{font-size:16px}.birth{font-size:11px}.countdown{font-size:17px}}
  .sync-strip{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;border:1px solid #34445a;border-radius:9px;background:#141e2b;padding:9px 11px;margin-bottom:9px;font-size:12px;color:#bbcee6}.sync-dot{width:9px;height:9px;border-radius:50%;background:#78889c;flex:none}.sync-dot.ok{background:#47c998}.sync-dot.wait{background:#ecc160}.sync-dot.error{background:#f16d70}.sync-dot.paused{background:#8294a9}.sync-strip strong{color:#e7f0fc}.sync-strip .right{margin-left:auto;color:#aac0db;font-variant-numeric:tabular-nums}.filters button{min-height:44px}.boss-card{transition:border-color .2s,background .2s}@media(max-width:480px){.sync-strip{font-size:11px}.sync-strip .right{margin-left:0;width:100%}}@media(prefers-reduced-motion:reduce){.boss-card.danger{animation:none}}
 
-/* V15.9 command preview: deliberately local-only, no write endpoint. */
+/* V15.10 command preview: deliberately local-only, no write endpoint. */
 .cmd-panel{margin:14px 0;border:1px solid #425876;background:#131f2e;border-radius:10px;padding:14px}
 .cmd-panel h2{font-size:17px;color:#e9be70;margin:0 0 7px}.cmd-panel p{font-size:12px;color:#bacbe0;line-height:1.6}
 .cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cmd-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.cmd-actions button{flex:1;min-height:45px}.cmd-actions button.selected{background:var(--tone);border-color:var(--tone)}
 .cmd-output{border:1px solid #566c86;border-radius:8px;padding:12px;background:#0c1725;min-height:72px;white-space:pre-wrap;line-height:1.6;font-size:13px;color:#d7e6ff}
 .cmd-output.warn{border-color:#a77b43;color:#ffe0a1}.cmd-label{font-size:12px;color:#e4c68e;font-weight:650}
 @media(max-width:480px){.cmd-grid{grid-template-columns:1fr}.cmd-panel{padding:11px}}
-</style></head><body class="team-b"><header><h1>天堂W｜B 隊首領王表</h1><div class="subtitle">V15.9 深色計時看板・指令預覽・每 30 秒自動同步・唯讀測試</div></header><div class="notice">此頁提供 K／Z／T 格式預覽，但不執行任何 K／Z／T／RESTART。測試金鑰請勿分享，正式上線仍須進一步設計登入權限。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>B 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="actions"><button class="primary" id="go">讀取 B 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z／T 指令預覽（不會送出）</h2>
+
+/* V15.10 local connection settings */
+.remember-box{border:1px solid #34445a;border-radius:9px;background:#131e2c;padding:10px 12px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:10px}.remember-toggle{display:flex;align-items:center;gap:8px;margin:0;font-size:13px;cursor:pointer}.remember-toggle input{width:18px;height:18px;margin:0;accent-color:var(--tone)}.remember-box button{font-size:12px;padding:8px 10px}.remember-box .muted{margin:0}.remember-hint{color:#a5b4c8;font-size:11px;line-height:1.5;margin:0;flex-basis:100%}
+</style></head><body class="team-b"><header><h1>天堂W｜B 隊首領王表</h1><div class="subtitle">V15.10 深色計時看板・記住連線設定・指令預覽・每 30 秒自動同步・唯讀測試</div></header><div class="notice">此頁提供 K／Z／T 格式預覽，但不執行任何 K／Z／T／RESTART。測試金鑰請勿分享，正式上線仍須進一步設計登入權限。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>B 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住此隊金鑰（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="actions"><button class="primary" id="go">讀取 B 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z／T 指令預覽（不會送出）</h2>
 <p>這裡只組合指令並檢查輸入格式。按預覽不會呼叫 Worker、不會寫入 Firebase，也不會改動 LINE 時間。K 是擊殺、Z 是強制修正；T 目前僅供未來介面討論。</p>
 <div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算（未開放）</button></div>
 <div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
@@ -24,6 +27,40 @@ header{background:linear-gradient(120deg,#27354a,#132033);border:1px solid #5260
 const names={1:'尼羅德',2:'夫人',3:'飛龍3',4:'飛龍4',5:'卡司特王',6:'大腳',7:'黑虎',8:'德雷克',9:'莫莉提亞',10:'飛龍1',11:'飛龍2',12:'殺戮者',13:'麥肯',14:'蜥蜴王',15:'庫約',16:'烏勒庫斯',17:'奈克諾斯',18:'拉馬修',19:'庫爾託',20:'四色',21:'哈格瑪',22:'克洛林',23:'史前巨鱷',24:'二巨',25:'奧杜亞'};
 const $=id=>document.getElementById(id);const safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let hasConnected=false;let fetching=false;let lastSync=0;let syncError=false;
+// Stored only in this browser. Credentials are NEVER inserted into URLs or diagnostics.
+const URL_STORE='lw-v1510-board-worker-url';
+const KEY_STORE='lw-v1510-board-secret-'+TEAM;
+const OPT_STORE='lw-v1510-board-remember-'+TEAM;
+function saveOnSuccess(){
+ try{
+  localStorage.setItem(URL_STORE,$('url').value.trim().replace(/\/$/,''));
+  if($('rememberKey').checked){localStorage.setItem(KEY_STORE,$('key').value);localStorage.setItem(OPT_STORE,'yes')}
+  else{localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE)}
+  $('rememberStatus').textContent=$('rememberKey').checked?'網址及此隊金鑰已儲存':'已記住網址；金鑰不保存';
+ }catch(e){$('rememberStatus').textContent='瀏覽器禁止儲存設定；本次連線仍可使用'}
+}
+function restoreSaved(){
+ try{
+  $('url').value=localStorage.getItem(URL_STORE)||'';
+  if(localStorage.getItem(OPT_STORE)==='yes'){
+    $('rememberKey').checked=true;
+    $('key').value=localStorage.getItem(KEY_STORE)||'';
+  }
+  if($('url').value&&$('key').value){$('rememberStatus').textContent='已還原連線設定，正在自動連線…';refreshBoard(true)}
+  else if($('url').value){$('rememberStatus').textContent='已帶入網址；請輸入金鑰讀取'}
+ }catch(e){$('rememberStatus').textContent='無法讀取本機儲存設定'}
+}
+$('clearSaved').addEventListener('click',()=>{
+ try{localStorage.removeItem(URL_STORE);localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE)}catch(e){}
+ $('url').value='';$('key').value='';$('rememberKey').checked=false;
+ hasConnected=false;syncError=false;lastSync=0;liveRows=[];renderBoard();updateSyncUI();
+ $('rememberStatus').textContent='已清除本隊金鑰與網址；自動同步已停止';$('status').textContent='等待重新輸入連線設定';
+});
+$('rememberKey').addEventListener('change',()=>{
+ if(!$('rememberKey').checked){try{localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE)}catch(e){}$('rememberStatus').textContent='已取消記住金鑰'}
+ else $('rememberStatus').textContent='勾選後，下一次成功連線時會儲存金鑰';
+});
+
 function updateSyncUI(){const elapsed=lastSync?Math.floor((Date.now()-lastSync)/1000):0;const hidden=document.hidden;const stale=hasConnected&&elapsed>75;const state=fetching?'wait':syncError?'error':hidden&&hasConnected?'paused':stale?'wait':hasConnected?'ok':'';
  $('syncDot').className='sync-dot '+state;
  $('syncLabel').textContent=fetching?'同步中…':syncError?'同步失敗':hidden&&hasConnected?'背景暫停':stale?'資料待更新':hasConnected?'已連線':'尚未連線';
@@ -46,7 +83,7 @@ async function refreshBoard(manual=false){
  rows.sort((a,b)=>a.when-b.when||a.name.localeCompare(b.name,'zh-TW'));
  $('diag').textContent=JSON.stringify({team:TEAM,stateCount:entries.length,projectedField:rows.filter(x=>!x.fixed).length,fixedToday:rows.filter(x=>x.fixed).length,eventActive:j.eventActive,multiplier:mult,firstKeys:entries.slice(0,3).map(([k,v])=>({key:k,fields:Object.keys(v||{})}))},null,2);
  liveRows=rows; renderBoard();
- hasConnected=true;lastSync=Date.now();syncError=false;
+ hasConnected=true;lastSync=Date.now();syncError=false;saveOnSuccess();
  $('status').textContent='同步成功（每 30 秒自動更新）：'+entries.length+' 筆原始狀態｜野外首領 '+rows.filter(x=>!x.fixed).length+' 筆｜今日固定首領 '+rows.filter(x=>x.fixed).length+' 筆';
  $('lastFetch').textContent='最後讀取：'+new Date().toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour12:false});
  }catch(e){syncError=true;$('status').textContent='同步失敗（保留上次畫面）：'+e.message;$('diag').textContent=JSON.stringify({team:TEAM,error:e.message},null,2)}finally{fetching=false;updateSyncUI()}
@@ -83,4 +120,5 @@ $('cmdPreview').addEventListener('click',()=>{
  if(error){output.textContent='無法預覽：'+error;return}
  output.textContent='預覽：'+selectedCmd+' '+raw+' '+hhmm+'\n對應首領：'+canonical+'\n隊伍：'+TEAM+' 隊\n'+(selectedCmd==='T'?'T 尚未在 LINE V14 正式開放；本頁不執行推算或寫入。':'僅格式預覽，不驗證擊殺時間先後、不計算重生時間，也不會執行。');
 });
+window.addEventListener('DOMContentLoaded',restoreSaved);
 </script></body></html>
