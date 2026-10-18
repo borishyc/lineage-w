@@ -29,7 +29,7 @@ body{padding-bottom:118px} .cmd-panel,.pick-hint{display:none!important}
 .command-dock{position:fixed;bottom:0;left:0;right:0;z-index:1000;background:#111b2c;border-top:1px solid #3b4c63;box-shadow:0 -10px 28px #0008;padding:8px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));}
 .dock-inner{max-width:880px;margin:auto}.dock-log{height:22px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:12px;line-height:22px;color:#aebfd7}.dock-log.good{color:#61d9a6}.dock-log.bad{color:#ff8787}.dock-log.working{color:#ffcd69}
 .dock-row{display:flex;align-items:center;gap:8px}.dock-row input{flex:1;min-width:0;margin:0;height:44px;border-radius:22px;background:#182437;padding:9px 14px;font-size:15px}.dock-row button{height:44px;border-radius:12px;background:var(--tone);border-color:var(--tone);flex:none}
-.swipe-wrap{position:relative;overflow:hidden;border-radius:8px;margin:8px 0;touch-action:pan-y}.swipe-wrap .boss-card{margin:0;position:relative;z-index:1;width:100%;background:var(--panel);transition:transform .18s ease;touch-action:pan-y}.swipe-wrap .boss-card.fixed{background:#152d2a}.swipe-wrap .boss-card.near{background:#332d1d}.swipe-wrap .boss-card.swiped{transform:translateX(86px)}.swipe-kill{position:absolute;left:0;top:0;bottom:0;width:86px;display:flex;align-items:center;justify-content:center;background:#167453;color:white;border:0;border-radius:8px 0 0 8px;font-size:15px;font-weight:750}.swipe-kill:focus-visible{outline:2px solid white;outline-offset:-3px}
+.swipe-wrap{position:relative;overflow:hidden;border-radius:8px;margin:8px 0;touch-action:pan-y}.swipe-wrap .boss-card{margin:0;position:relative;z-index:1;width:100%;background:var(--panel);transition:transform .18s ease;touch-action:pan-y}.swipe-wrap .boss-card.fixed{background:#152d2a}.swipe-wrap .boss-card.near{background:#332d1d}.swipe-wrap .boss-card.swiped{transform:translateX(86px)}.swipe-kill{position:absolute;left:0;top:0;bottom:0;width:86px;display:flex;align-items:center;justify-content:center;background:#b91c1c;color:white;border:0;border-radius:8px 0 0 8px;font-size:15px;font-weight:750}.swipe-kill:focus-visible{outline:2px solid white;outline-offset:-3px}
 @media(max-width:480px){body{padding-bottom:120px}.command-dock{padding-left:8px;padding-right:8px}.dock-row input{font-size:14px}}
 
 /* V16.3 temporary pending-kill shelf: display-only; no Firebase writes. */
@@ -44,6 +44,11 @@ body{padding-bottom:calc(var(--dock-height,130px) + 20px)!important}
 .wait-kill{background:#17805a;border:1px solid #2aa475;color:#fff;border-radius:7px;min-height:33px;padding:4px 11px;font-weight:700;flex:none}
 .waiting-area[hidden]{display:none}
 
+/* V16.5: waiting row slides right to reveal the same left-hand red kill action. */
+.waiting-area .swipe-wrap{margin:4px 0;border-radius:8px}
+.waiting-area .swipe-wrap .wait-item{position:relative;z-index:1;width:100%;margin:0;min-height:45px;transition:transform .18s ease;background:#302919;touch-action:pan-y}
+.waiting-area .swipe-wrap .wait-item.swiped{transform:translateX(86px)}
+.waiting-area .swipe-kill{background:#b91c1c;border:0;color:#fff}
 /* V16.4 session-only write arming. */
 .write-arming{margin:12px 0;padding:10px 12px;background:#162235;border:1px solid #607590;border-radius:9px}
 .write-arming .remember-toggle{margin:10px 0}.write-arming input[type=password]{margin-top:6px}
@@ -56,7 +61,7 @@ header.settings-toggle[aria-expanded="true"]::after{content:'✕'}
 #setupPanel[hidden]{display:none!important}
 #setupPanel{padding:1px 0 8px;margin-bottom:6px}
 #setupPanel details{margin:10px 0}
-</style></head><body class="team-a"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V16.4 操作測試｜右滑擊殺・固定指令列・待擊殺區</div></header><div id="setupPanel" hidden><div class="notice">預設唯讀。啟用本次寫入並填入獨立寫入金鑰後，右滑擊殺和 K／Z 指令會直接更新本隊 Firebase；操作前請核對隊伍。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>A 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住此隊金鑰（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><label>本隊獨立寫入金鑰（僅本次頁面，不儲存）<input id="dockWriteKey" type="password" autocomplete="new-password" placeholder="BOARD_WRITE_KEY：至少 32 字元"></label><label class="remember-toggle"><input id="dockArm" type="checkbox"> 啟用本次 K／Z 寫入（擊殺按下後不再二次確認）</label><p class="remember-hint">預設唯讀；需每次重新開啟網頁時重新授權。送出後會先由 Worker 檢查，再進行寫入。T 仍未開放。請勿在共用裝置啟用。</p></div><div class="actions"><button class="primary" id="go">讀取 A 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
+</style></head><body class="team-a"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V16.5 操作測試｜主列表與待擊殺區統一右滑擊殺</div></header><div id="setupPanel" hidden><div class="notice">預設唯讀。啟用本次寫入並填入獨立寫入金鑰後，右滑擊殺和 K／Z 指令會直接更新本隊 Firebase；操作前請核對隊伍。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>A 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住此隊金鑰（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><label>本隊獨立寫入金鑰（僅本次頁面，不儲存）<input id="dockWriteKey" type="password" autocomplete="new-password" placeholder="BOARD_WRITE_KEY：至少 32 字元"></label><label class="remember-toggle"><input id="dockArm" type="checkbox"> 啟用本次 K／Z 寫入（擊殺按下後不再二次確認）</label><p class="remember-hint">預設唯讀；需每次重新開啟網頁時重新授權。送出後會先由 Worker 檢查，再進行寫入。T 仍未開放。請勿在共用裝置啟用。</p></div><div class="actions"><button class="primary" id="go">讀取 A 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
 <p>這裡只組合指令並檢查輸入格式。按預覽不會呼叫 Worker、不會寫入 Firebase，也不會改動 LINE 時間。K 是擊殺、Z 是強制修正；T 目前僅供未來介面討論。</p>
 <div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算（未開放）</button></div>
 <div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
@@ -160,13 +165,14 @@ function tickWaiting(force){
  else{for(const w of waiting.values()){const node=$('waitingArea').querySelector('[data-wait-id="'+CSS.escape(w.id)+'"] small');if(node)node.textContent='已出現 '+duration(now-w.due)+'｜保留 '+Math.max(0,Math.ceil((waitingLimit*60000-(now-w.due))/1000))+' 秒'}}
 }
 function renderWaiting(){
+ if(typeof closeSwipe==='function')closeSwipe();
  const area=$('waitingArea');area.replaceChildren();const now=Date.now();
  const rows=[...waiting.values()].sort((a,b)=>a.due-b.due);if(demoWaiting&&!rows.length)rows.push({id:'demo',name:'德雷克（示範）',due:now-65000,sig:'demo'});
  if(!rows.length){const e=document.createElement('div');e.className='wait-empty';e.textContent='目前沒有待擊殺首領';area.appendChild(e)}
  for(const w of rows){const wrap=document.createElement('div');wrap.className='wait-item';wrap.dataset.waitId=w.id;
   const name=document.createElement('div');name.className='wait-name';const strong=document.createElement('strong');strong.textContent=w.name;const info=document.createElement('small');info.textContent='已出現 '+duration(now-w.due)+'｜保留 '+Math.max(0,Math.ceil((waitingLimit*60000-(now-w.due))/1000))+' 秒';name.append(strong,info);
-  const btn=document.createElement('button');btn.className='wait-kill';btn.type='button';btn.textContent='擊殺';btn.setAttribute('aria-label','擊殺 '+w.name);btn.onclick=()=>w.id==='demo'?dockMessage('示範按鈕｜不會寫入','good'):waitingPreview(w.name);
-  wrap.append(name,btn);area.appendChild(wrap)
+  wrap.append(name);area.appendChild(wrap);
+  decorateSwipe(wrap,w,{demo:w.id==='demo'});
  }
 }
 // Dock height can change as waiting bosses enter/leave; keep page bottom scrollable.
@@ -288,15 +294,16 @@ $('dockSend').onclick=()=>submitDock(dockCommand.value);
 dockCommand.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitDock(dockCommand.value)}});
 let swipeOpen=null;
 function closeSwipe(){if(swipeOpen){swipeOpen.classList.remove('swiped');swipeOpen=null}}
-function decorateSwipe(el,row){
+function decorateSwipe(el,row,options={}){
  const wrap=document.createElement('div');wrap.className='swipe-wrap';
  const btn=document.createElement('button');btn.type='button';btn.className='swipe-kill';btn.textContent='擊殺';btn.setAttribute('aria-label','擊殺 '+row.name);
  el.parentNode.insertBefore(wrap,el);wrap.appendChild(btn);wrap.appendChild(el);
- let startX=0,startY=0;
- el.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY},{passive:true});
- el.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3){e.preventDefault();if(dx>0){closeSwipe();el.classList.add('swiped');swipeOpen=el}else if(swipeOpen===el){closeSwipe()}}},{passive:false});
- el.addEventListener('click',e=>{if(swipeOpen===el){closeSwipe();e.stopPropagation()}else{closeSwipe();el.classList.add('swiped');swipeOpen=el;e.stopPropagation()}},true);
- btn.addEventListener('click',()=>{const hhmm=taiwanHHMM();closeSwipe();submitDock('K '+row.name+' '+hhmm,'右滑擊殺')});
+ let startX=0,startY=0,swipedGesture=false;
+ el.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY;swipedGesture=false},{passive:true});
+ el.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3){swipedGesture=true;e.preventDefault();if(dx>0){closeSwipe();el.classList.add('swiped');swipeOpen=el}else if(swipeOpen===el){closeSwipe()}}},{passive:false});
+ // Desktop users can click the row to expose the action; on touch only the swipe opens it.
+ el.addEventListener('click',e=>{if(swipedGesture){swipedGesture=false;e.stopPropagation();return}if(e.detail===0)return;if(swipeOpen===el){closeSwipe()}else{closeSwipe();el.classList.add('swiped');swipeOpen=el}e.stopPropagation()},true);
+ btn.addEventListener('click',e=>{e.stopPropagation();closeSwipe();if(options.demo){dockMessage('示範按鈕｜不會寫入','good');return}const hhmm=taiwanHHMM();submitDock('K '+row.name+' '+hhmm,'右滑擊殺')});
 }
 const originalRenderBoard=renderBoard;
 renderBoard=function(){closeSwipe();originalRenderBoard();const fieldItems=[...$('list').querySelectorAll('.boss-card.field')];const shown=liveRows.filter(r=>!isWaiting(r.id)&&(filter==='all'||(filter==='fixed'?r.fixed:!r.fixed))).filter(r=>!r.fixed);fieldItems.forEach((el,i)=>{const row=shown[i];if(!row)return;el.dataset.when=String(row.when);el.classList.remove('pickable');el.removeAttribute('role');el.removeAttribute('tabindex');decorateSwipe(el,row);});};
