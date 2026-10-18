@@ -79,13 +79,13 @@ body{height:100vh;height:100dvh;min-height:0;overflow:hidden;display:flex;flex-d
 .swipe-wrap .swipe-kill{z-index:0}
 .swipe-wrap .boss-card,.waiting-area .swipe-wrap .wait-item{z-index:1}
 .swipe-wrap{touch-action:pan-y}.swipe-wrap .boss-card,.swipe-wrap .wait-item{touch-action:pan-y;-webkit-user-select:none;user-select:none}
-</style></head><body class="team-a"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V17.3｜K 秒級時間・右滑即時擊殺</div></header><div id="setupPanel" hidden><div class="notice">預設唯讀。啟用本次寫入並填入獨立寫入金鑰後，右滑擊殺和 K／Z 指令會直接更新本隊 Firebase；操作前請核對隊伍。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>A 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住此隊金鑰（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">V17.2 安全提醒：本頁先要求 Worker 的 command-check 驗證通過，再送出 commit；若伺服器不支援，會停在唯讀。請勿將讀取金鑰當成寫入金鑰。</p><label>本隊獨立寫入金鑰（僅本次頁面，不儲存）<input id="dockWriteKey" type="password" autocomplete="new-password" placeholder="BOARD_WRITE_KEY：至少 32 字元"></label><label class="remember-toggle"><input id="dockArm" type="checkbox"> 啟用本次 K／Z 寫入（擊殺按下後不再二次確認）</label><p class="remember-hint">預設唯讀；需每次重新開啟網頁時重新授權。送出後會先由 Worker 檢查，再進行寫入。T 仍未開放。請勿在共用裝置啟用。</p></div><div class="actions"><button class="primary" id="go">讀取 A 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
+</style></head><body class="team-a"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V17.4｜群組 ID＋Key 一次授權・右滑擊殺</div></header><div id="setupPanel" hidden><div class="notice">群組 ID 與群組 Key 首次驗證後，即可讀取及直接執行 K／Z／右滑擊殺。請僅在私人裝置記住 Key。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>群組 ID<input id="groupId" value="A" maxlength="20" autocomplete="off"></label><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 ID 與 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權 A 隊</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
 <p>這裡只組合指令並檢查輸入格式。按預覽不會呼叫 Worker、不會寫入 Firebase，也不會改動 LINE 時間。K 是擊殺、Z 是強制修正；T 目前僅供未來介面討論。</p>
 <div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算（未開放）</button></div>
 <div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
 <datalist id="cmdBossNames"></datalist><button type="button" id="cmdPreview">檢查指令（不執行）</button>
 <div class="write-zone"><label>此隊獨立寫入金鑰（不儲存）<input id="writeKey" type="password" autocomplete="off" placeholder="BOARD_WRITE_KEY 專用，不是讀取金鑰"></label><label class="write-check"><input id="writeAgree" type="checkbox"> 我已核對隊伍、首領及擊殺時間</label><button type="button" id="cmdCommit" disabled>確認並執行 K／Z 寫入</button><p class="muted">必須先通過「檢查指令」，才能執行。寫入後會同步至 LINE 王表。</p></div><p class="cmd-label">驗證／執行結果</p><div class="cmd-output" id="cmdOutput" role="status" aria-live="polite">請先選擇指令、輸入首領及時間。</div>
-<p>注意：本版 K／Z 在寫入金鑰、檢查與二次確認後將修改此隊 Firebase 與 LINE 共用的王表資料。T 仍僅預覽。寫入金鑰不儲存。</p></section><div class="pick-hint">提示：點選野外首領卡片，可帶入下方 K／Z／T 預覽欄位（不會執行指令）。</div><div class="filters"><button data-filter="all" class="active">全部</button><button data-filter="field">野外首領</button><button data-filter="fixed">固定首領</button></div><div class="stats"><span>首領列表（台灣時間）</span><span id="count">0 筆</span></div><main id="list"></main><details><summary>安全診斷（不顯示金鑰）</summary><pre id="diag"></pre></details><div class="command-dock" aria-label="固定指令操作列"><div class="dock-inner"><div class="wait-header"><strong>⚔ 待擊殺區</strong><button id="waitDemo" type="button" class="wait-demo">示範</button><label>保留時間 <select id="waitMinutes" aria-label="待擊殺區保留時間"><option value="5">5 分鐘</option><option value="10">10 分鐘</option></select></label></div><div id="waitingArea" class="waiting-area" aria-live="polite"></div><div id="dockLog" class="dock-log" role="status" aria-live="polite">唯讀模式｜可輸入 K／Z，啟用寫入後才會執行</div><div class="dock-row"><input id="dockCommand" placeholder="輸入 K 德雷克（即時）或 K 德雷克 1502" autocomplete="off" aria-label="輸入指令"><button id="dockSend" type="button">送出</button></div></div></div><script>
+<p>注意：本版 K／Z 在寫入金鑰、檢查與二次確認後將修改此隊 Firebase 與 LINE 共用的王表資料。T 仍僅預覽。寫入金鑰不儲存。</p></section><div class="pick-hint">提示：點選野外首領卡片，可帶入下方 K／Z／T 預覽欄位（不會執行指令）。</div><div class="filters"><button data-filter="all" class="active">全部</button><button data-filter="field">野外首領</button><button data-filter="fixed">固定首領</button></div><div class="stats"><span>首領列表（台灣時間）</span><span id="count">0 筆</span></div><main id="list"></main><details><summary>安全診斷（不顯示金鑰）</summary><pre id="diag"></pre></details><div class="command-dock" aria-label="固定指令操作列"><div class="dock-inner"><div class="wait-header"><strong>⚔ 待擊殺區</strong><button id="waitDemo" type="button" class="wait-demo">示範</button><label>保留時間 <select id="waitMinutes" aria-label="待擊殺區保留時間"><option value="5">5 分鐘</option><option value="10">10 分鐘</option></select></label></div><div id="waitingArea" class="waiting-area" aria-live="polite"></div><div id="dockLog" class="dock-log" role="status" aria-live="polite">請先輸入群組 ID＋Key 授權</div><div class="dock-row"><input id="dockCommand" placeholder="輸入 K 德雷克（即時）或 K 德雷克 1502" autocomplete="off" aria-label="輸入指令"><button id="dockSend" type="button">送出</button></div></div></div><script>
 /* Re-home fixed sections before existing board logic starts; no data or command changes. */
 (function(){
  const header=document.getElementById('settingsHeader');
@@ -120,14 +120,16 @@ const $=id=>document.getElementById(id);const safe=x=>String(x??'').replace(/[&<
 let hasConnected=false;let fetching=false;let lastSync=0;let syncError=false;
 // Stored only in this browser. Credentials are NEVER inserted into URLs or diagnostics.
 const URL_STORE='lw-v1510-board-worker-url';
-const KEY_STORE='lw-v1510-board-secret-'+TEAM;
-const OPT_STORE='lw-v1510-board-remember-'+TEAM;
+const KEY_STORE='lw-v174-group-key-'+TEAM;
+const GROUP_STORE='lw-v174-group-id-'+TEAM;
+const OPT_STORE='lw-v174-group-remember-'+TEAM;
 function saveOnSuccess(){
  try{
   localStorage.setItem(URL_STORE,$('url').value.trim().replace(/\/$/,''));
+  if($('rememberKey').checked)localStorage.setItem(GROUP_STORE,$('groupId').value.trim());else localStorage.removeItem(GROUP_STORE);
   if($('rememberKey').checked){localStorage.setItem(KEY_STORE,$('key').value);localStorage.setItem(OPT_STORE,'yes')}
-  else{localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE)}
-  $('rememberStatus').textContent=$('rememberKey').checked?'網址及此隊金鑰已儲存':'已記住網址；金鑰不保存';
+  else{localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE);localStorage.removeItem(GROUP_STORE)}
+  $('rememberStatus').textContent=$('rememberKey').checked?'群組 ID、Key 與網址已儲存':'已記住網址；群組 Key 不保存';
  }catch(e){$('rememberStatus').textContent='瀏覽器禁止儲存設定；本次連線仍可使用'}
 }
 function restoreSaved(){
@@ -135,6 +137,7 @@ function restoreSaved(){
   $('url').value=localStorage.getItem(URL_STORE)||'';
   if(localStorage.getItem(OPT_STORE)==='yes'){
     $('rememberKey').checked=true;
+    $('groupId').value=localStorage.getItem(GROUP_STORE)||TEAM;
     $('key').value=localStorage.getItem(KEY_STORE)||'';
   }
   if($('url').value&&$('key').value){$('rememberStatus').textContent='已還原連線設定，正在自動連線…';refreshBoard(true)}
@@ -142,16 +145,19 @@ function restoreSaved(){
  }catch(e){$('rememberStatus').textContent='無法讀取本機儲存設定'}
 }
 $('clearSaved').addEventListener('click',()=>{
- try{localStorage.removeItem(URL_STORE);localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE)}catch(e){}
- $('url').value='';$('key').value='';$('rememberKey').checked=false;
+ try{localStorage.removeItem(URL_STORE);localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE);localStorage.removeItem(GROUP_STORE)}catch(e){}
+ $('url').value='';$('key').value='';$('groupId').value=TEAM;$('rememberKey').checked=false;
  hasConnected=false;syncError=false;lastSync=0;liveRows=[];waiting.clear();observed.clear();waitingSignature="";renderWaiting();renderBoard();updateSyncUI();
  $('rememberStatus').textContent='已清除本隊金鑰與網址；自動同步已停止';$('status').textContent='等待重新輸入連線設定';
 });
 $('rememberKey').addEventListener('change',()=>{
- if(!$('rememberKey').checked){try{localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE)}catch(e){}$('rememberStatus').textContent='已取消記住金鑰'}
+ if(!$('rememberKey').checked){try{localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE);localStorage.removeItem(GROUP_STORE)}catch(e){}$('rememberStatus').textContent='已取消記住金鑰'}
  else $('rememberStatus').textContent='勾選後，下一次成功連線時會儲存金鑰';
 });
 
+function groupReady(){return $('groupId').value.trim().toUpperCase()===TEAM&&$('key').value.length>=32;}
+$('groupId').addEventListener('input',()=>{hasConnected=false;updateSyncUI()});
+$('key').addEventListener('input',()=>{hasConnected=false;updateSyncUI()});
 function updateSyncUI(){const elapsed=lastSync?Math.floor((Date.now()-lastSync)/1000):0;const hidden=document.hidden;const stale=hasConnected&&elapsed>75;const state=fetching?'wait':syncError?'error':hidden&&hasConnected?'paused':stale?'wait':hasConnected?'ok':'';
  $('syncDot').className='sync-dot '+state;
  $('syncLabel').textContent=fetching?'同步中…':syncError?'同步失敗':hidden&&hasConnected?'背景暫停':stale?'資料待更新':hasConnected?'已連線':'尚未連線';
@@ -220,9 +226,10 @@ dockObserver.observe(document.querySelector('.command-dock'));
 setInterval(()=>tickWaiting(false),1000);
 renderWaiting();
 async function refreshBoard(manual=false){
+ if(!groupReady()){ $('status').textContent='請確認群組 ID 為 '+TEAM+' 並輸入至少 32 字元群組 Key';return;}
  if(fetching)return;
  if(!manual&&(!hasConnected||document.hidden))return;const url=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;if(!/^https:\/\//.test(url)||!key){if(manual)$('status').textContent='請填入 HTTPS Worker 網址及金鑰';return}
- fetching=true;updateSyncUI(); if(manual)$('status').textContent='讀取中…';try{const r=await fetch(url+'/api/board?team='+TEAM,{headers:{Authorization:'Bearer '+key},cache:'no-store'});const j=await r.json();if(!r.ok)throw Error(j.error||'HTTP '+r.status);const states=j.states||{};const entries=Object.entries(states);const now=Date.now();
+ fetching=true;updateSyncUI(); if(manual)$('status').textContent='讀取中…';try{const r=await fetch(url+'/api/board?team='+TEAM+'&groupId='+TEAM,{headers:{Authorization:'Bearer '+key},cache:'no-store'});const j=await r.json();if(!r.ok)throw Error(j.error||'HTTP '+r.status);const states=j.states||{};const entries=Object.entries(states);const now=Date.now();
  const bosses=j.bosses||{};const fixed=j.fixedSchedules||{};const mult=j.eventActive===true?Number(j.eventConfig?.cooldownMultiplier??0.5):1;
  const rows=[];for(const [id,st] of entries){const b=bosses[id]||Object.values(bosses).find(x=>String(x?.id)===String(id));if(!b||b.enabled===false)continue;
  const cycle=Number(b.cooldownHours)*mult*3600000;let when=Number(st?.respawnAt);if(!Number.isFinite(when)||!when||!Number.isFinite(cycle)||cycle<=0)continue;
@@ -278,7 +285,7 @@ $('cmdPreview').addEventListener('click',async()=>{resetApproval();
  if(!url.startsWith('https://')||!key){output.textContent='請先連線並輸入 Worker 網址及讀取金鑰。';return}
  $('cmdPreview').disabled=true;output.textContent='正在向 Worker 驗證（不寫入）…';
  try{
-  const res=await fetch(url+'/api/command-check',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({team:TEAM,action:selectedCmd,boss:raw,hhmm}),cache:'no-store'});
+  const res=await fetch(url+'/api/command-check',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({team:TEAM,groupId:TEAM,action:selectedCmd,boss:raw,hhmm}),cache:'no-store'});
   const j=await res.json();if(!res.ok)throw Error(j.error||'HTTP '+res.status);
   output.classList.toggle('warn',!j.valid);
   output.textContent='隊伍：'+TEAM+'｜'+selectedCmd+' '+j.boss+' '+hhmm+'\n擊殺時間：'+fmtTime(j.killedAt)+'\n上次擊殺：'+(j.previousKilledAt?fmtTime(j.previousKilledAt):'無資料')+'\n預估重生：'+fmtTime(j.respawnAt)+'\n週期：'+j.cooldownHours+' 小時\n驗證：'+(j.valid?'通過':'不通過')+'\n'+(j.warnings||[]).join('\n')+'\n【驗證本身不寫入；如要執行請再確認】';if(j.valid){approvedPreview={team:TEAM,action:selectedCmd,boss:raw,hhmm,killedAt:j.killedAt};$('cmdCommit').disabled=!$('writeAgree').checked;}
@@ -291,9 +298,7 @@ $('cmdPreview').addEventListener('click',async()=>{resetApproval();
 const dockLog=$('dockLog'), dockCommand=$('dockCommand');
 let submitting=false;let lastActionAt=0;
 function dockMessage(msg,kind=''){dockLog.textContent=msg;dockLog.className='dock-log '+kind;}
-function isArmed(){return $('dockArm').checked&&$('dockWriteKey').value.length>=32&&$('dockWriteKey').value!==$('key').value}
-$('dockArm').addEventListener('change',()=>{dockMessage(isArmed()?'已啟用本次寫入｜點擊擊殺將直接執行':'唯讀模式｜輸入有效寫入金鑰後才可啟用',isArmed()?'good':'bad')});
-$('dockWriteKey').addEventListener('input',()=>{if($('dockArm').checked&&!isArmed()){$('dockArm').checked=false;dockMessage('寫入金鑰不足 32 字元，已關閉寫入','bad')}});
+function isArmed(){return hasConnected&&groupReady()}
 function parseDock(raw){
  const match=raw.trim().match(/^([KZ])\s+(.+?)(?:\s+(\d{4}))?$/i);
  if(!match)throw Error('格式錯誤｜例如 K 德雷克 或 K 德雷克 1502');
@@ -305,25 +310,25 @@ function parseDock(raw){
 async function submitDock(raw,source='指令'){
  if(submitting)return;
  let cmd;try{cmd=parseDock(raw)}catch(e){dockMessage(e.message,'bad');return}
- if(!isArmed()){dockMessage('唯讀保護｜請設定至少 32 字元、且與讀取金鑰不同的本隊寫入金鑰','bad');return}
+ if(!isArmed()){dockMessage('請先用群組 ID＋Key 連線授權','bad');return}
  if(!hasConnected){dockMessage('請先成功讀取此隊王表','bad');return}
  if(!liveRows.some(r=>!r.fixed&&(r.name===cmd.boss||r.name===aliasMap[cmd.boss]))){dockMessage('安全保護：此首領不在目前 '+TEAM+' 隊的野外王表中','bad');return}
  const url=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;
- if(!url.startsWith('https://')||!key){dockMessage('請先設定 Worker 網址及讀取金鑰','bad');return}
+ if(!url.startsWith('https://')||!key){dockMessage('請先設定 Worker 網址與群組 Key','bad');return}
  if(Date.now()-lastActionAt<1200){dockMessage('操作太快，請稍後再試','bad');return}
  submitting=true;lastActionAt=Date.now();$('dockSend').disabled=true;document.querySelector('.command-dock').classList.add('busy');
  dockMessage('檢查中｜'+cmd.action+' '+cmd.boss+' '+cmd.hhmm,'working');
  try{
-  const check=await fetch(url+'/api/command-check',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify(cmd),cache:'no-store'});
+  const check=await fetch(url+'/api/command-check',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({...cmd,groupId:TEAM}),cache:'no-store'});
   const c=await check.json();if(!check.ok)throw Error(check.status===404||check.status===405?'目前 Worker 不支援擊殺驗證 API（/api/command-check）；已阻止寫入，請勿重複點擊':'檢查失敗：'+(c.error||check.status));
   if(c.team!==TEAM)throw Error('安全驗證失敗：伺服器回傳的隊伍不一致');
   if(!c.valid)throw Error('未通過 K／Z 驗證：'+(c.warnings||[]).join('；'));
   if(!Number.isFinite(Number(c.killedAt))||!Number.isFinite(Number(c.respawnAt)))throw Error('安全驗證失敗：伺服器時間資料不完整');
   if(c.boss!==cmd.boss && aliasMap[cmd.boss]!==c.boss)throw Error('安全驗證失敗：伺服器回傳首領不一致');
-  if(!isArmed())throw Error('本次寫入授權已關閉');
+  if(!isArmed())throw Error('群組授權已失效，請重新連線');
   dockMessage('寫入中｜'+cmd.action+' '+c.boss+' '+cmd.hhmm,'working');
   const requestId=crypto.randomUUID().replace(/-/g,'');
-  const res=await fetch(url+'/api/command-commit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+$('dockWriteKey').value},body:JSON.stringify({...cmd,requestId}),cache:'no-store'});
+  const res=await fetch(url+'/api/command-commit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({...cmd,groupId:TEAM,requestId}),cache:'no-store'});
   const j=await res.json();if(!res.ok)throw Error(res.status===404||res.status===405?'Worker 不支援擊殺寫入 API；未確認資料更動':'寫入失敗：'+(j.error||res.status));
   if(!j.ok||j.team!==TEAM)throw Error('Worker 未回報本隊成功，請先查詢王表，不要重送');
   dockMessage('成功｜'+cmd.action+' '+j.boss+'｜擊殺 '+new Date(j.killedAt).toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'})+'｜重生 '+new Date(j.respawnAt).toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}),'good');
