@@ -80,15 +80,19 @@ body{height:100vh;height:100dvh;min-height:0;overflow:hidden;display:flex;flex-d
 .swipe-wrap .boss-card,.waiting-area .swipe-wrap .wait-item{z-index:1}
 .swipe-wrap{touch-action:pan-y}.swipe-wrap .boss-card,.swipe-wrap .wait-item{touch-action:pan-y;-webkit-user-select:none;user-select:none}
 .filters{justify-content:stretch}.filters button{flex:1 1 0;width:auto;padding:5px 6px;min-height:34px;height:34px}
+
+/* V18.3.0: team-only revenge event switch. */
+.event-switch{display:flex;align-items:center;gap:9px;justify-content:space-between;background:#182536;border:1px solid #4c6481;border-radius:9px;padding:8px 10px;margin:3px 0 6px;font-size:13px}
+.event-switch strong{color:#e6ce93}.event-switch .event-state{margin-left:auto;color:#b8c6d9}.event-switch button{padding:8px 12px;min-width:92px;background:#28435b}.event-switch button.on{background:#176e56;border-color:#3eaf84}.event-switch button:disabled{opacity:.5;cursor:wait}
 </style>
 <style>
-/* V18.2.1 category palette: 4H blue; 6/8/12H purple; fixed green. Timed warnings still override. */
+/* V18.3.0 category palette: 4H blue; 6/8/12H purple; fixed green. Timed warnings still override. */
 .boss-card.field.cycle-four:not(.near):not(.danger){border-left-color:#3975cb}
 .boss-card.field.cycle-long:not(.near):not(.danger){border-left-color:#a86cf2;background:#231b33}
 .boss-card.field.cycle-long .dot{background:#b991ff}
 .swipe-wrap .boss-card.field.cycle-long:not(.near):not(.danger){background:#231b33}
 </style>
-</head><body class="team-a"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V18.2.1｜Restart・逐隻 K／T 首輪・王的逆襲</div></header><div id="setupPanel" hidden><div class="notice">群組 Key 首次驗證後，即可讀取及直接執行 K／Z／右滑擊殺。請僅在私人裝置記住 Key。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權 A 隊</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
+</head><body class="team-a"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V18.3.0｜Restart・逐隻 K／T 首輪・王的逆襲</div></header><div id="setupPanel" hidden><div class="notice">群組 Key 首次驗證後，即可讀取及直接執行 K／Z／右滑擊殺。請僅在私人裝置記住 Key。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權 A 隊</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
 <p>這裡只組合指令並檢查輸入格式。按預覽不會呼叫 Worker、不會寫入 Firebase，也不會改動 LINE 時間。K 是擊殺、Z 是強制修正；T 目前僅供未來介面討論。</p>
 <div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算（未開放）</button></div>
 <div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
@@ -105,6 +109,8 @@ body{height:100vh;height:100dvh;min-height:0;overflow:hidden;display:flex;flex-d
  const top=document.createElement('div');top.className='board-top';
  document.body.insertBefore(top,header);
  top.append(header,setup,filters);
+ const eventBar=document.createElement('div');eventBar.className='event-switch';eventBar.innerHTML='<strong>王的逆襲</strong><span id="eventState" class="event-state">連線後讀取</span><button id="eventToggle" type="button" disabled>開關設定</button>';top.append(eventBar);
+
  const shelf=document.createElement('section');shelf.className='board-waiting';
  const waitHeader=dock.querySelector('.wait-header');
  const waitList=document.getElementById('waitingArea');
@@ -154,7 +160,7 @@ function restoreSaved(){
 $('clearSaved').addEventListener('click',()=>{
  try{localStorage.removeItem(URL_STORE);localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE);localStorage.removeItem(GROUP_STORE)}catch(e){}
  $('url').value='';$('key').value='';$('rememberKey').checked=false;
- hasConnected=false;syncError=false;lastSync=0;liveRows=[];waiting.clear();observed.clear();waitingSignature="";renderWaiting();renderBoard();updateSyncUI();
+ hasConnected=false;currentEventActive=null;renderEventSwitch();syncError=false;lastSync=0;liveRows=[];waiting.clear();observed.clear();waitingSignature="";renderWaiting();renderBoard();updateSyncUI();
  $('rememberStatus').textContent='已清除本隊金鑰與網址；自動同步已停止';$('status').textContent='等待重新輸入連線設定';
 });
 $('rememberKey').addEventListener('change',()=>{
@@ -232,6 +238,26 @@ const dockObserver=new ResizeObserver(entries=>{const size=entries[0]?.target.ge
 dockObserver.observe(document.querySelector('.command-dock'));
 setInterval(()=>tickWaiting(false),1000);
 renderWaiting();
+let currentEventActive=null;
+const eventButton=$('eventToggle');
+function renderEventSwitch(){
+ $('eventState').textContent=currentEventActive===null?'連線後讀取':currentEventActive?'活動中':'活動關閉';
+ eventButton.textContent=currentEventActive===null?'開關設定':currentEventActive?'關閉活動':'開啟活動';
+ eventButton.classList.toggle('on',currentEventActive===true);
+ eventButton.disabled=!hasConnected||currentEventActive===null||fetching;
+}
+eventButton.addEventListener('click',async()=>{
+ if(!hasConnected||currentEventActive===null)return;
+ const next=!currentEventActive;
+ if(!confirm('確定要'+(next?'開啟':'關閉')+' '+TEAM+' 隊的「王的逆襲」嗎？\n只會改變本隊活動倍率，不會清除首領資料。'))return;
+ const base=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;
+ eventButton.disabled=true;$('eventState').textContent='設定中…';
+ try{
+  const r=await fetch(base+'/api/event-toggle',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({team:TEAM,enabled:next}),cache:'no-store'});
+  const j=await r.json();if(!r.ok||j.team!==TEAM||j.eventActive!==next)throw Error(j.error||'設定失敗');
+  currentEventActive=next;renderEventSwitch();await refreshBoard(true);
+ }catch(e){alert('活動切換失敗：'+e.message);renderEventSwitch()}
+});
 async function refreshBoard(manual=false){
  if(!groupReady()){ $('status').textContent='請確認群組 ID 為 '+TEAM+' 並輸入至少 32 字元群組 Key';return;}
  if(fetching)return;
@@ -252,10 +278,11 @@ async function refreshBoard(manual=false){
  rows.sort((a,b)=>a.when-b.when||a.name.localeCompare(b.name,'zh-TW'));
  $('diag').textContent=JSON.stringify({team:TEAM,stateCount:entries.length,projectedField:rows.filter(x=>!x.fixed).length,fixedToday:rows.filter(x=>x.fixed).length,eventActive:j.eventActive,multiplier:mult,firstKeys:entries.slice(0,3).map(([k,v])=>({key:k,fields:Object.keys(v||{})}))},null,2);
  liveRows=rows; reconcileWaiting(rows); renderBoard();
- hasConnected=true;lastSync=Date.now();syncError=false;saveOnSuccess();
+ currentEventActive=j.eventActive===true;
+ hasConnected=true;lastSync=Date.now();syncError=false;saveOnSuccess();renderEventSwitch();
  $('status').textContent=(waitingForT?'⚠ 本隊已 Restart；可逐隻 K 或 LINE 確認 T，未記錄的野外王保持空白。｜':'同步成功（每 30 秒自動更新）：')+entries.length+' 筆原始狀態｜野外首領 '+rows.filter(x=>!x.fixed).length+' 筆｜今日固定首領 '+rows.filter(x=>x.fixed).length+' 筆';
  $('lastFetch').textContent='最後讀取：'+new Date().toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour12:false});
- }catch(e){syncError=true;$('status').textContent='同步失敗（保留上次畫面）：'+e.message;$('diag').textContent=JSON.stringify({team:TEAM,error:e.message},null,2)}finally{fetching=false;updateSyncUI()}
+ }catch(e){syncError=true;$('status').textContent='同步失敗（保留上次畫面）：'+e.message;$('diag').textContent=JSON.stringify({team:TEAM,error:e.message},null,2)}finally{fetching=false;updateSyncUI();renderEventSwitch()}
 }
 $('go').onclick=()=>refreshBoard(true);
 setInterval(()=>{if(hasConnected&&!document.hidden)refreshBoard(false)},30000);
