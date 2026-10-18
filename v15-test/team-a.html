@@ -6,7 +6,21 @@ header{background:linear-gradient(120deg,#27354a,#132033);border:1px solid #5260
 .boss-card{background:var(--panel);border:1px solid #39485c;border-left:5px solid #3975cb;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;margin:8px 0;min-height:70px}.boss-card.fixed{border-left-color:#3caf7f;background:#152d2a}.boss-card.near{border-color:#e2b84d;background:#332d1d}.boss-card.danger{border-color:#e45454;animation:alert 1s infinite}.name{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}.name strong{font-size:18px}.name small{color:#93a8bf;font-size:11px;width:100%;padding-left:16px}.dot{width:8px;height:8px;border-radius:50%;background:#5594ef;flex:none}.fixed .dot{background:#52cf9a}.time-area{text-align:right;flex-shrink:0}.birth{font-size:12px;color:#becce2;font-variant-numeric:tabular-nums}.countdown{font-size:19px;font-weight:800;color:#efcd79;font-variant-numeric:tabular-nums;margin-top:4px}.danger .countdown{color:#ff6767}.near .countdown{color:#ffd458}.empty{text-align:center;padding:30px;color:#a8b6cb}details{margin:18px 0;color:#a4b5ce}pre{overflow-x:auto;white-space:pre-wrap;font-size:11px} @keyframes alert{50%{box-shadow:0 0 14px #a94545}}
 @media(max-width:480px){body{padding:8px}header{padding:14px}h1{font-size:21px}.boss-card{padding:10px 8px}.name strong{font-size:16px}.birth{font-size:11px}.countdown{font-size:17px}}
  .sync-strip{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;border:1px solid #34445a;border-radius:9px;background:#141e2b;padding:9px 11px;margin-bottom:9px;font-size:12px;color:#bbcee6}.sync-dot{width:9px;height:9px;border-radius:50%;background:#78889c;flex:none}.sync-dot.ok{background:#47c998}.sync-dot.wait{background:#ecc160}.sync-dot.error{background:#f16d70}.sync-dot.paused{background:#8294a9}.sync-strip strong{color:#e7f0fc}.sync-strip .right{margin-left:auto;color:#aac0db;font-variant-numeric:tabular-nums}.filters button{min-height:44px}.boss-card{transition:border-color .2s,background .2s}@media(max-width:480px){.sync-strip{font-size:11px}.sync-strip .right{margin-left:0;width:100%}}@media(prefers-reduced-motion:reduce){.boss-card.danger{animation:none}}
-</style></head><body class="team-a"><header><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V15.8 深色計時看板・每 30 秒自動同步・唯讀測試</div></header><div class="notice">此頁僅查詢，不提供 K／Z／T／RESTART。測試金鑰請勿分享，正式上線仍須進一步設計登入權限。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>A 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="actions"><button class="primary" id="go">讀取 A 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div><div class="filters"><button data-filter="all" class="active">全部</button><button data-filter="field">野外首領</button><button data-filter="fixed">固定首領</button></div><div class="stats"><span>首領列表（台灣時間）</span><span id="count">0 筆</span></div><main id="list"></main><details><summary>安全診斷（不顯示金鑰）</summary><pre id="diag"></pre></details><script>const TEAM='A';
+
+/* V15.9 command preview: deliberately local-only, no write endpoint. */
+.cmd-panel{margin:14px 0;border:1px solid #425876;background:#131f2e;border-radius:10px;padding:14px}
+.cmd-panel h2{font-size:17px;color:#e9be70;margin:0 0 7px}.cmd-panel p{font-size:12px;color:#bacbe0;line-height:1.6}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cmd-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.cmd-actions button{flex:1;min-height:45px}.cmd-actions button.selected{background:var(--tone);border-color:var(--tone)}
+.cmd-output{border:1px solid #566c86;border-radius:8px;padding:12px;background:#0c1725;min-height:72px;white-space:pre-wrap;line-height:1.6;font-size:13px;color:#d7e6ff}
+.cmd-output.warn{border-color:#a77b43;color:#ffe0a1}.cmd-label{font-size:12px;color:#e4c68e;font-weight:650}
+@media(max-width:480px){.cmd-grid{grid-template-columns:1fr}.cmd-panel{padding:11px}}
+</style></head><body class="team-a"><header><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V15.9 深色計時看板・指令預覽・每 30 秒自動同步・唯讀測試</div></header><div class="notice">此頁提供 K／Z／T 格式預覽，但不執行任何 K／Z／T／RESTART。測試金鑰請勿分享，正式上線仍須進一步設計登入權限。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>A 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="actions"><button class="primary" id="go">讀取 A 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z／T 指令預覽（不會送出）</h2>
+<p>這裡只組合指令並檢查輸入格式。按預覽不會呼叫 Worker、不會寫入 Firebase，也不會改動 LINE 時間。K 是擊殺、Z 是強制修正；T 目前僅供未來介面討論。</p>
+<div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算（未開放）</button></div>
+<div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
+<datalist id="cmdBossNames"></datalist><button type="button" id="cmdPreview">預覽指令（不執行）</button>
+<p class="cmd-label">預覽結果</p><div class="cmd-output" id="cmdOutput" role="status" aria-live="polite">請先選擇指令、輸入首領及時間。</div>
+<p>安全限制：此版沒有任何 K／Z／T 寫入 API 呼叫；不儲存輸入內容，也不將指令送到 LINE。</p></section><div class="filters"><button data-filter="all" class="active">全部</button><button data-filter="field">野外首領</button><button data-filter="fixed">固定首領</button></div><div class="stats"><span>首領列表（台灣時間）</span><span id="count">0 筆</span></div><main id="list"></main><details><summary>安全診斷（不顯示金鑰）</summary><pre id="diag"></pre></details><script>const TEAM='A';
 const names={1:'尼羅德',2:'夫人',3:'飛龍3',4:'飛龍4',5:'卡司特王',6:'大腳',7:'黑虎',8:'德雷克',9:'莫莉提亞',10:'飛龍1',11:'飛龍2',12:'殺戮者',13:'麥肯',14:'蜥蜴王',15:'庫約',16:'烏勒庫斯',17:'奈克諾斯',18:'拉馬修',19:'庫爾託',20:'四色',21:'哈格瑪',22:'克洛林',23:'史前巨鱷',24:'二巨',25:'奧杜亞'};
 const $=id=>document.getElementById(id);const safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let hasConnected=false;let fetching=false;let lastSync=0;let syncError=false;
@@ -51,4 +65,22 @@ function renderBoard(){const now=Date.now();let shown=liveRows.filter(r=>filter=
  $('count').textContent=shown.length+' 筆';}
  document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));renderBoard()}));
  setInterval(()=>{if(liveRows.length)renderBoard()},1000);
+
+// V15.9 preview-only controls. These handlers NEVER call fetch, Firebase or LINE.
+let selectedCmd='K';
+const aliasMap={'海賊':'德雷克','茉莉':'莫莉提亞','狼王':'庫爾託','庫爾托':'庫爾託'};
+const previewNames=Object.values(names);
+const datalist=$('cmdBossNames');
+for(const name of previewNames){const opt=document.createElement('option');opt.value=name;datalist.appendChild(opt)}
+for(const name of Object.keys(aliasMap)){const opt=document.createElement('option');opt.value=name;datalist.appendChild(opt)}
+document.querySelectorAll('[data-cmd]').forEach(btn=>btn.addEventListener('click',()=>{selectedCmd=btn.dataset.cmd;document.querySelectorAll('[data-cmd]').forEach(el=>el.classList.toggle('selected',el===btn));$('cmdOutput').textContent='已選 '+selectedCmd+'；請輸入首領與 HHMM 後預覽。';$('cmdOutput').classList.toggle('warn',selectedCmd==='T')}));
+$('cmdPreview').addEventListener('click',()=>{
+ const raw=$('cmdBoss').value.trim();const hhmm=$('cmdTime').value.trim();const canonical=aliasMap[raw]||raw;let error='';
+ if(!raw)error='請先輸入首領名稱。';
+ else if(!previewNames.includes(canonical))error='首領名稱不在此版內建名單，請檢查是否輸入正確；正式別名表仍待同步驗證。';
+ else if(!/^\d{4}$/.test(hhmm)||Number(hhmm.slice(0,2))>23||Number(hhmm.slice(2))>59)error='時間格式不正確。請使用 0000～2359 的 HHMM。';
+ const output=$('cmdOutput');output.classList.toggle('warn',Boolean(error)||selectedCmd==='T');
+ if(error){output.textContent='無法預覽：'+error;return}
+ output.textContent='預覽：'+selectedCmd+' '+raw+' '+hhmm+'\n對應首領：'+canonical+'\n隊伍：'+TEAM+' 隊\n'+(selectedCmd==='T'?'T 尚未在 LINE V14 正式開放；本頁不執行推算或寫入。':'僅格式預覽，不驗證擊殺時間先後、不計算重生時間，也不會執行。');
+});
 </script></body></html>
