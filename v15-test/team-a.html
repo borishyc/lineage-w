@@ -61,13 +61,46 @@ header.settings-toggle[aria-expanded="true"]::after{content:'✕'}
 #setupPanel[hidden]{display:none!important}
 #setupPanel{padding:1px 0 8px;margin-bottom:6px}
 #setupPanel details{margin:10px 0}
-</style></head><body class="team-a"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V16.5.1 修正版｜主列表與待擊殺區統一右滑擊殺</div></header><div id="setupPanel" hidden><div class="notice">預設唯讀。啟用本次寫入並填入獨立寫入金鑰後，右滑擊殺和 K／Z 指令會直接更新本隊 Firebase；操作前請核對隊伍。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>A 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住此隊金鑰（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><label>本隊獨立寫入金鑰（僅本次頁面，不儲存）<input id="dockWriteKey" type="password" autocomplete="new-password" placeholder="BOARD_WRITE_KEY：至少 32 字元"></label><label class="remember-toggle"><input id="dockArm" type="checkbox"> 啟用本次 K／Z 寫入（擊殺按下後不再二次確認）</label><p class="remember-hint">預設唯讀；需每次重新開啟網頁時重新授權。送出後會先由 Worker 檢查，再進行寫入。T 仍未開放。請勿在共用裝置啟用。</p></div><div class="actions"><button class="primary" id="go">讀取 A 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
+
+/* V16.6: three-zone phone layout; only the Boss list scrolls. */
+html{height:100%;overflow:hidden}
+body{height:100vh;height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding-bottom:0!important}
+.board-top{flex:0 0 auto;min-height:0;max-height:calc(100dvh - var(--dock-height,90px) - 90px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.board-top header{margin-bottom:7px}
+.board-top .filters{position:relative;top:auto;z-index:1;padding:5px 0}
+.board-top .stats{padding:5px 2px}
+.board-waiting{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 0 5px}
+.board-waiting .waiting-area{max-height:min(166px,25dvh);overflow-y:auto;margin:0}
+.board-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding-bottom:8px}
+.command-dock{flex:none}
+@media(max-width:480px){.board-top header{padding:10px 14px}.board-top h1{font-size:20px}.board-top .subtitle{font-size:11px}.board-waiting{padding:4px 0}}
+</style></head><body class="team-a"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V16.6｜頂部固定・王表獨立滑動</div></header><div id="setupPanel" hidden><div class="notice">預設唯讀。啟用本次寫入並填入獨立寫入金鑰後，右滑擊殺和 K／Z 指令會直接更新本隊 Firebase；操作前請核對隊伍。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>A 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住此隊金鑰（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><label>本隊獨立寫入金鑰（僅本次頁面，不儲存）<input id="dockWriteKey" type="password" autocomplete="new-password" placeholder="BOARD_WRITE_KEY：至少 32 字元"></label><label class="remember-toggle"><input id="dockArm" type="checkbox"> 啟用本次 K／Z 寫入（擊殺按下後不再二次確認）</label><p class="remember-hint">預設唯讀；需每次重新開啟網頁時重新授權。送出後會先由 Worker 檢查，再進行寫入。T 仍未開放。請勿在共用裝置啟用。</p></div><div class="actions"><button class="primary" id="go">讀取 A 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
 <p>這裡只組合指令並檢查輸入格式。按預覽不會呼叫 Worker、不會寫入 Firebase，也不會改動 LINE 時間。K 是擊殺、Z 是強制修正；T 目前僅供未來介面討論。</p>
 <div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算（未開放）</button></div>
 <div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
 <datalist id="cmdBossNames"></datalist><button type="button" id="cmdPreview">檢查指令（不執行）</button>
 <div class="write-zone"><label>此隊獨立寫入金鑰（不儲存）<input id="writeKey" type="password" autocomplete="off" placeholder="BOARD_WRITE_KEY 專用，不是讀取金鑰"></label><label class="write-check"><input id="writeAgree" type="checkbox"> 我已核對隊伍、首領及擊殺時間</label><button type="button" id="cmdCommit" disabled>確認並執行 K／Z 寫入</button><p class="muted">必須先通過「檢查指令」，才能執行。寫入後會同步至 LINE 王表。</p></div><p class="cmd-label">驗證／執行結果</p><div class="cmd-output" id="cmdOutput" role="status" aria-live="polite">請先選擇指令、輸入首領及時間。</div>
-<p>注意：本版 K／Z 在寫入金鑰、檢查與二次確認後將修改此隊 Firebase 與 LINE 共用的王表資料。T 仍僅預覽。寫入金鑰不儲存。</p></section><div class="pick-hint">提示：點選野外首領卡片，可帶入下方 K／Z／T 預覽欄位（不會執行指令）。</div><div class="filters"><button data-filter="all" class="active">全部</button><button data-filter="field">野外首領</button><button data-filter="fixed">固定首領</button></div><div class="stats"><span>首領列表（台灣時間）</span><span id="count">0 筆</span></div><main id="list"></main><details><summary>安全診斷（不顯示金鑰）</summary><pre id="diag"></pre></details><div class="command-dock" aria-label="固定指令操作列"><div class="dock-inner"><div class="wait-header"><strong>⚔ 待擊殺區</strong><button id="waitDemo" type="button" class="wait-demo">示範</button><label>保留時間 <select id="waitMinutes" aria-label="待擊殺區保留時間"><option value="5">5 分鐘</option><option value="10">10 分鐘</option></select></label></div><div id="waitingArea" class="waiting-area" aria-live="polite"></div><div id="dockLog" class="dock-log" role="status" aria-live="polite">唯讀模式｜可輸入 K／Z，啟用寫入後才會執行</div><div class="dock-row"><input id="dockCommand" placeholder="輸入指令，例如 K 德雷克 1502" autocomplete="off" aria-label="輸入指令"><button id="dockSend" type="button">送出</button></div></div></div><script>(function(){
+<p>注意：本版 K／Z 在寫入金鑰、檢查與二次確認後將修改此隊 Firebase 與 LINE 共用的王表資料。T 仍僅預覽。寫入金鑰不儲存。</p></section><div class="pick-hint">提示：點選野外首領卡片，可帶入下方 K／Z／T 預覽欄位（不會執行指令）。</div><div class="filters"><button data-filter="all" class="active">全部</button><button data-filter="field">野外首領</button><button data-filter="fixed">固定首領</button></div><div class="stats"><span>首領列表（台灣時間）</span><span id="count">0 筆</span></div><main id="list"></main><details><summary>安全診斷（不顯示金鑰）</summary><pre id="diag"></pre></details><div class="command-dock" aria-label="固定指令操作列"><div class="dock-inner"><div class="wait-header"><strong>⚔ 待擊殺區</strong><button id="waitDemo" type="button" class="wait-demo">示範</button><label>保留時間 <select id="waitMinutes" aria-label="待擊殺區保留時間"><option value="5">5 分鐘</option><option value="10">10 分鐘</option></select></label></div><div id="waitingArea" class="waiting-area" aria-live="polite"></div><div id="dockLog" class="dock-log" role="status" aria-live="polite">唯讀模式｜可輸入 K／Z，啟用寫入後才會執行</div><div class="dock-row"><input id="dockCommand" placeholder="輸入指令，例如 K 德雷克 1502" autocomplete="off" aria-label="輸入指令"><button id="dockSend" type="button">送出</button></div></div></div><script>
+/* Re-home fixed sections before existing board logic starts; no data or command changes. */
+(function(){
+ const header=document.getElementById('settingsHeader');
+ const setup=document.getElementById('setupPanel');
+ const filters=document.querySelector('.filters');
+ const stats=document.querySelector('.stats');
+ const dock=document.querySelector('.command-dock');
+ const top=document.createElement('div');top.className='board-top';
+ document.body.insertBefore(top,header);
+ top.append(header,setup,filters);
+ const shelf=document.createElement('section');shelf.className='board-waiting';
+ const waitHeader=dock.querySelector('.wait-header');
+ const waitList=document.getElementById('waitingArea');
+ shelf.append(waitHeader,waitList);top.append(shelf,stats);
+ const scroll=document.createElement('div');scroll.className='board-scroll';
+ top.after(scroll);
+ const list=document.getElementById('list');scroll.append(list);
+ const details=document.querySelector('body > details');if(details)scroll.append(details);
+})();
+</script><script>(function(){
  const header=document.getElementById('settingsHeader');
  const panel=document.getElementById('setupPanel');
  const diag=document.querySelector('details');
