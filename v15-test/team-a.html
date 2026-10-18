@@ -79,7 +79,7 @@ body{height:100vh;height:100dvh;min-height:0;overflow:hidden;display:flex;flex-d
 .swipe-wrap .swipe-kill{z-index:0}
 .swipe-wrap .boss-card,.waiting-area .swipe-wrap .wait-item{z-index:1}
 .swipe-wrap{touch-action:pan-y}.swipe-wrap .boss-card,.swipe-wrap .wait-item{touch-action:pan-y;-webkit-user-select:none;user-select:none}
-</style></head><body class="team-a"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V17.1｜右滑擊殺觸控測試版・王表獨立滑動</div></header><div id="setupPanel" hidden><div class="notice">預設唯讀。啟用本次寫入並填入獨立寫入金鑰後，右滑擊殺和 K／Z 指令會直接更新本隊 Firebase；操作前請核對隊伍。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>A 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住此隊金鑰（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><label>本隊獨立寫入金鑰（僅本次頁面，不儲存）<input id="dockWriteKey" type="password" autocomplete="new-password" placeholder="BOARD_WRITE_KEY：至少 32 字元"></label><label class="remember-toggle"><input id="dockArm" type="checkbox"> 啟用本次 K／Z 寫入（擊殺按下後不再二次確認）</label><p class="remember-hint">預設唯讀；需每次重新開啟網頁時重新授權。送出後會先由 Worker 檢查，再進行寫入。T 仍未開放。請勿在共用裝置啟用。</p></div><div class="actions"><button class="primary" id="go">讀取 A 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
+</style></head><body class="team-a"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜A 隊首領王表</h1><div class="subtitle">V17.2｜擊殺安全驗證版・讀寫能力檢查</div></header><div id="setupPanel" hidden><div class="notice">預設唯讀。啟用本次寫入並填入獨立寫入金鑰後，右滑擊殺和 K／Z 指令會直接更新本隊 Firebase；操作前請核對隊伍。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>A 隊讀取金鑰<input id="key" type="password" autocomplete="off"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住此隊金鑰（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">V17.2 安全提醒：本頁先要求 Worker 的 command-check 驗證通過，再送出 commit；若伺服器不支援，會停在唯讀。請勿將讀取金鑰當成寫入金鑰。</p><label>本隊獨立寫入金鑰（僅本次頁面，不儲存）<input id="dockWriteKey" type="password" autocomplete="new-password" placeholder="BOARD_WRITE_KEY：至少 32 字元"></label><label class="remember-toggle"><input id="dockArm" type="checkbox"> 啟用本次 K／Z 寫入（擊殺按下後不再二次確認）</label><p class="remember-hint">預設唯讀；需每次重新開啟網頁時重新授權。送出後會先由 Worker 檢查，再進行寫入。T 仍未開放。請勿在共用裝置啟用。</p></div><div class="actions"><button class="primary" id="go">讀取 A 隊王表</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
 <p>這裡只組合指令並檢查輸入格式。按預覽不會呼叫 Worker、不會寫入 Firebase，也不會改動 LINE 時間。K 是擊殺、Z 是強制修正；T 目前僅供未來介面討論。</p>
 <div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算（未開放）</button></div>
 <div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
@@ -291,7 +291,7 @@ $('cmdPreview').addEventListener('click',async()=>{resetApproval();
 const dockLog=$('dockLog'), dockCommand=$('dockCommand');
 let submitting=false;let lastActionAt=0;
 function dockMessage(msg,kind=''){dockLog.textContent=msg;dockLog.className='dock-log '+kind;}
-function isArmed(){return $('dockArm').checked&&$('dockWriteKey').value.length>=32}
+function isArmed(){return $('dockArm').checked&&$('dockWriteKey').value.length>=32&&$('dockWriteKey').value!==$('key').value}
 $('dockArm').addEventListener('change',()=>{dockMessage(isArmed()?'已啟用本次寫入｜點擊擊殺將直接執行':'唯讀模式｜輸入有效寫入金鑰後才可啟用',isArmed()?'good':'bad')});
 $('dockWriteKey').addEventListener('input',()=>{if($('dockArm').checked&&!isArmed()){$('dockArm').checked=false;dockMessage('寫入金鑰不足 32 字元，已關閉寫入','bad')}});
 function parseDock(raw){
@@ -305,8 +305,9 @@ function parseDock(raw){
 async function submitDock(raw,source='指令'){
  if(submitting)return;
  let cmd;try{cmd=parseDock(raw)}catch(e){dockMessage(e.message,'bad');return}
- if(!isArmed()){dockMessage('尚未授權寫入｜請點標題設定本隊寫入金鑰並啟用','bad');return}
+ if(!isArmed()){dockMessage('唯讀保護｜請設定至少 32 字元、且與讀取金鑰不同的本隊寫入金鑰','bad');return}
  if(!hasConnected){dockMessage('請先成功讀取此隊王表','bad');return}
+ if(!liveRows.some(r=>!r.fixed&&(r.name===cmd.boss||r.name===aliasMap[cmd.boss]))){dockMessage('安全保護：此首領不在目前 '+TEAM+' 隊的野外王表中','bad');return}
  const url=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;
  if(!url.startsWith('https://')||!key){dockMessage('請先設定 Worker 網址及讀取金鑰','bad');return}
  if(Date.now()-lastActionAt<1200){dockMessage('操作太快，請稍後再試','bad');return}
@@ -314,14 +315,17 @@ async function submitDock(raw,source='指令'){
  dockMessage('檢查中｜'+cmd.action+' '+cmd.boss+' '+cmd.hhmm,'working');
  try{
   const check=await fetch(url+'/api/command-check',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify(cmd),cache:'no-store'});
-  const c=await check.json();if(!check.ok)throw Error('檢查失敗：'+(c.error||check.status));
+  const c=await check.json();if(!check.ok)throw Error(check.status===404||check.status===405?'目前 Worker 不支援擊殺驗證 API（/api/command-check）；已阻止寫入，請勿重複點擊':'檢查失敗：'+(c.error||check.status));
+  if(c.team!==TEAM)throw Error('安全驗證失敗：伺服器回傳的隊伍不一致');
   if(!c.valid)throw Error('未通過 K／Z 驗證：'+(c.warnings||[]).join('；'));
+  if(!Number.isFinite(Number(c.killedAt))||!Number.isFinite(Number(c.respawnAt)))throw Error('安全驗證失敗：伺服器時間資料不完整');
+  if(c.boss!==cmd.boss && aliasMap[cmd.boss]!==c.boss)throw Error('安全驗證失敗：伺服器回傳首領不一致');
   if(!isArmed())throw Error('本次寫入授權已關閉');
   dockMessage('寫入中｜'+cmd.action+' '+c.boss+' '+cmd.hhmm,'working');
   const requestId=crypto.randomUUID().replace(/-/g,'');
   const res=await fetch(url+'/api/command-commit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+$('dockWriteKey').value},body:JSON.stringify({...cmd,requestId}),cache:'no-store'});
-  const j=await res.json();if(!res.ok)throw Error('寫入失敗：'+(j.error||res.status));
-  if(!j.ok)throw Error('Worker 未回報成功，請確認 LINE 王表');
+  const j=await res.json();if(!res.ok)throw Error(res.status===404||res.status===405?'Worker 不支援擊殺寫入 API；未確認資料更動':'寫入失敗：'+(j.error||res.status));
+  if(!j.ok||j.team!==TEAM)throw Error('Worker 未回報本隊成功，請先查詢王表，不要重送');
   dockMessage('成功｜'+cmd.action+' '+j.boss+' '+cmd.hhmm+'｜重生 '+new Date(j.respawnAt).toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour12:false}),'good');
   dockCommand.value='';closeSwipe();
   waiting.clear();observed.clear();waitingSignature='';renderWaiting();
