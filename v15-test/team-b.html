@@ -229,9 +229,10 @@ async function refreshBoard(manual=false){
  if(fetching)return;
  if(!manual&&(!hasConnected||document.hidden))return;const url=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;if(!/^https:\/\//.test(url)||!key){if(manual)$('status').textContent='請填入 HTTPS Worker 網址及金鑰';return}
  fetching=true;updateSyncUI(); if(manual)$('status').textContent='讀取中…';try{const r=await fetch(url+'/api/board?team='+TEAM,{headers:{Authorization:'Bearer '+key},cache:'no-store'});const j=await r.json();if(!r.ok)throw Error(j.error||'HTTP '+r.status);const states=j.states||{};const entries=Object.entries(states);const now=Date.now();
- const bosses=j.bosses||{};const fixed=j.fixedSchedules||{};const mult=j.eventActive===true?Number(j.eventConfig?.cooldownMultiplier??0.5):1;
+ const bosses=j.bosses||{};const fixed=j.fixedSchedules||{};const eventNames=new Set(j.revengeBossNames||[]);const eventEnabled=j.eventEnabled||{};const mult=j.eventActive===true?Number(j.eventConfig?.cooldownMultiplier??0.5):1;
  const rows=[];for(const [id,st] of entries){const b=bosses[id]||Object.values(bosses).find(x=>String(x?.id)===String(id));if(!b||b.enabled===false)continue;
- const cycle=Number(b.cooldownHours)*mult*3600000;let when=Number(st?.respawnAt);if(!Number.isFinite(when)||!when||!Number.isFinite(cycle)||cycle<=0)continue;
+ const eventMult=j.eventActive===true&&eventNames.has(b.name)&&eventEnabled[String(b.id??id)]!==false ? mult : 1;
+ const cycle=Number(b.cooldownHours)*eventMult*3600000;let when=Number(st?.respawnAt);if(!Number.isFinite(when)||!when||!Number.isFinite(cycle)||cycle<=0)continue;
  if(when<=now)when+=(Math.floor((now-when)/cycle)+1)*cycle;
  rows.push({id:String(id),name:b.name||names[id]||'王 '+id,when,fixed:false,respawnAt:Number(st?.respawnAt),cycle});}
  const today=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',weekday:'short'}).format(new Date());const weekday=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(today);
