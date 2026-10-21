@@ -81,11 +81,11 @@ body{height:100vh;height:100dvh;min-height:0;overflow:hidden;display:flex;flex-d
 .swipe-wrap{touch-action:pan-y}.swipe-wrap .boss-card,.swipe-wrap .wait-item{touch-action:pan-y;-webkit-user-select:none;user-select:none}
 .filters{justify-content:stretch}.filters button{flex:1 1 0;width:auto;padding:5px 6px;min-height:34px;height:34px}
 
-/* V18.5.3: team-only revenge event switch. */
+/* V18.5.6: team-only revenge event switch. */
 .event-switch{display:flex;align-items:center;gap:9px;justify-content:space-between;background:#182536;border:1px solid #4c6481;border-radius:9px;padding:8px 10px;margin:3px 0 6px;font-size:13px}
 .event-switch strong{color:#e6ce93}.event-switch .event-state{margin-left:auto;color:#b8c6d9}.event-switch button{padding:8px 12px;min-width:92px;background:#28435b}.event-switch button.on{background:#176e56;border-color:#3eaf84}.event-switch button:disabled{opacity:.5;cursor:wait}
 
-/* V18.5.3: distinguish expanded settings from the main board. */
+/* V18.5.6: distinguish expanded settings from the main board. */
 #setupPanel{background:linear-gradient(145deg,#22334b,#1b2b42 58%,#27374d);border:1px solid #6e88a8;border-radius:12px;padding:14px 13px 16px;margin:6px 0 12px;box-shadow:inset 0 1px 0 #ffffff12,0 8px 22px #050a1280}
 #setupPanel .event-switch{margin:14px 0 0;background:#263954;border:1px solid #758ca9;flex-wrap:wrap}
 #setupPanel .event-switch button{min-height:39px}
@@ -93,14 +93,14 @@ body{height:100vh;height:100dvh;min-height:0;overflow:hidden;display:flex;flex-d
 #setupPanel .notice{background:#292e39}
 </style>
 <style>
-/* V18.5.3 category palette: 4H blue; 6/8/12H purple; fixed green. Timed warnings still override. */
+/* V18.5.6 category palette: 4H blue; 6/8/12H purple; fixed green. Timed warnings still override. */
 .boss-card.field.cycle-four:not(.near):not(.danger){border-left-color:#3975cb}
 .boss-card.field.cycle-long:not(.near):not(.danger){border-left-color:#a86cf2;background:#231b33}
 .boss-card.field.cycle-long .dot{background:#b991ff}
 .swipe-wrap .boss-card.field.cycle-long:not(.near):not(.danger){background:#231b33}
 .restart-tools{display:flex;justify-content:flex-end;padding:4px 0 6px}.restart-tools button{background:#68402a;border-color:#bc7953;font-size:12px;padding:7px 11px}.restart-tools button:disabled{opacity:.5}
 </style>
-</head><body class="team-b"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜B 隊首領王表</h1><div class="subtitle">V18.5.3｜Restart・逐隻 K／T 首輪・王的逆襲</div></header><div id="setupPanel" hidden><div class="notice">群組 Key 首次驗證後，即可讀取及直接執行 K／Z／右滑擊殺。請僅在私人裝置記住 Key。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權 B 隊</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
+</head><body class="team-b"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W｜B 隊首領王表</h1><div class="subtitle">V18.5.6｜Restart・逐隻 K／T 首輪・王的逆襲</div></header><div id="setupPanel" hidden><div class="notice">群組 Key 首次驗證後，即可讀取及直接執行 K／Z／右滑擊殺。請僅在私人裝置記住 Key。</div><label>Worker 網址<input id="url" placeholder="https://xxx.workers.dev" autocomplete="off" type="url"></label><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權 B 隊</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 伺服器驗證與確認執行／T 預覽</h2>
 <p>這裡只組合指令並檢查輸入格式。按預覽不會呼叫 Worker、不會寫入 Firebase，也不會改動 LINE 時間。K 是擊殺、Z 是強制修正；T 目前僅供未來介面討論。</p>
 <div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算（未開放）</button></div>
 <div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
@@ -138,7 +138,7 @@ body{height:100vh;height:100dvh;min-height:0;overflow:hidden;display:flex;flex-d
  header.addEventListener('click',toggle);
  header.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
 })();
-// V18.5.3 Restart is intentionally separate from the K/Z dock.
+// V18.5.6 Restart is intentionally separate from the K/Z dock.
 const TEAM='B';
 const names={1:'尼羅德',2:'夫人',3:'飛龍3',4:'飛龍4',5:'卡司特王',6:'大腳',7:'黑虎',8:'德雷克',9:'莫莉提亞',10:'飛龍1',11:'飛龍2',12:'殺戮者',13:'麥肯',14:'蜥蜴王',15:'庫約',16:'烏勒庫斯',17:'奈克諾斯',18:'拉馬修',19:'庫爾託',20:'四色',21:'哈格瑪',22:'克洛林',23:'史前巨鱷',24:'二巨',25:'奧杜亞'};
 const $=id=>document.getElementById(id);const safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -463,14 +463,14 @@ renderBoard=function(){closeSwipe();originalRenderBoard();const fieldItems=[...$
 
 window.addEventListener('DOMContentLoaded',restoreSaved);
 </script><style>
-/* V18.5.3: simple one-page, row-by-row boss editor */
+/* V18.5.6: simple one-page, row-by-row boss editor */
 .boss-manager{margin:12px 0;padding:12px;background:#182337;border:1px solid #4d607b;border-radius:12px;color:#e6eef9}
 .boss-manager h3{font-size:16px;margin:8px 0}.boss-manager p{font-size:12px;color:#b7c7db;line-height:1.55}
 .boss-manager .manager-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between}
 .boss-manager button{padding:8px 10px;margin:0}.boss-manager .boss-edit-list{display:grid;gap:9px;margin-top:12px}
 .boss-manager .boss-edit-row{background:#0e1728;border:1px solid #3e516c;padding:10px;border-radius:10px}
-.boss-manager .edit-main{display:grid;grid-template-columns:minmax(100px,1.65fr) minmax(72px,.7fr) 60px;gap:8px;align-items:end}
-.boss-manager .edit-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;margin-top:7px}
+.boss-manager .edit-main{display:grid;grid-template-columns:minmax(100px,1.65fr) minmax(110px,.9fr) 60px;gap:8px;align-items:end}
+.boss-manager .edit-fields{display:grid;grid-template-columns:minmax(110px,1fr);gap:6px 10px;margin-top:7px;max-width:45%}
 .boss-manager label{margin:0;font-size:11px;font-weight:500;color:#b9c9e1;min-width:0}
 .boss-manager input:not([type=checkbox]){display:block;width:100%;min-width:0;padding:8px 7px;margin-top:3px;background:#162238;border:1px solid #516581;color:#f1f6ff;border-radius:6px;font-size:14px}
 .boss-manager .edit-name{font-size:15px;font-weight:700;color:#f4f6fb;padding:8px 1px;overflow-wrap:anywhere}
@@ -483,23 +483,70 @@ window.addEventListener('DOMContentLoaded',restoreSaved);
 .boss-manager .alias-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:6px}
 .boss-manager .fixed-row{padding:9px;border-radius:7px;background:#112b26;margin-top:6px;display:flex;justify-content:space-between;gap:8px;font-size:12px}
 .boss-manager .manager-separator{border-top:1px solid #465872;margin:16px 0 10px}
-@media(min-width:650px){.boss-manager .edit-fields{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:650px){.boss-manager .edit-fields{grid-template-columns:minmax(110px,1fr)}}
+.boss-manager .fixed-edit-card{border:1px solid #345c52;background:#102922;border-radius:9px;padding:9px;margin:7px 0}
+.boss-manager .fixed-edit-fields{display:grid;grid-template-columns:minmax(125px,1.5fr) 74px 95px;gap:8px;align-items:end}
+.boss-manager .fixed-edit-fields select{display:block;margin-top:3px;width:100%;padding:8px 4px;background:#162238;border:1px solid #516581;color:#fff;border-radius:6px}
+.boss-manager .fixed-edit-actions{display:flex;gap:12px;align-items:center;margin-top:7px}
+.boss-manager .fixed-active{display:flex;align-items:center;gap:6px}
+@media(max-width:390px){.boss-manager .fixed-edit-fields{grid-template-columns:1fr 70px}.boss-manager .fixed-edit-fields label:first-child{grid-column:span 2}}
+
+/* V18.5.6 compact dual-tab Boss settings */
+.boss-manager .boss-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 12px}
+.boss-manager .boss-tab{min-height:43px;background:#101a2c;border:1px solid #20334d;font-weight:700;color:#b8c5d9}
+.boss-manager .boss-tab.active{background:#d99400;border-color:#e7ad35;color:#171919}
+.boss-manager .boss-tab:disabled{opacity:.55;cursor:not-allowed}
+.boss-manager .boss-panel[hidden]{display:none!important}
+.boss-manager .edit-main{display:flex;align-items:center;gap:9px}
+.boss-manager .edit-name{font-size:21px;flex:1;padding:4px 0}
+.boss-manager .edit-options{margin:0;gap:5px;flex:0 1 auto}
+.boss-manager .edit-options label{font-size:12px;white-space:nowrap}
+.boss-manager .edit-save{flex:none;min-width:42px}
+.boss-manager .edit-fields{max-width:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:5px}
+.boss-manager .alias-row{margin-top:4px}
+.boss-manager .boss-edit-row{padding:10px}
+.boss-manager .edit-fields label{font-size:12px}
+.boss-manager .fixed-edit-card{background:#080f1c;border:1px solid #30435f;padding:12px;margin:10px 0}
+.boss-manager .fixed-edit-fields{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(90px,.7fr);gap:10px}
+.boss-manager .fixed-edit-actions{display:grid;grid-template-columns:1.7fr .7fr;gap:10px;margin:9px 0}
+.boss-manager .fixed-edit-actions button{font-size:14px;font-weight:700}
+.boss-manager .fixed-delete{background:#752024;border-color:#8e3337}
+.boss-manager .fixed-days{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+.boss-manager .fixed-days label{display:flex;align-items:center;gap:5px;padding:7px;border:1px solid #3e5069;border-radius:6px;font-size:12px;color:#b6c6da;background:#121c2c}
+.boss-manager .fixed-days label:has(input:checked){color:#fbd246;border-color:#d99700}
+.boss-manager .fixed-days input{margin:0}
+@media(max-width:430px){.boss-manager .edit-name{font-size:19px}.boss-manager .edit-options label{font-size:11px}.boss-manager .fixed-days label{padding:6px}}
 </style><script>
 (function(){
  const setup=document.getElementById('setupPanel');
  const ui=document.createElement('section');ui.className='boss-manager';
- ui.innerHTML='<div class="manager-head"><h3>⚙ Boss 一頁設定</h3><button type="button" id="bossLoad">重新讀取</button></div><p>所有野外王直接展開；只儲存按下「存」的那隻。共用設定：A/B 任一隊有野外王計時時，伺服器會拒絕修改。</p><p id="bossEditStatus" role="status">請先連線，再按「重新讀取」。</p><div id="bossEditList" class="boss-edit-list"></div><div class="manager-separator"></div><h3>固定王排程</h3><p>既有固定王排程列於下方，維持原設定不變；固定王編輯需要獨立的排程儲存 API，避免誤寫野外王資料。</p><div id="fixedEditList"></div><div class="manager-separator"></div><h3>特殊固定王</h3><div class="fixed-row"><span>萊茵哈德</span><span>每日 01、03…23 時；時間到切下一場，免 K/Z</span></div>';
+ ui.innerHTML=`<div class="manager-head"><h3>⚙ Boss 設定管理</h3><button type="button" id="bossLoad">重新讀取</button></div>
+ <div class="boss-tabs" role="tablist" aria-label="Boss 類別">
+  <button type="button" class="boss-tab active" id="bossTabWild" role="tab" aria-selected="true">🗺 地圖王</button>
+  <button type="button" class="boss-tab" id="bossTabFixed" role="tab" aria-selected="false">🗓 固定王</button>
+  <button type="button" class="boss-tab" disabled>預留功能 1</button><button type="button" class="boss-tab" disabled>預留功能 2</button>
+  <button type="button" class="boss-tab" disabled>預留功能 3</button><button type="button" class="boss-tab" disabled>預留功能 4</button>
+ </div><p id="bossEditStatus" role="status">請先連線，再按「重新讀取」。</p>
+ <div class="boss-panel" id="bossPanelWild"><p>地圖王共用設定：A／B 任一隊有野外王計時時，不可儲存修改。</p><div id="bossEditList" class="boss-edit-list"></div></div>
+ <div class="boss-panel" id="bossPanelFixed" hidden><p>固定王共用排程：名稱、時間與星期直接修改，按「儲存」更新整組；「刪除」移除整組。請謹慎操作。</p><div id="fixedEditList"></div><div class="manager-separator"></div><h3>特殊固定王</h3><div class="fixed-row"><span>萊茵哈德</span><span>每日 01、03…23 時；時間到切下一場，免 K/Z</span></div></div>`;
+
  setup.append(ui);
  const get=id=>document.getElementById(id), offsets={};
  [['尼羅德',0],['夫人',0],['飛龍3',40],['飛龍4',40],['卡司特王',60],['大腳',90],['黑虎',120],['德雷克',130],['莫莉提亞',150],['奧杜亞',150],['飛龍1',160],['飛龍2',160],['殺戮者',190],['麥肯',210],['蜥蜴王',220],['烏勒庫斯',270],['奈克諾斯',270],['二巨',270],['庫約',280],['拉馬修',300],['庫爾託',310],['四色',330],['哈格瑪',340],['克洛林',360],['史前巨鱷',370]].forEach(([n,x])=>offsets[n]=x);
  const excluded=new Set(['奧杜亞','四色','克洛林']);
+ const wildTab=document.getElementById('bossTabWild'),fixedTab=document.getElementById('bossTabFixed');
+ function showBossTab(fixed){document.getElementById('bossPanelWild').hidden=fixed;document.getElementById('bossPanelFixed').hidden=!fixed;wildTab.classList.toggle('active',!fixed);fixedTab.classList.toggle('active',fixed);wildTab.setAttribute('aria-selected',String(!fixed));fixedTab.setAttribute('aria-selected',String(fixed))}
+ wildTab.onclick=()=>showBossTab(false);fixedTab.onclick=()=>showBossTab(true);
+
  let data={};
  const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n};
  function field(parent,title,value,type='number',name=''){const l=el('label','',title),i=el('input');i.type=type;i.value=value??'';i.dataset.field=name;i.autocomplete='off';if(type==='number'){i.min='0';i.step='any'}else i.maxLength=32;l.append(i);parent.append(l);return i}
- function row(id,b){const wrap=el('article','boss-edit-row'),top=el('div','edit-main');top.append(el('div','edit-name',b.name||id));field(top,'重生 (小時)',b.cooldownHours,'number','cooldownHours');const save=el('button','edit-save','存');save.type='button';top.append(save);wrap.append(top);
- const defaults=offsets[b.name]??0,participates=typeof b.participatesInEvent==='boolean'?b.participatesInEvent:!excluded.has(b.name);
- const f=el('div','edit-fields');field(f,'正常首輪 (分)',b.spawnOffsetMinutes??defaults,'number','spawnOffsetMinutes');wrap.append(f);
- const options=el('div','edit-options');const label=el('label','', '參與逆襲 ');const toggle=el('input');toggle.type='checkbox';toggle.checked=participates;toggle.dataset.field='participatesInEvent';label.prepend(toggle);options.append(label);wrap.append(options);
+ function row(id,b){
+ const wrap=el('article','boss-edit-row'),top=el('div','edit-main');top.append(el('div','edit-name',b.name||id));
+ const participates=typeof b.participatesInEvent==='boolean'?b.participatesInEvent:!excluded.has(b.name);
+ const options=el('div','edit-options'),label=el('label','','參與逆襲'),toggle=el('input');toggle.type='checkbox';toggle.checked=participates;toggle.dataset.field='participatesInEvent';label.prepend(toggle);options.append(label);top.append(options);
+ const save=el('button','edit-save','存');save.type='button';top.append(save);wrap.append(top);
+ const f=el('div','edit-fields');field(f,'重生（小時）',b.cooldownHours,'number','cooldownHours');field(f,'首輪時距（分鐘）',b.spawnOffsetMinutes??offsets[b.name]??0,'number','spawnOffsetMinutes');wrap.append(f);
  const aliases=el('div','alias-row');for(let i=0;i<3;i++)field(aliases,'別名 '+(i+1),b.aliases?.[i]??'','text','alias'+i);wrap.append(aliases);
  const result=el('span','row-result','');result.setAttribute('role','status');wrap.append(result);
  save.onclick=async()=>{const value=name=>wrap.querySelector('[data-field="'+name+'"]')?.value.trim();const numeric=name=>{const s=value(name);return s===''?NaN:Number(s)};const cfg={cooldownHours:numeric('cooldownHours'),spawnOffsetMinutes:numeric('spawnOffsetMinutes'),participatesInEvent:toggle.checked,aliases:[0,1,2].map(i=>value('alias'+i)).concat(Array.isArray(b.aliases)?b.aliases.slice(3):[])};
@@ -509,7 +556,20 @@ window.addEventListener('DOMContentLoaded',restoreSaved);
  };return wrap}
  get('bossLoad').onclick=async()=>{const url=get('url').value.trim().replace(/\/$/,'');if(!/^https:\/\//.test(url)||!get('key').value){get('bossEditStatus').textContent='請先填 Worker 網址及 Key';return}
  get('bossEditStatus').textContent='讀取中…';try{const r=await fetch(url+'/api/board?team='+TEAM,{headers:{Authorization:'Bearer '+get('key').value},cache:'no-store'});const j=await r.json();if(!r.ok)throw Error(j.error||String(r.status));data=j.bosses||{};const list=get('bossEditList');list.replaceChildren();const entries=Object.entries(data).filter(([id,b])=>b&&b.enabled!==false).sort((a,b)=>(offsets[a[1].name]??999)-(offsets[b[1].name]??999));for(const [id,b] of entries)list.append(row(id,b));get('bossEditStatus').textContent='已載入 '+entries.length+' 隻野外王；可逐隻編輯儲存。';
- const fixed=get('fixedEditList');fixed.replaceChildren();const schedules=Object.values(j.fixedSchedules||{}).filter(x=>x&&x.enabled!==false).sort((a,b)=>(Number(a.weekday)-Number(b.weekday))||String(a.time).localeCompare(String(b.time)));const days=['日','一','二','三','四','五','六'];for(const x of schedules){fixed.append(el('div','fixed-row','週'+(days[Number(x.weekday)]??'?')+' '+(x.time||'--:--')+'　'+(x.bossName||'固定王')))}if(!schedules.length)fixed.append(el('p','', '目前沒有已啟用的固定王排程'));
+ const fixed=get('fixedEditList');fixed.replaceChildren();const rawSchedules=Object.entries(j.fixedSchedules||{}).filter(([id,x])=>x&&typeof x==='object');
+ const grouped=new Map();for(const [id,x] of rawSchedules){const groupKey=JSON.stringify([x.bossName||'',x.time||'']);if(!grouped.has(groupKey))grouped.set(groupKey,{name:x.bossName||'',time:x.time||'',ids:[],weekdays:new Set()});const g=grouped.get(groupKey);g.ids.push(id);if(x.enabled!==false&&Number.isInteger(Number(x.weekday)))g.weekdays.add(Number(x.weekday));}
+ const days=['日','一','二','三','四','五','六'];
+ for(const g of [...grouped.values()].sort((a,b)=>a.time.localeCompare(b.time)||a.name.localeCompare(b.name))){
+  const card=el('article','fixed-edit-card'),f=el('div','fixed-edit-fields');const n=field(f,'固定王名稱',g.name,'text','fixedName');n.maxLength=60;const ti=field(f,'時間 HH:MM',g.time,'text','fixedTime');ti.maxLength=5;ti.placeholder='15:00';card.append(f);
+  const actions=el('div','fixed-edit-actions'),save=el('button','edit-save','儲存'),del=el('button','fixed-delete','刪除');save.type=del.type='button';actions.append(save,del);card.append(actions);
+  const daysBox=el('div','fixed-days'),checks=[];for(let i=1;i<=7;i++){const d=i%7,l=el('label'),input=el('input');input.type='checkbox';input.checked=g.weekdays.has(d);l.append(input,document.createTextNode('週'+days[d]));daysBox.append(l);checks.push({day:d,input})}card.append(daysBox);
+  const state=el('span','row-result','');state.setAttribute('role','status');card.append(state);fixed.append(card);
+  async function commit(action){const config={bossName:n.value.trim(),time:ti.value.trim(),weekdays:checks.filter(x=>x.input.checked).map(x=>x.day)};if(action==='save'&&(!config.bossName||!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(config.time)||!config.weekdays.length)){state.textContent='請填寫名稱、時間，並至少勾選一天';return}
+   if(!confirm(action==='delete'?'確定刪除「'+g.name+'」所有相關星期排程？此操作無法復原。':'儲存「'+g.name+'」的共用星期排程？A／B 隊都會同步更改。'))return;
+   save.disabled=del.disabled=true;state.textContent='儲存中…';try{const r=await fetch(get('url').value.trim().replace(/\/$/,'')+'/api/fixed-group',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+get('key').value},body:JSON.stringify({team:TEAM,action,ids:g.ids,config})});const j=await r.json();if(!r.ok)throw Error(j.error||String(r.status));state.textContent='✓ 已更新；重新讀取中';await get('bossLoad').onclick();showBossTab(true)}catch(e){state.textContent='操作失敗：'+e.message}finally{save.disabled=del.disabled=false}}
+  save.onclick=()=>commit('save');del.onclick=()=>commit('delete');
+ }
+ if(!grouped.size)fixed.append(el('p','', '目前沒有固定王排程'));
  }catch(e){get('bossEditStatus').textContent='讀取失敗：'+e.message}};
 })();
 </script></body></html>
