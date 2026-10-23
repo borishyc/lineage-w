@@ -10,6 +10,7 @@ messaging.onBackgroundMessage(payload=>{
  const tag=String(data.tag||'lineage-w-alert');
  const team=String(data.team||'');
  const url=team==='A'?'./team-a.html':team==='B'?'./team-b.html':'./';
+ self.clients.matchAll({type:'window',includeUncontrolled:true}).then(clients=>{for(const client of clients)client.postMessage({type:'LW_FCM_BACKGROUND',team});}).catch(()=>{});
  return self.registration.showNotification(title,{body,tag,icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',data:{url}});
 });
 self.addEventListener('notificationclick',event=>{

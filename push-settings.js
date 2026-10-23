@@ -12,13 +12,36 @@
  <label class="push-label">通知 Worker 網址<input id="pushWorkerUrl" type="url" placeholder="https://你的通知Worker.workers.dev" autocomplete="off"></label>
  <fieldset class="push-fieldset"><legend>出生前提醒</legend><label><input type="checkbox" name="pushMinutes" value="1"> 1 分鐘</label><label><input type="checkbox" name="pushMinutes" value="3" checked> 3 分鐘</label><label><input type="checkbox" name="pushMinutes" value="5" checked> 5 分鐘</label><label><input type="checkbox" name="pushMinutes" value="10"> 10 分鐘</label></fieldset>
  <fieldset class="push-fieldset"><legend>首領類型</legend><label><input type="checkbox" id="pushField" checked> 地圖王</label><label><input type="checkbox" id="pushFixed" checked> 固定王</label><label><input type="checkbox" id="pushSpecial" checked> 萊茵哈德</label></fieldset>
- <div class="push-actions"><button type="button" id="pushEnable" class="primary">啟用／更新本隊通知</button><button type="button" id="pushDisable">取消本隊訂閱</button><button type="button" id="pushSelfTest">🔔 測試這支手機</button></div>
- <p id="pushStatus" role="status" aria-live="polite">尚未註冊。需 HTTPS、瀏覽器允許通知及支援 FCM。</p>
+ <div class="push-actions"><button type="button" id="pushEnable" class="primary">啟用／更新本隊通知</button><button type="button" id="pushDisable">取消本隊訂閱</button><button type="button" id="pushSelfTest">🔔 測試這支手機（FCM）</button><button type="button" id="pushLocalTest">📱 測試本機通知</button></div>
+ <p id="pushDiagnostic" role="status" aria-live="polite">診斷尚未開始。</p><p id="pushStatus" role="status" aria-live="polite">尚未註冊。需 HTTPS、瀏覽器允許通知及支援 FCM。</p>
  <p class="push-note">iPhone 請先將網站加入主畫面，再從主畫面開啟。若 A、B 都要收到通知，需分別到兩隊頁面授權訂閱。</p>`;
  container.parentNode.insertBefore(panel,container.nextSibling);
  const css=document.createElement('style');css.textContent=`#bossPanelPush{padding:14px 4px}.push-label{display:block;margin:12px 0;font-size:14px}.push-label input{display:block;width:100%;margin-top:7px;padding:11px;border-radius:8px;background:#111b2b;color:white;border:1px solid #52617a}.push-fieldset{border:1px solid #45516b;border-radius:10px;padding:10px;margin:12px 0}.push-fieldset label{display:inline-flex;gap:5px;align-items:center;margin:8px 12px 8px 0;font-size:13px}.push-actions{display:flex;gap:10px;flex-wrap:wrap}.push-actions button{padding:12px;border-radius:8px;background:#45516b;color:white}.push-actions .primary{background:#936b31}.push-note{color:#aeb8c7;font-size:12px;line-height:1.65}#pushStatus{margin:12px 0;color:#e9bb6c;overflow-wrap:anywhere}`;document.head.append(css);
  $('pushWorkerUrl').value=localStorage.getItem(storage)||'';
  const status=message=>$('pushStatus').textContent=message;
+ const diag=message=>$('pushDiagnostic').textContent='['+new Date().toLocaleTimeString('zh-TW',{hour12:false})+'] '+message;
+ // Only report reception for this team. No token or credentials are displayed.
+ if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{
+  if(e.data?.type==='LW_FCM_BACKGROUND'&&e.data.team===TEAM)diag('背景接收程式已處理【'+TEAM+'隊】FCM 訊息');
+ });
+ let foregroundHooked=false;
+ function attachForegroundDiagnostic(){
+  if(foregroundHooked||typeof firebase==='undefined'||!firebase.messaging)return;
+  try{firebase.messaging().onMessage(payload=>{
+   const data=payload?.data||{};
+   if(String(data.team||'')===TEAM)diag('網頁前景已收到【'+TEAM+'隊】FCM 訊息（不保證系統橫幅）');
+  });foregroundHooked=true;}catch(e){diag('前景接收診斷不可用：'+e.message)}
+ }
+ async function localTest(){
+  try{
+   requireSupport();
+   if(Notification.permission!=='granted')throw Error('請先允許本機通知');
+   const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js',{scope:'./fcm-push/'});
+   await reg.showNotification('【'+TEAM+'隊】本機通知測試',{body:'這是手機直接顯示的通知，沒有經過 Cloudflare 或 Firebase。',tag:'lw-'+TEAM+'-local-'+Date.now(),icon:'./icons/icon-192.png'});
+   diag('已要求手機顯示【'+TEAM+'隊】本機通知；請查看通知中心或鎖定畫面');
+  }catch(e){diag('本機通知失敗：'+e.message)}
+ }
+
  for(const other of container.querySelectorAll('button:not(#bossTabPush)'))other.addEventListener('click',()=>{panel.hidden=true;tab.classList.remove('active');tab.setAttribute('aria-selected','false');});
  tab.addEventListener('click',()=>{container.querySelector('#bossTabConnection')?.click();for(const p of document.querySelectorAll('.boss-manager .boss-panel'))p.hidden=true;container.querySelectorAll('button').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-selected','false')});panel.hidden=false;tab.classList.add('active');tab.setAttribute('aria-selected','true')});
  const verify=()=>{
@@ -29,7 +52,7 @@
   localStorage.setItem(storage,url);return{url,minutes,kinds,key:$('key').value};
  };
  function requireSupport(){if(!window.isSecureContext||!('Notification' in window)||!('serviceWorker' in navigator))throw Error('需要 HTTPS 及支援背景通知的瀏覽器；iPhone 請用已加入主畫面的 PWA');if(typeof firebase==='undefined'||!firebase.messaging)throw Error('FCM 函式庫尚未載入，請檢查網路連線');}
- async function getToken(){requireSupport();if(!(await firebase.messaging.isSupported()))throw Error('此裝置不支援 Firebase Messaging');
+ async function getToken(){requireSupport();attachForegroundDiagnostic();if(!(await firebase.messaging.isSupported()))throw Error('此裝置不支援 Firebase Messaging');
   const registration=await navigator.serviceWorker.register('./firebase-messaging-sw.js',{scope:'./fcm-push/'});
   const app=firebase.apps.find(a=>a.name==='[DEFAULT]')||firebase.initializeApp({"apiKey":"AIzaSyDBeZoh8YPH1laR9uK3mnbb0jAvBUxqFzQ","authDomain":"lwopendata.firebaseapp.com","projectId":"lwopendata","messagingSenderId":"133221637621","appId":"1:133221637621:web:623bf5e1da065071f194bc"});
   const token=await firebase.messaging(app).getToken({vapidKey:'BDIjrDIPJHapfeR1NXp3pRvXu1txkDn2OX3IlgTc4AzQmvGXP87N3wATHRK5JSbibdKVBLw1JOfiS3w30pgPa_0',serviceWorkerRegistration:registration});if(!token)throw Error('Firebase 未傳回裝置 Token');return token;
@@ -45,7 +68,7 @@
  }catch(e){status('操作失敗：'+e.message)}finally{busy=false;$('pushEnable').disabled=$('pushDisable').disabled=false}}
  async function selfTest(){
   if(busy)return;busy=true;
-  const controls=[$('pushEnable'),$('pushDisable'),$('pushSelfTest')];controls.forEach(x=>x.disabled=true);
+  const controls=[$('pushEnable'),$('pushDisable'),$('pushSelfTest'),$('pushLocalTest')];controls.forEach(x=>x.disabled=true);
   try{
    const values=verify();requireSupport();
    if(Notification.permission!=='granted')throw Error('請先點「啟用／更新本隊通知」並允許通知');
@@ -62,6 +85,6 @@
   }catch(e){status('測試失敗：'+e.message)}finally{busy=false;controls.forEach(x=>x.disabled=false)}
  }
  $('pushEnable').onclick=()=>act(false);$('pushDisable').onclick=()=>act(true);
- $('pushSelfTest').onclick=selfTest;
+ $('pushSelfTest').onclick=selfTest; $('pushLocalTest').onclick=localTest;
  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
