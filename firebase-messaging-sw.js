@@ -1,4 +1,4 @@
-/* V19.0.2 Firebase background FCM receiver; do not put secrets here. */
+/* V19.0.7 Firebase background FCM receiver; no credentials. */
 importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js');
 firebase.initializeApp({"apiKey":"AIzaSyDBeZoh8YPH1laR9uK3mnbb0jAvBUxqFzQ","authDomain":"lwopendata.firebaseapp.com","projectId":"lwopendata","messagingSenderId":"133221637621","appId":"1:133221637621:web:623bf5e1da065071f194bc"});
@@ -9,7 +9,8 @@ messaging.onBackgroundMessage(payload=>{
  const body=String(data.body||'');
  const tag=String(data.tag||'lineage-w-alert');
  const team=String(data.team||'');
- const url=team==='A'?'./team-a.html':team==='B'?'./team-b.html':'./';
+ if(team!=='A'&&team!=='B')return;
+ const url=team==='A'?'../team-a.html':'../team-b.html';
  self.clients.matchAll({type:'window',includeUncontrolled:true}).then(clients=>{for(const client of clients)client.postMessage({type:'LW_FCM_BACKGROUND',team});}).catch(()=>{});
  return self.registration.showNotification(title,{body,tag,icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',data:{url}});
 });

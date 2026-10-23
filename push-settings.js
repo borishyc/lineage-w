@@ -20,7 +20,7 @@
  $('pushWorkerUrl').value=localStorage.getItem(storage)||'';
  const status=message=>$('pushStatus').textContent=message;
  const diag=message=>$('pushDiagnostic').textContent='['+new Date().toLocaleTimeString('zh-TW',{hour12:false})+'] '+message;
- // Only report reception for this team. No token or credentials are displayed.
+ // Only handle FCM received by this team. Never display cross-team alerts.
  if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{
   if(e.data?.type==='LW_FCM_BACKGROUND'&&e.data.team===TEAM)diag('背景接收程式已處理【'+TEAM+'隊】FCM 訊息');
  });
@@ -29,7 +29,20 @@
   if(foregroundHooked||typeof firebase==='undefined'||!firebase.messaging)return;
   try{firebase.messaging().onMessage(payload=>{
    const data=payload?.data||{};
-   if(String(data.team||'')===TEAM)diag('網頁前景已收到【'+TEAM+'隊】FCM 訊息（不保證系統橫幅）');
+   if(String(data.team||'')!==TEAM)return;
+   diag('網頁前景已收到【'+TEAM+'隊】FCM；正在顯示系統通知');
+   // Data-only FCM does not create a system notification while this PWA is foregrounded.
+   // The background handler in firebase-messaging-sw.js handles background delivery.
+   if(Notification.permission!=='granted'){diag('已收到 FCM，但系統通知權限未允許');return;}
+   navigator.serviceWorker.getRegistration('./fcm-push/').then(async reg=>{
+    if(!reg)reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js',{scope:'./fcm-push/'});
+    const title=String(data.title||'【'+TEAM+'隊】天堂W 首領提醒');
+    const body=String(data.body||'');
+    const tag=String(data.tag||'lw-'+TEAM+'-foreground-'+Date.now());
+    const url='./team-'+TEAM.toLowerCase()+'.html';
+    await reg.showNotification(title,{body,tag,icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',data:{url}});
+    diag('【'+TEAM+'隊】前景 FCM 已交給系統通知中心');
+   }).catch(e=>diag('FCM 已收到，但系統顯示失敗：'+e.message));
   });foregroundHooked=true;}catch(e){diag('前景接收診斷不可用：'+e.message)}
  }
  async function localTest(){
