@@ -1,0 +1,805 @@
+<!doctype html><html lang="zh-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>天堂W 首領擊殺榜</title><style>
+:root{color-scheme:dark;--line:#34445a;--gold:#e9be70;--muted:#a5b4c8;--bg:#0d1219;--panel:#182334;--tone:#3975cb}
+*{box-sizing:border-box}body{background:var(--bg);color:#f3f5fa;font:15px system-ui,-apple-system,'Noto Sans TC',sans-serif;max-width:880px;margin:auto;padding:12px}
+header{background:linear-gradient(120deg,#27354a,#132033);border:1px solid #526075;border-radius:12px;padding:18px 16px;margin-bottom:12px}body.team-b{--tone:#2aa992}body.team-b header{background:linear-gradient(120deg,#214b43,#142a35)}h1{margin:0 0 5px;color:var(--gold);font-size:25px;letter-spacing:1px}.subtitle{color:#b3c4dc;font-size:13px}
+.notice{color:#e3c08c;border:1px solid #74603e;padding:10px;border-radius:7px;font-size:12px;margin-bottom:14px}label{display:block;color:#dae3ee;font-weight:600;margin:9px 0;font-size:13px}input{display:block;width:100%;padding:11px;border-radius:7px;background:#202c3b;border:1px solid #55657a;color:#fff;font-size:15px;margin-top:5px}button{cursor:pointer;border:1px solid #63758f;background:#334b69;color:#f5f7ff;border-radius:7px;padding:10px 13px;font-size:14px;font-weight:600}button:active{transform:translateY(1px)}.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:13px 0}.actions .primary{background:var(--tone);border-color:var(--tone)}.muted{color:var(--muted);font-size:12px;margin:5px 0 12px}.filters{display:flex;gap:7px;padding:12px 0;position:sticky;top:0;background:var(--bg);z-index:2}.filters button{flex:1;background:#202b3a;padding:9px 6px;font-size:13px}.filters button.active{background:var(--tone);border-color:var(--tone)}.stats{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:8px 2px;color:#b7c4d6;font-size:12px}
+.boss-card{background:var(--panel);border:1px solid #39485c;border-left:5px solid #3975cb;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;margin:8px 0;min-height:70px}.boss-card.fixed{border-left-color:#3caf7f;background:#152d2a}.boss-card.near{border-color:#e2b84d;background:#332d1d}.boss-card.danger{border-color:#e45454;animation:alert 1s infinite}.name{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}.name strong{font-size:18px}.name small{color:#93a8bf;font-size:11px;width:100%;padding-left:16px}.dot{width:8px;height:8px;border-radius:50%;background:#5594ef;flex:none}.fixed .dot{background:#52cf9a}.time-area{text-align:right;flex-shrink:0}.birth{font-size:12px;color:#becce2;font-variant-numeric:tabular-nums}.countdown{font-size:19px;font-weight:800;color:#efcd79;font-variant-numeric:tabular-nums;margin-top:4px}.danger .countdown{color:#ff6767}.near .countdown{color:#ffd458}.empty{text-align:center;padding:30px;color:#a8b6cb}details{margin:18px 0;color:#a4b5ce}pre{overflow-x:auto;white-space:pre-wrap;font-size:11px} @keyframes alert{50%{box-shadow:0 0 14px #a94545}}
+@media(max-width:480px){body{padding:8px}header{padding:14px}h1{font-size:21px}.boss-card{padding:10px 8px}.name strong{font-size:16px}.birth{font-size:11px}.countdown{font-size:17px}}
+ .sync-strip{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;border:1px solid #34445a;border-radius:9px;background:#141e2b;padding:9px 11px;margin-bottom:9px;font-size:12px;color:#bbcee6}.sync-dot{width:9px;height:9px;border-radius:50%;background:#78889c;flex:none}.sync-dot.ok{background:#47c998}.sync-dot.wait{background:#ecc160}.sync-dot.error{background:#f16d70}.sync-dot.paused{background:#8294a9}.sync-strip strong{color:#e7f0fc}.sync-strip .right{margin-left:auto;color:#aac0db;font-variant-numeric:tabular-nums}.filters button{min-height:44px}.boss-card{transition:border-color .2s,background .2s}@media(max-width:480px){.sync-strip{font-size:11px}.sync-strip .right{margin-left:0;width:100%}}@media(prefers-reduced-motion:reduce){.boss-card.danger{animation:none}}
+
+/* V15.10 command preview: deliberately local-only, no write endpoint. */
+.cmd-panel{margin:14px 0;border:1px solid #425876;background:#131f2e;border-radius:10px;padding:14px}
+.cmd-panel h2{font-size:17px;color:#e9be70;margin:0 0 7px}.cmd-panel p{font-size:12px;color:#bacbe0;line-height:1.6}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cmd-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.cmd-actions button{flex:1;min-height:45px}.cmd-actions button.selected{background:var(--tone);border-color:var(--tone)}
+.cmd-output{border:1px solid #566c86;border-radius:8px;padding:12px;background:#0c1725;min-height:72px;white-space:pre-wrap;line-height:1.6;font-size:13px;color:#d7e6ff}
+.cmd-output.warn{border-color:#a77b43;color:#ffe0a1}.cmd-label{font-size:12px;color:#e4c68e;font-weight:650}
+@media(max-width:480px){.cmd-grid{grid-template-columns:1fr}.cmd-panel{padding:11px}}
+
+/* V15.10 local connection settings */
+.remember-box{border:1px solid #34445a;border-radius:9px;background:#131e2c;padding:10px 12px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:10px}.remember-toggle{display:flex;align-items:center;gap:8px;margin:0;font-size:13px;cursor:pointer}.remember-toggle input{width:18px;height:18px;margin:0;accent-color:var(--tone)}.remember-box button{font-size:12px;padding:8px 10px}.remember-box .muted{margin:0}.remember-hint{color:#a5b4c8;font-size:11px;line-height:1.5;margin:0;flex-basis:100%}
+
+/* V15.11 safe field-boss shortcut: click a field boss to fill the local preview only. */
+.boss-card.field.pickable{cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.boss-card.field.pickable:hover,.boss-card.field.pickable:focus-visible{border-color:#83adf2;box-shadow:0 0 0 2px rgba(93,154,232,.3);outline:none}
+.pick-hint{font-size:12px;color:#bad4fb;margin:4px 0 10px}
+.write-zone{margin:12px 0;padding:12px;border:1px solid #9b7541;border-radius:9px;background:#1f2531}.write-zone label{display:block;margin-bottom:8px}.write-check{display:flex!important;gap:8px;align-items:center;font-size:13px}.write-check input{width:18px;height:18px;flex:none}.write-zone button:disabled{opacity:.45;cursor:not-allowed}
+
+/* V16.2 layout confirmation only: bottom dock and swipe preview. */
+body{padding-bottom:118px} .cmd-panel,.pick-hint{display:none!important}
+.command-dock{position:fixed;bottom:0;left:0;right:0;z-index:1000;background:#111b2c;border-top:1px solid #3b4c63;box-shadow:0 -10px 28px #0008;padding:8px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));}
+.dock-inner{max-width:880px;margin:auto}.dock-log{height:22px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:12px;line-height:22px;color:#aebfd7}.dock-log.good{color:#61d9a6}.dock-log.bad{color:#ff8787}.dock-log.working{color:#ffcd69}
+.dock-row{display:flex;align-items:center;gap:8px}.dock-row input{flex:1;min-width:0;margin:0;height:44px;border-radius:22px;background:#182437;padding:9px 14px;font-size:15px}.dock-row button{height:44px;border-radius:12px;background:var(--tone);border-color:var(--tone);flex:none}
+.swipe-wrap{position:relative;overflow:hidden;border-radius:8px;margin:8px 0;touch-action:pan-y}.swipe-wrap .boss-card{margin:0;position:relative;z-index:1;width:100%;background:var(--panel);transition:transform .18s ease;touch-action:pan-y}.swipe-wrap .boss-card.fixed{background:#152d2a}.swipe-wrap .boss-card.near{background:#332d1d}.swipe-wrap .boss-card.swiped{transform:translateX(86px)}.swipe-kill{position:absolute;left:0;top:0;bottom:0;width:86px;display:flex;align-items:center;justify-content:center;background:#b91c1c;color:white;border:0;border-radius:8px 0 0 8px;font-size:15px;font-weight:750}.swipe-kill:focus-visible{outline:2px solid white;outline-offset:-3px}
+@media(max-width:480px){body{padding-bottom:120px}.command-dock{padding-left:8px;padding-right:8px}.dock-row input{font-size:14px}}
+
+/* V16.3 temporary pending-kill shelf: display-only; no Firebase writes. */
+body{padding-bottom:calc(var(--dock-height,130px) + 20px)!important}
+.wait-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 5px;color:#f0ca7e;font-size:12px}
+.wait-demo{width:auto;padding:3px 7px;margin-left:auto;background:#283b55;border:1px solid #547092;color:#d9e9ff;border-radius:6px;font-size:11px}.wait-header label{display:flex;align-items:center;gap:6px;margin:0;font-size:11px;font-weight:500;color:#b9cbe0}
+.wait-header select{width:auto;min-width:78px;padding:3px 6px;margin:0;background:#1e2d40;color:#fff;border:1px solid #52647d;border-radius:6px;font-size:12px}
+.waiting-area{max-height:166px;overflow-y:auto;overscroll-behavior:contain;margin-bottom:5px}
+.wait-empty{font-size:11px;color:#8ea1b9;height:18px;line-height:18px}
+.wait-item{display:flex;align-items:center;gap:8px;background:#302919;border:1px solid #9c762d;border-radius:8px;padding:6px 8px;margin:4px 0;min-height:45px}
+.wait-name{flex:1;min-width:0}.wait-name strong{font-size:13px}.wait-name small{display:block;font-size:10px;color:#eecf88;margin-top:2px}
+.wait-kill{background:#17805a;border:1px solid #2aa475;color:#fff;border-radius:7px;min-height:33px;padding:4px 11px;font-weight:700;flex:none}
+.waiting-area[hidden]{display:none}
+
+/* V16.5: waiting row slides right to reveal the same left-hand red kill action. */
+.waiting-area .swipe-wrap{margin:4px 0;border-radius:8px}
+.waiting-area .swipe-wrap .wait-item{position:relative;z-index:1;width:100%;margin:0;min-height:45px;transition:transform .18s ease;background:#302919;touch-action:pan-y}
+.waiting-area .swipe-wrap .wait-item.swiped{transform:translateX(86px)}
+.waiting-area .swipe-kill{background:#b91c1c;border:0;color:#fff}
+/* V16.4 session-only write arming. */
+.write-arming{margin:12px 0;padding:10px 12px;background:#162235;border:1px solid #607590;border-radius:9px}
+.write-arming .remember-toggle{margin:10px 0}.write-arming input[type=password]{margin-top:6px}
+.command-dock.busy .dock-row button,.command-dock.busy .swipe-kill,.command-dock.busy .wait-kill{opacity:.5;pointer-events:none}
+/* V16.3.1 header toggles configuration panel; board and bottom dock remain visible. */
+header.settings-toggle{cursor:pointer;position:relative;padding-right:47px;user-select:none}
+header.settings-toggle:focus-visible{outline:2px solid #88bafb;outline-offset:3px}
+header.settings-toggle::after{content:'⚙';position:absolute;right:17px;top:19px;font-size:22px;color:#c5d6ec;opacity:.85}
+header.settings-toggle[aria-expanded="true"]::after{content:'✕'}
+#setupPanel[hidden]{display:none!important}
+#setupPanel{padding:1px 0 8px;margin-bottom:6px}
+#setupPanel details{margin:10px 0}
+
+/* V16.6: three-zone phone layout; only the Boss list scrolls. */
+html{height:100%;overflow:hidden}
+body{height:100vh;height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding-bottom:0!important}
+.board-top{flex:0 0 auto;min-height:0;max-height:calc(100dvh - var(--dock-height,90px) - 90px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.board-top header{margin-bottom:7px}
+.board-top .filters{position:relative;top:auto;z-index:1;padding:5px 0}
+.board-top .stats{padding:5px 2px}
+.board-waiting{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 0 5px}
+.board-waiting .waiting-area{max-height:min(166px,25dvh);overflow-y:auto;margin:0}
+.board-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding-bottom:8px}
+.command-dock{flex:none}
+@media(max-width:480px){.board-top header{padding:10px 14px}.board-top h1{font-size:20px}.board-top .subtitle{font-size:11px}.board-waiting{padding:4px 0}}
+/* V17.1: swipe cards independently while preserving vertical scrolling. */
+.swipe-wrap .boss-card,.waiting-area .swipe-wrap .wait-item{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.swipe-wrap .swipe-kill{z-index:0}
+.swipe-wrap .boss-card,.waiting-area .swipe-wrap .wait-item{z-index:1}
+.swipe-wrap{touch-action:pan-y}.swipe-wrap .boss-card,.swipe-wrap .wait-item{touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.filters{justify-content:stretch}.filters button{flex:1 1 0;width:auto;padding:5px 6px;min-height:34px;height:34px}
+
+/* V19.0.2: team-only revenge event switch. */
+.event-switch{display:flex;align-items:center;gap:9px;justify-content:space-between;background:#182536;border:1px solid #4c6481;border-radius:9px;padding:8px 10px;margin:3px 0 6px;font-size:13px}
+.event-switch strong{color:#e6ce93}.event-switch .event-state{margin-left:auto;color:#b8c6d9}.event-switch button{padding:8px 12px;min-width:92px;background:#28435b}.event-switch button.on{background:#176e56;border-color:#3eaf84}.event-switch button:disabled{opacity:.5;cursor:wait}
+
+/* V19.0.2: distinguish expanded settings from the main board. */
+#setupPanel{background:linear-gradient(145deg,#22334b,#1b2b42 58%,#27374d);border:1px solid #6e88a8;border-radius:12px;padding:14px 13px 16px;margin:6px 0 12px;box-shadow:inset 0 1px 0 #ffffff12,0 8px 22px #050a1280}
+#setupPanel .event-switch{margin:14px 0 0;background:#263954;border:1px solid #758ca9;flex-wrap:wrap}
+#setupPanel .event-switch button{min-height:39px}
+#setupPanel input{background:#142337;border-color:#7a8da8}
+#setupPanel .notice{background:#292e39}
+</style>
+<style>
+/* V19.0.2 category palette: 4H blue; 6/8/12H purple; fixed green. Timed warnings still override. */
+.boss-card.field.cycle-four:not(.near):not(.danger){border-left-color:#3975cb}
+.boss-card.field.cycle-long:not(.near):not(.danger){border-left-color:#a86cf2;background:#231b33}
+.boss-card.field.cycle-long .dot{background:#b991ff}
+.swipe-wrap .boss-card.field.cycle-long:not(.near):not(.danger){background:#231b33}
+.restart-tools{display:flex;justify-content:flex-end;padding:4px 0 6px}.restart-tools button{background:#68402a;border-color:#bc7953;font-size:12px;padding:7px 11px}.restart-tools button:disabled{opacity:.5}
+
+/* V19.0.2: 萊茵哈德 only; preserve near/danger alerts */
+.boss-card.clock-only:not(.near):not(.danger){border-left-color:#F4B942;background:#332713}
+.boss-card.clock-only .dot{background:#F4B942}
+.swipe-wrap .boss-card.clock-only:not(.near):not(.danger){background:#332713}
+</style>
+<link rel="manifest" href="./manifest-delta.webmanifest"><meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="apple-touch-icon" href="./icons/apple-touch-icon-delta.png?v=2060"><script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script><script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
+<style>
+/* V19.0.5: reserve space for the FIXED command dock inside the independent boss scroller.
+   The page itself is intentionally scroll-locked; the boss list must remain scrollable. */
+html,body{overscroll-behavior-y:none}
+.board-scroll{
+  flex:1 1 0%;
+  min-height:0;
+  margin-bottom:0;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+  overscroll-behavior-y:contain;
+}
+/* When the keyboard opens, the command bar is raised; reserve its new position too. */
+@media(max-width:760px){
+ .board-scroll{margin-bottom:0}
+}
+</style>
+<style>
+/* V19.1.0.2: dock occupies flex space; do not reserve its height twice in board-scroll. */
+/* V19.1.0: dock contains both waiting list and input; board scroll never overlaps. */
+.command-dock{position:relative!important;bottom:auto!important;inset:auto!important;width:100%;z-index:1000;max-height:min(49dvh,345px);overflow:hidden}
+.command-dock .dock-inner{display:flex;flex-direction:column;max-height:min(49dvh,345px);min-height:0}
+.command-dock .board-waiting{flex:0 1 auto;min-height:0;overflow:hidden;border-top:0}
+.command-dock .waiting-area{max-height:min(22dvh,150px);min-height:0;overflow-y:auto}
+.command-dock .dock-log,.command-dock .dock-row{flex-shrink:0}
+.board-scroll{min-height:0;flex:1 1 auto!important;overflow-y:auto!important}
+@media(max-width:760px){.dock-row input,input:not([type=checkbox]):not([type=radio]){font-size:16px!important}}
+
+/* V19.1.0.3: settings-only mode, A/B user interface only. */
+body.settings-mode .board-scroll,
+body.settings-mode .command-dock,
+body.settings-mode .board-top > .filters,
+body.settings-mode .board-top > .stats,
+body.settings-mode .board-top > .restart-tools { display:none!important; }
+body.settings-mode .board-top {
+  flex:1 1 auto!important;
+  max-height:none!important;
+  min-height:0;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom, 0px));
+}
+body.settings-mode #setupPanel {display:block;}
+body.team-delta{--tone:#568fff}body.team-delta header{background:linear-gradient(120deg,#27354a,#132033)}
+</style></head><body class="team-delta"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W 首領擊殺榜</h1><div class="subtitle">V19.2.0｜Restart・逐隻 K／T 首輪・王的逆襲</div></header><div id="setupPanel" hidden><div class="notice">群組 Key 首次驗證後，即可讀取及直接執行 K／Z／右滑擊殺。請僅在私人裝置記住 Key。</div><input id="url" type="hidden" value="https://lineage-w-board-api.boris-shi.workers.dev"><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 指令與 T 直接執行</h2>
+<p>輸入後直接執行。K 可省略字首；Z 用於修正時間；T 會立即更新本隊 25 隻地圖王，不需預覽或二次確認。</p>
+<div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算</button></div>
+<div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
+<datalist id="cmdBossNames"></datalist><button type="button" id="cmdPreview">檢查指令（不執行）</button>
+<div class="write-zone"><label>此隊獨立寫入金鑰（不儲存）<input id="writeKey" type="password" autocomplete="off" placeholder="BOARD_WRITE_KEY 專用，不是讀取金鑰"></label><label class="write-check"><input id="writeAgree" type="checkbox"> 我已核對隊伍、首領及擊殺時間</label><button type="button" id="cmdCommit" disabled>確認並執行 K／Z 寫入</button><p class="muted">必須先通過「檢查指令」，才能執行。寫入後會同步至 LINE 王表。</p></div><p class="cmd-label">驗證／執行結果</p><div class="cmd-output" id="cmdOutput" role="status" aria-live="polite">請先選擇指令、輸入首領及時間。</div>
+<p>注意：本版 K／Z 在寫入金鑰、檢查與二次確認後將修改此隊 Firebase 與 LINE 共用的王表資料。T 從底部指令列直接計算並寫入本隊 25 隻地圖王，不需預覽或再次確認。寫入金鑰不儲存。</p></section><div class="pick-hint">提示：點選野外首領卡片，可帶入下方 K／Z／T 輸入欄位（不會執行指令）。</div><div class="filters"><button data-filter="all" class="active">全部</button><button data-filter="field">野外首領</button><button data-filter="fixed">固定首領</button></div><div class="stats"><span>首領列表（台灣時間）</span><span id="count">0 筆</span></div><main id="list"></main><details><summary>安全診斷（不顯示金鑰）</summary><pre id="diag"></pre></details><div class="command-dock" aria-label="固定指令操作列"><div class="dock-inner"><div class="wait-header"><strong>⚔ 待擊殺區</strong><label>保留時間 <select id="waitMinutes" aria-label="待擊殺區保留時間"><option value="5">5 分鐘</option><option value="10">10 分鐘</option></select></label></div><div id="waitingArea" class="waiting-area" aria-live="polite"></div><div id="dockLog" class="dock-log" role="status" aria-live="polite">請先連線授權</div><div class="dock-row"><input id="dockCommand" placeholder="海賊 0857、海賊 或 T 德雷克 0857" autocomplete="off" aria-label="輸入指令"><button id="dockSend" type="button">送出</button></div></div></div><script>
+/* V19.0.5: keyboard-safe bottom command bar without disabling page zoom. */
+(function(){
+  if (!window.visualViewport) return;
+  const root = document.documentElement;
+  let raf = 0;
+  function syncKeyboard(){
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(function(){
+      const vv=window.visualViewport;
+      const editable=document.activeElement && document.activeElement.matches('input:not([type="checkbox"]):not([type="radio"]),textarea,select');
+      const obscured=Math.max(0,window.innerHeight-vv.height-vv.offsetTop);
+      const inset=editable && obscured>100 ? Math.round(obscured) : 0;
+      root.style.setProperty('--lw-keyboard-inset',inset+'px');
+    });
+  }
+  window.visualViewport.addEventListener('resize',syncKeyboard);
+  window.visualViewport.addEventListener('scroll',syncKeyboard);
+  window.addEventListener('focusin',syncKeyboard);
+  window.addEventListener('focusout',function(){ requestAnimationFrame(syncKeyboard); });
+  window.addEventListener('orientationchange',syncKeyboard);
+})();
+
+/* Re-home fixed sections before existing board logic starts; no data or command changes. */
+(function(){
+ const header=document.getElementById('settingsHeader');
+ const setup=document.getElementById('setupPanel');
+ const filters=document.querySelector('.filters');
+ const stats=document.querySelector('.stats');
+ const dock=document.querySelector('.command-dock');
+ const top=document.createElement('div');top.className='board-top';
+ document.body.insertBefore(top,header);
+ top.append(header,setup,filters);
+ const restartBar=document.createElement('div');restartBar.className='restart-tools';restartBar.innerHTML='<button id="webRestart" type="button" disabled>Restart 重置野外王</button>';top.insertBefore(restartBar,filters);
+ const eventBar=document.createElement('div');eventBar.className='event-switch';eventBar.innerHTML='<strong>王的逆襲</strong><span id="eventState" class="event-state">連線後讀取</span><button id="eventToggle" type="button" disabled>開關設定</button>';setup.append(eventBar);
+
+ const shelf=document.createElement('section');shelf.className='board-waiting';
+ const waitHeader=dock.querySelector('.wait-header');
+ const waitList=document.getElementById('waitingArea');
+ shelf.append(waitHeader,waitList);dock.querySelector('.dock-inner').insertBefore(shelf,dock.querySelector('.dock-log'));top.append(stats);
+ const scroll=document.createElement('div');scroll.className='board-scroll';
+ top.after(scroll);
+ const list=document.getElementById('list');scroll.append(list);
+ const details=document.querySelector('body > details');if(details)scroll.append(details);
+})();
+</script><script>(function(){
+ const header=document.getElementById('settingsHeader');
+ const panel=document.getElementById('setupPanel');
+ const diag=document.querySelector('details');
+ if(diag)panel.appendChild(diag);
+ let savedBoardScroll=0,savedTopScroll=0;
+ const boardScroll=document.querySelector('.board-scroll');
+ const boardTop=document.querySelector('.board-top');
+ const toggle=()=>{
+  const opened=panel.hidden;
+  if(opened){
+    savedBoardScroll=boardScroll?.scrollTop||0;
+    savedTopScroll=boardTop?.scrollTop||0;
+  }
+  panel.hidden=!opened;
+  document.body.classList.toggle('settings-mode',opened);
+  header.setAttribute('aria-expanded',String(opened));
+  if(opened){if(boardTop)boardTop.scrollTop=0;}
+  else{
+    if(boardTop)boardTop.scrollTop=savedTopScroll;
+    if(boardScroll)boardScroll.scrollTop=savedBoardScroll;
+  }
+ };
+ header.addEventListener('click',toggle);
+ header.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
+})();
+// V19.0.2 Restart is intentionally separate from the K/Z dock.
+const TEAM='D';
+const names={1:'尼羅德',2:'夫人',3:'飛龍3',4:'飛龍4',5:'卡司特王',6:'大腳',7:'黑虎',8:'德雷克',9:'莫莉提亞',10:'飛龍1',11:'飛龍2',12:'殺戮者',13:'麥肯',14:'蜥蜴王',15:'庫約',16:'烏勒庫斯',17:'奈克諾斯',18:'拉馬修',19:'庫爾託',20:'四色',21:'哈格瑪',22:'克洛林',23:'史前巨鱷',24:'二巨',25:'奧杜亞'};
+const $=id=>document.getElementById(id);const safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let hasConnected=false;let fetching=false;let lastSync=0;let syncError=false;
+// Stored only in this browser. Credentials are NEVER inserted into URLs or diagnostics.
+const BUILTIN_BOSS_WORKER='https://lineage-w-board-api.boris-shi.workers.dev';
+const URL_STORE='lw-v1510-board-worker-url';
+const KEY_STORE='lw-v174-group-key-'+TEAM;
+
+const OPT_STORE='lw-v174-group-remember-'+TEAM;
+function saveOnSuccess(){
+ try{
+  localStorage.setItem(URL_STORE,$('url').value.trim().replace(/\/$/,''));
+  if($('rememberKey').checked){localStorage.setItem(KEY_STORE,$('key').value);localStorage.setItem(OPT_STORE,'yes')}
+  else{localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE);localStorage.removeItem(GROUP_STORE)}
+  $('rememberStatus').textContent=$('rememberKey').checked?'群組 Key 與網址已儲存':'已記住網址；群組 Key 不保存';
+ }catch(e){$('rememberStatus').textContent='瀏覽器禁止儲存設定；本次連線仍可使用'}
+}
+function restoreSaved(){
+ try{
+  $('url').value=BUILTIN_BOSS_WORKER;
+  if(localStorage.getItem(OPT_STORE)==='yes'){
+    $('rememberKey').checked=true;
+    $('key').value=localStorage.getItem(KEY_STORE)||'';
+  }
+  if($('url').value&&$('key').value){$('rememberStatus').textContent='已還原連線設定，正在自動連線…';refreshBoard(true)}
+  else if($('url').value){$('rememberStatus').textContent='已帶入網址；請輸入金鑰讀取'}
+ }catch(e){$('rememberStatus').textContent='無法讀取本機儲存設定'}
+}
+$('clearSaved').addEventListener('click',()=>{
+ try{localStorage.removeItem(URL_STORE);localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE);localStorage.removeItem(GROUP_STORE)}catch(e){}
+ $('url').value=BUILTIN_BOSS_WORKER;$('key').value='';$('rememberKey').checked=false;
+ hasConnected=false;currentEventActive=null;renderEventSwitch();syncError=false;lastSync=0;liveRows=[];waiting.clear();observed.clear();waitingSignature="";renderWaiting();renderBoard();updateSyncUI();
+ $('rememberStatus').textContent='已清除本隊金鑰；網址為內建值';$('status').textContent='等待重新輸入連線設定';
+});
+$('rememberKey').addEventListener('change',()=>{
+ if(!$('rememberKey').checked){try{localStorage.removeItem(KEY_STORE);localStorage.removeItem(OPT_STORE);localStorage.removeItem(GROUP_STORE)}catch(e){}$('rememberStatus').textContent='已取消記住金鑰'}
+ else $('rememberStatus').textContent='勾選後，下一次成功連線時會儲存金鑰';
+});
+
+function groupReady(){return $('key').value.length>=32;}
+
+$('key').addEventListener('input',()=>{hasConnected=false;updateSyncUI()});
+function updateSyncUI(){const elapsed=lastSync?Math.floor((Date.now()-lastSync)/1000):0;const hidden=document.hidden;const stale=hasConnected&&elapsed>75;const state=fetching?'wait':syncError?'error':hidden&&hasConnected?'paused':stale?'wait':hasConnected?'ok':'';
+ $('syncDot').className='sync-dot '+state;
+ $('syncLabel').textContent=fetching?'同步中…':syncError?'同步失敗':hidden&&hasConnected?'背景暫停':stale?'資料待更新':hasConnected?'已連線':'尚未連線';
+ $('syncDetail').textContent=syncError?'保留上次成功讀取資料':hidden&&hasConnected?'返回此頁後會視需要更新':hasConnected?'每 30 秒自動同步':'首次讀取成功後啟用';
+ $('syncClock').textContent=lastSync?'上次成功 '+elapsed+' 秒前':'尚無同步紀錄';
+}
+// V16.3: per-team local presentation preference only; never stored in Firebase.
+const WAIT_STORE='lw-v163-wait-minutes-'+TEAM;
+let swipeOpen=null; // initialized before the first waiting-area render
+let waiting=new Map();
+
+let observed=new Map();
+let waitingSignature='';
+let waitingLimit=5;
+try{waitingLimit=localStorage.getItem(WAIT_STORE)==='10'?10:5}catch(_){waitingLimit=5}
+$('waitMinutes').value=String(waitingLimit);
+
+$('waitMinutes').addEventListener('change',()=>{waitingLimit=Number($('waitMinutes').value)===10?10:5;try{localStorage.setItem(WAIT_STORE,String(waitingLimit))}catch(_){}tickWaiting(true)});
+function isWaiting(id){return id!=null&&waiting.has(String(id))}
+function taiwanHHMM(){return new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date()).replace(':','')}
+function waitingPreview(name){submitDock('K '+name,'待擊殺區')}
+function reconcileWaiting(rows){
+ const now=Date.now(),next=new Map();
+ for(const r of rows){
+  if(r.fixed)continue;
+  const id=String(r.id), old=observed.get(id), sig=String(r.respawnAt);
+  if(old&&old.sig!==sig){waiting.delete(id);next.set(id,{sig,when:r.when});continue} // LINE or website recorded a new kill
+  const previous=old?.sig===sig?old.when:(r.when-r.cycle);
+  const due=Number(previous), recentlyDue=Number.isFinite(due)&&due<=now&&now-due<10*60000;
+  if(recentlyDue && due>=Number(r.respawnAt)){
+   const current=waiting.get(id);
+   if(!current||current.sig===sig)waiting.set(id,{id,name:r.name,due,sig});
+  }
+  next.set(id,{sig,when:r.when});
+ }
+ observed=next;
+ tickWaiting(false);
+}
+function tickWaiting(force){
+ const now=Date.now();let changed=!!force;
+ for(const [id,w] of waiting){if(now-w.due>=waitingLimit*60000||now<w.due){waiting.delete(id);changed=true}}
+ // Detect locally when a boss reaches zero, even before the next server sync.
+ for(const r of liveRows){if(r.fixed||waiting.has(String(r.id)))continue;
+  const old=observed.get(String(r.id));
+  if(old&&old.sig===String(r.respawnAt)&&r.when<=now&&now-r.when<waitingLimit*60000){waiting.set(String(r.id),{id:String(r.id),name:r.name,due:r.when,sig:old.sig});changed=true}
+ }
+ const signature=[...waiting.values()].sort((a,b)=>a.due-b.due).map(x=>x.id+':'+x.due).join('|');
+ if(signature!==waitingSignature){waitingSignature=signature;changed=true}
+ if(changed){renderWaiting();if(typeof renderBoard==='function')renderBoard()}
+ else{for(const w of waiting.values()){const node=$('waitingArea').querySelector('[data-wait-id="'+CSS.escape(w.id)+'"] small');if(node)node.textContent='已出現 '+duration(now-w.due)+'｜保留 '+Math.max(0,Math.ceil((waitingLimit*60000-(now-w.due))/1000))+' 秒'}}
+}
+function renderWaiting(){
+ if(typeof closeSwipe==='function')closeSwipe();
+ const area=$('waitingArea');area.replaceChildren();const now=Date.now();
+ const rows=[...waiting.values()].sort((a,b)=>a.due-b.due);
+ if(!rows.length){const e=document.createElement('div');e.className='wait-empty';e.textContent='目前沒有待擊殺首領';area.appendChild(e)}
+ for(const w of rows){const wrap=document.createElement('div');wrap.className='wait-item';wrap.dataset.waitId=w.id;
+  const name=document.createElement('div');name.className='wait-name';const strong=document.createElement('strong');strong.textContent=w.name;const info=document.createElement('small');info.textContent='已出現 '+duration(now-w.due)+'｜保留 '+Math.max(0,Math.ceil((waitingLimit*60000-(now-w.due))/1000))+' 秒';name.append(strong,info);
+  wrap.append(name);area.appendChild(wrap);
+  decorateSwipe(wrap,w,{demo:w.id==='demo'});
+ }
+}
+// Dock height can change as waiting bosses enter/leave; keep page bottom scrollable.
+const dockObserver=new ResizeObserver(entries=>{const size=entries[0]?.target.getBoundingClientRect().height||130;document.body.style.setProperty('--dock-height',Math.ceil(size)+'px')});
+dockObserver.observe(document.querySelector('.command-dock'));
+setInterval(()=>tickWaiting(false),1000);
+renderWaiting();
+let currentEventActive=null;
+const restartButton=$('webRestart');
+restartButton.addEventListener('click',async()=>{
+ if(!hasConnected||!groupReady())return;
+ const base=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;
+ restartButton.disabled=true;restartButton.textContent='Restart 執行中…';
+ try{
+  const r=await fetch(base+'/api/restart',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({team:TEAM}),cache:'no-store'});
+  const j=await r.json();if(!r.ok||j.team!==TEAM||j.resetCount!==25)throw Error(j.error||'操作失敗');
+  await refreshBoard(true);alert(TEAM+' 隊 Restart 成功：25 隻野外王已重置。');
+ }catch(e){alert('Restart 失敗：'+e.message)}finally{restartButton.textContent='Restart 重置野外王';restartButton.disabled=!hasConnected;}
+});
+const eventButton=$('eventToggle');
+function renderEventSwitch(){if(restartButton)restartButton.disabled=!hasConnected||fetching;
+ $('eventState').textContent=currentEventActive===null?'連線後讀取':currentEventActive?'活動中':'活動關閉';
+ eventButton.textContent=currentEventActive===null?'開關設定':currentEventActive?'關閉活動':'開啟活動';
+ eventButton.classList.toggle('on',currentEventActive===true);
+ eventButton.disabled=!hasConnected||currentEventActive===null||fetching;
+}
+eventButton.addEventListener('click',async()=>{
+ if(!hasConnected||currentEventActive===null)return;
+ const next=!currentEventActive;
+ if(!confirm('確定要'+(next?'開啟':'關閉')+' '+TEAM+' 隊的「王的逆襲」嗎？\n僅限 Restart 後、野外王表為空時切換。\n不會修改已有的計時資料。'))return;
+ const base=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;
+ eventButton.disabled=true;$('eventState').textContent='設定中…';
+ try{
+  const r=await fetch(base+'/api/event-toggle',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({team:TEAM,enabled:next}),cache:'no-store'});
+  const j=await r.json();if(!r.ok||j.team!==TEAM||j.eventActive!==next)throw Error(j.error==='board_not_empty'?'目前野外王表非空，請於維修後先執行 Restart 再切換活動':j.error||'設定失敗');
+  currentEventActive=next;renderEventSwitch();await refreshBoard(true);
+ }catch(e){alert('活動切換失敗：'+e.message);renderEventSwitch()}
+});
+async function refreshBoard(manual=false){
+ if(!groupReady()){ $('status').textContent='請確認群組 ID 為 '+TEAM+' 並輸入至少 32 字元群組 Key';return;}
+ if(fetching)return;
+ if(!manual&&(!hasConnected||document.hidden))return;const url=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;if(!/^https:\/\//.test(url)||!key){if(manual)$('status').textContent='請填入 HTTPS Worker 網址及金鑰';return}
+ fetching=true;updateSyncUI(); if(manual)$('status').textContent='讀取中…';try{const r=await fetch(url+'/api/board?team='+TEAM,{headers:{Authorization:'Bearer '+key},cache:'no-store'});const j=await r.json();if(!r.ok)throw Error(j.error||'HTTP '+r.status);const states=j.states||{};const entries=Object.entries(states);const now=Date.now();
+ const bosses=j.bosses||{};const fixed=j.fixedSchedules||{};const eventNames=new Set(j.revengeBossNames||[]);const eventEnabled=j.eventEnabled||{};const fixedBossEnabled=j.fixedBossEnabled||{};const mult=j.eventActive===true?Number(j.eventConfig?.cooldownMultiplier??0.5):1;
+ const waitingForT=j.awaitingT===true;
+ if(waitingForT){waiting.clear();observed.clear();waitingSignature='';renderWaiting();}
+ const rows=[];for(const [id,st] of entries){const b=bosses[id]||Object.values(bosses).find(x=>String(x?.id)===String(id));if(!b||b.enabled===false)continue;
+ const eventMult=j.eventActive===true&&eventNames.has(b.name)&&eventEnabled[String(b.id??id)]!==false ? mult : 1;
+ const cycle=Number(b.cooldownHours)*eventMult*3600000;let when=Number(st?.respawnAt);if(!Number.isFinite(when)||!when||!Number.isFinite(cycle)||cycle<=0)continue;
+ if(when<=now)when+=(Math.floor((now-when)/cycle)+1)*cycle;
+ rows.push({id:String(id),name:b.name||names[id]||'王 '+id,when,fixed:false,hours:Number(b.cooldownHours),respawnAt:Number(st?.respawnAt),cycle});}
+ for(const special of (j.specialFixedBosses||[])){if(special.type==='clock-only'&&Number(special.nextAt)>now)rows.push({id:special.id,name:special.name,when:Number(special.nextAt),fixed:true,clockOnly:true});}
+ const today=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',weekday:'short'}).format(new Date());const weekday=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(today);
+ const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const val=k=>parts.find(x=>x.type===k)?.value;
+ for(const [fixedId,item] of Object.entries(fixed)){if(fixedBossEnabled[fixedId]===false||!item||item.enabled===false||Number(item.weekday)!==weekday||!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(item.time||'')))continue;
+ const when=Date.parse(`${val('year')}-${val('month')}-${val('day')}T${item.time}:00+08:00`);if(Number.isFinite(when)&&when>=now)rows.push({name:item.bossName||'固定首領',when,fixed:true});}
+ rows.sort((a,b)=>a.when-b.when||a.name.localeCompare(b.name,'zh-TW'));
+ $('diag').textContent=JSON.stringify({team:TEAM,stateCount:entries.length,projectedField:rows.filter(x=>!x.fixed).length,fixedToday:rows.filter(x=>x.fixed).length,eventActive:j.eventActive,multiplier:mult,firstKeys:entries.slice(0,3).map(([k,v])=>({key:k,fields:Object.keys(v||{})}))},null,2);
+ liveRows=rows; reconcileWaiting(rows); renderBoard();
+ currentEventActive=j.eventActive===true;
+ hasConnected=true;lastSync=Date.now();syncError=false;saveOnSuccess();renderEventSwitch();
+ $('status').textContent=(waitingForT?'⚠ 本隊已 Restart；可逐隻 K 或直接執行 T，未記錄的野外王保持空白。｜':'同步成功（每 30 秒自動更新）：')+entries.length+' 筆原始狀態｜野外首領 '+rows.filter(x=>!x.fixed).length+' 筆｜今日固定首領 '+rows.filter(x=>x.fixed).length+' 筆';
+ $('lastFetch').textContent='最後讀取：'+new Date().toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour12:false});
+ }catch(e){syncError=true;$('status').textContent='同步失敗（保留上次畫面）：'+e.message;$('diag').textContent=JSON.stringify({team:TEAM,error:e.message},null,2)}finally{fetching=false;updateSyncUI();renderEventSwitch()}
+}
+$('go').onclick=()=>refreshBoard(true);
+setInterval(()=>{if(hasConnected&&!document.hidden)refreshBoard(false)},30000);
+document.addEventListener('visibilitychange',()=>{updateSyncUI();if(!document.hidden&&hasConnected&&Date.now()-lastSync>=30000)refreshBoard(false)});
+setInterval(updateSyncUI,1000);updateSyncUI();
+
+let liveRows=[];let filter='all';
+const fmtTime=ms=>new Date(ms).toLocaleString('zh-TW',{timeZone:'Asia/Taipei',hour12:false,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const duration=ms=>{const sec=Math.floor(Math.abs(ms)/1000),h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return (ms<0?'已過 ':'')+(h?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')};
+function renderBoard(){const now=Date.now();let shown=liveRows.filter(r=>!isWaiting(r.id)&&(filter==='all'||(filter==='fixed' ? r.fixed:!r.fixed)));
+ $('list').innerHTML=shown.length?'':'<div class="empty">目前沒有符合篩選條件的首領</div>';
+ shown.forEach(row=>{const diff=row.when-now, el=document.createElement('article');el.className='boss-card '+(row.clockOnly?'fixed clock-only':row.fixed?'fixed':(Number(row.hours)===4?'field cycle-four':'field cycle-long'))+(diff>=0&&diff<=60000?' danger':diff>60000&&diff<=180000?' near':'');el.dataset.when=String(row.when);el.innerHTML='<div class="name"><span class="dot"></span><strong>'+safe(row.name)+'</strong><small>'+(row.clockOnly?'定時固定首領｜免 K/Z':row.fixed?'固定首領':'野外首領')+'</small></div><div class="time-area"><div class="birth">'+safe(fmtTime(row.when))+'</div><div class="countdown">'+safe(duration(diff))+'</div></div>';if(!row.fixed){el.classList.add('pickable');el.setAttribute('role','button');el.setAttribute('tabindex','0');el.setAttribute('aria-label','選擇 '+row.name+' 進行指令預覽');const pick=()=>{ resetApproval();$('cmdBoss').value=row.name; $('cmdTime').value=''; $('cmdOutput').classList.remove('warn'); $('cmdOutput').textContent='已選取 '+row.name+'（'+TEAM+' 隊）。請輸入台灣時間 HHMM，再按「檢查指令（不執行）」。';document.querySelector('.cmd-panel').scrollIntoView({behavior:'smooth',block:'start'});$('cmdTime').focus({preventScroll:true});};}$('list').append(el)});
+ $('count').textContent=shown.length+' 筆';}
+ document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));renderBoard()}));
+ setInterval(()=>{const current=Date.now();let changed=false;for(const r of liveRows){if(!r.clockOnly||r.when>current)continue;const local=new Date(current+8*3600000);const midnight=Date.UTC(local.getUTCFullYear(),local.getUTCMonth(),local.getUTCDate())-8*3600000;let next=null;for(let d=0;d<2&&next===null;d++)for(let h=1;h<24;h+=2){const t=midnight+d*86400000+h*3600000;if(t>current){next=t;break}}if(next!==null){r.when=next;changed=true}}if(changed){liveRows.sort((a,b)=>a.when-b.when||a.name.localeCompare(b.name,'zh-TW'));renderBoard()}const cards=$('list').querySelectorAll('.boss-card');cards.forEach(el=>{const birth=el.querySelector('.birth'),clock=el.querySelector('.countdown');if(!birth||!clock)return;const stamp=el.dataset.when;const diff=Number(stamp)-Date.now();clock.textContent=duration(diff);el.classList.toggle('near',diff>60000&&diff<=180000);el.classList.toggle('danger',diff>=0&&diff<=60000);});},1000);
+
+// V16.1 write route requires separate per-team secret and explicit confirmation.
+let selectedCmd='K';
+const aliasMap={'海賊':'德雷克','茉莉':'莫莉提亞','狼王':'庫爾託','庫爾托':'庫爾託'};
+const previewNames=Object.values(names);
+const datalist=$('cmdBossNames');
+for(const name of previewNames){const opt=document.createElement('option');opt.value=name;datalist.appendChild(opt)}
+for(const name of Object.keys(aliasMap)){const opt=document.createElement('option');opt.value=name;datalist.appendChild(opt)}
+let approvedPreview=null; const resetApproval=()=>{approvedPreview=null;$('cmdCommit').disabled=true;$('writeAgree').checked=false};
+for(const el of ['cmdBoss','cmdTime','url','key'])$(el).addEventListener('input',resetApproval);
+$('writeAgree').addEventListener('change',()=>{$('cmdCommit').disabled=!(approvedPreview&&$('writeAgree').checked)});
+document.querySelectorAll('[data-cmd]').forEach(btn=>btn.addEventListener('click',()=>{resetApproval();selectedCmd=btn.dataset.cmd;document.querySelectorAll('[data-cmd]').forEach(el=>el.classList.toggle('selected',el===btn));$('cmdOutput').textContent='已選 '+selectedCmd+'；請輸入首領與 HHMM 後預覽。';$('cmdOutput').classList.toggle('warn',selectedCmd==='T')}));
+$('cmdPreview').addEventListener('click',async()=>{resetApproval();
+ const raw=$('cmdBoss').value.trim();const hhmm=$('cmdTime').value.trim();const canonical=aliasMap[raw]||raw;let error='';
+ if(!raw)error='請先輸入首領名稱。';
+ else if(!previewNames.includes(canonical))error='首領名稱不在此版內建名單，請檢查是否輸入正確；正式別名表仍待同步驗證。';
+ else if(!/^\d{4}$/.test(hhmm)||Number(hhmm.slice(0,2))>23||Number(hhmm.slice(2))>59)error='時間格式不正確。請使用 0000～2359 的 HHMM。';
+ const output=$('cmdOutput');output.classList.toggle('warn',Boolean(error)||selectedCmd==='T');
+ if(error){output.textContent='無法預覽：'+error;return}
+ if(selectedCmd==='T'){output.textContent='T '+raw+' '+hhmm+'\n請於下方指令列輸入 T 王名 HHMM，將立即計算並寫入本隊 25 隻地圖王。';return}
+ const url=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;
+ if(!url.startsWith('https://')||!key){output.textContent='請先連線並輸入 Worker 網址及讀取金鑰。';return}
+ $('cmdPreview').disabled=true;output.textContent='正在向 Worker 驗證（不寫入）…';
+ try{
+  const res=await fetch(url+'/api/command-check',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({team:TEAM,action:selectedCmd,boss:raw,hhmm}),cache:'no-store'});
+  const j=await res.json();if(!res.ok)throw Error(j.error||'HTTP '+res.status);
+  output.classList.toggle('warn',!j.valid);
+  output.textContent='隊伍：'+TEAM+'｜'+selectedCmd+' '+j.boss+' '+hhmm+'\n擊殺時間：'+fmtTime(j.killedAt)+'\n上次擊殺：'+(j.previousKilledAt?fmtTime(j.previousKilledAt):'無資料')+'\n預估重生：'+fmtTime(j.respawnAt)+'\n週期：'+j.cooldownHours+' 小時\n驗證：'+(j.valid?'通過':'不通過')+'\n'+(j.warnings||[]).join('\n')+'\n【驗證本身不寫入；如要執行請再確認】';if(j.valid){approvedPreview={team:TEAM,action:selectedCmd,boss:raw,hhmm,killedAt:j.killedAt};$('cmdCommit').disabled=!$('writeAgree').checked;}
+ }catch(e){output.classList.add('warn');output.textContent='伺服器驗證失敗：'+e.message+'。請確認已更新獨立 Worker。'}
+ finally{$('cmdPreview').disabled=false} 
+});
+// Hidden legacy command panel has no write handler in this visual-preview version.
+
+// V16.4: write remains disabled until the user deliberately arms this session.
+const dockLog=$('dockLog'), dockCommand=$('dockCommand');
+let submitting=false;let lastActionAt=0;
+function dockMessage(msg,kind=''){dockLog.textContent=msg;dockLog.className='dock-log '+kind;}
+function isArmed(){return hasConnected&&groupReady()}
+function parseDock(raw){
+ const input=raw.trim();
+ const explicit=input.match(/^([KZT])\s+(.+?)(?:\s+(\d{4}))?$/i);
+ const implicit=explicit?null:input.match(/^(.+?)(?:\s+(\d{4}))?$/);
+ if(!explicit&&!implicit)throw Error('格式錯誤｜例如 海賊 或 海賊 0857');
+ const action=explicit?explicit[1].toUpperCase():'K';
+ const boss=(explicit?explicit[2]:implicit[1]).trim();
+ const hhmm=(explicit?explicit[3]:implicit[2])||'';
+ if(!boss||/^(?:K|Z|T)$/i.test(boss))throw Error('請輸入 Boss 名稱');
+ if(action==='T'&&!hhmm)throw Error('T 必須指定 HHMM');
+ if(action==='Z'&&!hhmm)throw Error('Z 修正必須指定 HHMM');
+ if(+hhmm.slice(0,2)>23||+hhmm.slice(2)>59)throw Error('時間錯誤｜請輸入 HHMM');
+ return {team:TEAM,action,boss,hhmm};
+}
+async function submitDock(raw,source='指令'){
+ if(submitting)return;
+ let cmd;try{cmd=parseDock(raw)}catch(e){dockMessage(e.message,'bad');return}
+ if(!isArmed()){dockMessage('請先用群組 Key 連線授權','bad');return}
+ if(!hasConnected){dockMessage('請先成功讀取此隊王表','bad');return}
+ if(cmd.action==='T'){await submitWebT(cmd);return}
+ // Server validates against the team's configured bosses, even when Restart leaves timers blank.
+ const url=$('url').value.trim().replace(/\/$/,'');const key=$('key').value;
+ if(!url.startsWith('https://')||!key){dockMessage('請先設定 Worker 網址與群組 Key','bad');return}
+ if(Date.now()-lastActionAt<1200){dockMessage('操作太快，請稍後再試','bad');return}
+ submitting=true;lastActionAt=Date.now();$('dockSend').disabled=true;document.querySelector('.command-dock').classList.add('busy');
+ dockMessage('檢查中｜'+cmd.action+' '+cmd.boss+' '+cmd.hhmm,'working');
+ try{
+  const check=await fetch(url+'/api/command-check',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({...cmd}),cache:'no-store'});
+  const c=await check.json();if(!check.ok)throw Error(check.status===404||check.status===405?'目前 Worker 不支援擊殺驗證 API（/api/command-check）；已阻止寫入，請勿重複點擊':'檢查失敗：'+(c.error||check.status));
+  if(c.team!==TEAM)throw Error('安全驗證失敗：伺服器回傳的隊伍不一致');
+  if(!c.valid)throw Error('未通過 K／Z 驗證：'+(c.warnings||[]).join('；'));
+  if(!Number.isFinite(Number(c.killedAt))||!Number.isFinite(Number(c.respawnAt)))throw Error('安全驗證失敗：伺服器時間資料不完整');
+  if(typeof c.boss!=='string'||!c.boss)throw Error('伺服器未回傳正式王名');
+  if(!isArmed())throw Error('群組授權已失效，請重新連線');
+  dockMessage('寫入中｜'+cmd.action+' '+c.boss+' '+cmd.hhmm,'working');
+  const requestId=crypto.randomUUID().replace(/-/g,'');
+  const res=await fetch(url+'/api/command-commit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({...cmd,requestId}),cache:'no-store'});
+  const j=await res.json();if(!res.ok)throw Error(res.status===404||res.status===405?'Worker 不支援擊殺寫入 API；未確認資料更動':'寫入失敗：'+(j.error||res.status));
+  if(!j.ok||j.team!==TEAM)throw Error('Worker 未回報本隊成功，請先查詢王表，不要重送');
+  dockMessage('成功｜'+cmd.action+' '+j.boss+'｜擊殺 '+new Date(j.killedAt).toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'})+'｜重生 '+new Date(j.respawnAt).toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}),'good');
+  dockCommand.value='';closeSwipe();
+  waiting.clear();observed.clear();waitingSignature='';renderWaiting();
+  await refreshBoard(true);
+ }catch(e){dockMessage(e.message+'｜不明結果請先查 LINE，勿直接重送','bad')}
+ finally{submitting=false;$('dockSend').disabled=false;document.querySelector('.command-dock').classList.remove('busy')}
+}
+
+async function submitWebT(cmd){
+ if(submitting)return;
+ if(!isArmed()){dockMessage('請先重新連線授權','bad');return}
+ if(Date.now()-lastActionAt<1200){dockMessage('操作太快，請稍後再試','bad');return}
+ submitting=true;lastActionAt=Date.now();$('dockSend').disabled=true;document.querySelector('.command-dock').classList.add('busy');
+ dockMessage('T 首輪計算並寫入中…','working');
+ try{
+  const r=await fetch($('url').value.trim().replace(/\/$/,'')+'/api/t-execute',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+$('key').value},body:JSON.stringify(cmd),cache:'no-store'});
+  const j=await r.json();if(!r.ok)throw Error(j.error||'HTTP '+r.status);
+  if(!j.ok||j.team!==TEAM||j.count!==25)throw Error('伺服器未確認完整寫入');
+  dockMessage('T 已成功寫入本隊 '+j.count+' 隻地圖王；紀錄 '+j.recordId,'good');dockCommand.value='';await refreshBoard(true);
+ }catch(e){const reason=e.message==='t_anchor_expired_choose_recent_boss'?'T 基準時間已超過這隻王的重生週期，請改用最近出生的王。':e.message==='t_time_in_future_please_check'?'T 輸入時間尚未到達，請檢查時間；午夜後可使用前一天週期內的時間。':e.message;dockMessage('T 未寫入：'+reason+'','bad')}
+ finally{submitting=false;$('dockSend').disabled=false;document.querySelector('.command-dock').classList.remove('busy')}
+}
+$('dockSend').onclick=()=>submitDock(dockCommand.value);
+dockCommand.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitDock(dockCommand.value)}});
+function closeSwipe(){
+ if(swipeOpen){swipeOpen.classList.remove('swiped');swipeOpen.style.transform='';swipeOpen.style.transition='';swipeOpen=null}
+}
+function decorateSwipe(el,row,options={}){
+ const wrap=document.createElement('div');wrap.className='swipe-wrap';
+ const btn=document.createElement('button');btn.type='button';btn.className='swipe-kill';btn.textContent='擊殺';btn.setAttribute('aria-label','擊殺 '+row.name);
+ el.parentNode.insertBefore(wrap,el);wrap.append(btn,el);
+ const WIDTH=86,THRESHOLD=32;
+ let down=false,axis='',startX=0,startY=0,startPos=0,currentPos=0,ignoreClick=false;
+ const opened=()=>swipeOpen===el;
+ const clamp=n=>Math.max(0,Math.min(WIDTH,n));
+ function translate(n){currentPos=clamp(n);el.style.transform='translate3d('+currentPos+'px,0,0)'}
+ function begin(x,y){down=true;axis='';startX=x;startY=y;startPos=opened()?WIDTH:0;currentPos=startPos;ignoreClick=false;el.style.transition='none'}
+ function drag(x,y,event){
+   if(!down)return;
+   const dx=x-startX,dy=y-startY;
+   if(!axis){if(Math.abs(dx)<7&&Math.abs(dy)<7)return;axis=Math.abs(dx)>Math.abs(dy)*1.1?'horizontal':'vertical'}
+   if(axis!=='horizontal')return;
+   ignoreClick=true;
+   if(event?.cancelable)event.preventDefault();
+   translate(startPos+dx);
+ }
+ function finish(x){
+   if(!down)return;
+   down=false;
+   const horizontal=axis==='horizontal';
+   const target=horizontal?clamp(startPos+x-startX):startPos;
+   const shouldOpen=horizontal?(startPos===WIDTH?target>WIDTH-THRESHOLD:target>=THRESHOLD):startPos===WIDTH;
+   if(shouldOpen){if(swipeOpen&&swipeOpen!==el)closeSwipe();swipeOpen=el;el.classList.add('swiped')}
+   else{el.classList.remove('swiped');if(swipeOpen===el)swipeOpen=null}
+   el.style.transition='transform .18s ease';translate(shouldOpen?WIDTH:0);
+   window.setTimeout(()=>{if(el.isConnected)el.style.transition=''},190);
+   axis='';
+ }
+ // Listen on the wrapper rather than the card: Safari may retarget touch events to child text.
+ // Keep vertical gestures native; only preventDefault after a clearly horizontal gesture.
+ wrap.addEventListener('touchstart',e=>{if(e.touches.length===1)begin(e.touches[0].clientX,e.touches[0].clientY)},{passive:true,capture:true});
+ wrap.addEventListener('touchmove',e=>{if(e.touches.length===1)drag(e.touches[0].clientX,e.touches[0].clientY,e)},{passive:false,capture:true});
+ wrap.addEventListener('touchend',e=>{if(down)finish(e.changedTouches[0]?.clientX??startX)},{passive:true,capture:true});
+ wrap.addEventListener('touchcancel',()=>{if(down)finish(startX)},{passive:true,capture:true});
+ // Desktop drag support for testing with a mouse.
+ wrap.addEventListener('mousedown',e=>{if(e.button===0&&!e.target.closest('.swipe-kill'))begin(e.clientX,e.clientY)});
+ const mousemove=e=>{if(down&&e.buttons===1)drag(e.clientX,e.clientY,e)};
+ const mouseup=e=>{if(down)finish(e.clientX)};
+ window.addEventListener('mousemove',mousemove);
+ window.addEventListener('mouseup',mouseup);
+ wrap.addEventListener('dragstart',e=>e.preventDefault());
+ el.addEventListener('click',e=>{
+   if(ignoreClick){ignoreClick=false;e.preventDefault();e.stopImmediatePropagation();return}
+   if(opened()){closeSwipe();e.preventDefault();e.stopImmediatePropagation()}
+ },true);
+ btn.addEventListener('click',e=>{
+   e.preventDefault();e.stopPropagation();closeSwipe();
+   if(options.demo){dockMessage('示範按鈕｜不會寫入 Firebase','good');return}
+   submitDock('K '+row.name,'右滑擊殺');
+ });
+}
+
+const originalRenderBoard=renderBoard;
+renderBoard=function(){closeSwipe();originalRenderBoard();const fieldItems=[...$('list').querySelectorAll('.boss-card.field')];const shown=liveRows.filter(r=>!isWaiting(r.id)&&(filter==='all'||(filter==='fixed'?r.fixed:!r.fixed))).filter(r=>!r.fixed);fieldItems.forEach((el,i)=>{const row=shown[i];if(!row)return;el.dataset.when=String(row.when);el.classList.remove('pickable');el.removeAttribute('role');el.removeAttribute('tabindex');decorateSwipe(el,row);});};
+
+window.addEventListener('DOMContentLoaded',restoreSaved);
+</script><style>
+/* V19.0.2: simple one-page, row-by-row boss editor */
+.boss-manager{margin:12px 0;padding:12px;background:#182337;border:1px solid #4d607b;border-radius:12px;color:#e6eef9}
+.boss-manager h3{font-size:16px;margin:8px 0}.boss-manager p{font-size:12px;color:#b7c7db;line-height:1.55}
+.boss-manager .manager-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.boss-manager button{padding:8px 10px;margin:0}.boss-manager .boss-edit-list{display:grid;gap:9px;margin-top:12px}
+.boss-manager .boss-edit-row{background:#0e1728;border:1px solid #3e516c;padding:10px;border-radius:10px}
+.boss-manager .edit-main{display:grid;grid-template-columns:minmax(100px,1.65fr) minmax(110px,.9fr) 60px;gap:8px;align-items:end}
+.boss-manager .edit-fields{display:grid;grid-template-columns:minmax(110px,1fr);gap:6px 10px;margin-top:7px;max-width:45%}
+.boss-manager label{margin:0;font-size:11px;font-weight:500;color:#b9c9e1;min-width:0}
+.boss-manager input:not([type=checkbox]){display:block;width:100%;min-width:0;padding:8px 7px;margin-top:3px;background:#162238;border:1px solid #516581;color:#f1f6ff;border-radius:6px;font-size:14px}
+.boss-manager .edit-name{font-size:15px;font-weight:700;color:#f4f6fb;padding:8px 1px;overflow-wrap:anywhere}
+.boss-manager .edit-save{background:#167b4c;border-color:#219c63;min-height:38px}
+.boss-manager .edit-options{display:flex;gap:14px;flex-wrap:wrap;margin:9px 0 2px}
+.boss-manager .edit-options label{display:flex;gap:6px;align-items:center;font-size:12px}
+.boss-manager input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:#6ca4f3}
+.boss-manager .row-result{display:block;min-height:14px;font-size:11px;color:#a8bcd6;margin-top:6px}
+.boss-manager .edit-save:disabled{opacity:.55;cursor:wait}
+.boss-manager .alias-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:6px}
+.boss-manager .fixed-row{padding:9px;border-radius:7px;background:#112b26;margin-top:6px;display:flex;justify-content:space-between;gap:8px;font-size:12px}
+.boss-manager .manager-separator{border-top:1px solid #465872;margin:16px 0 10px}
+@media(min-width:650px){.boss-manager .edit-fields{grid-template-columns:minmax(110px,1fr)}}
+.boss-manager .fixed-edit-card{border:1px solid #345c52;background:#102922;border-radius:9px;padding:9px;margin:7px 0}
+.boss-manager .fixed-edit-fields{display:grid;grid-template-columns:minmax(125px,1.5fr) 74px 95px;gap:8px;align-items:end}
+.boss-manager .fixed-edit-fields select{display:block;margin-top:3px;width:100%;padding:8px 4px;background:#162238;border:1px solid #516581;color:#fff;border-radius:6px}
+.boss-manager .fixed-edit-actions{display:flex;gap:12px;align-items:center;margin-top:7px}
+.boss-manager .fixed-active{display:flex;align-items:center;gap:6px}
+@media(max-width:390px){.boss-manager .fixed-edit-fields{grid-template-columns:1fr 70px}.boss-manager .fixed-edit-fields label:first-child{grid-column:span 2}}
+
+/* V19.0.2 compact dual-tab Boss settings */
+.boss-manager .boss-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 12px}
+.boss-manager .boss-tab{min-height:43px;background:#101a2c;border:1px solid #20334d;font-weight:700;color:#b8c5d9}
+.boss-manager .boss-tab.active{background:#d99400;border-color:#e7ad35;color:#171919}
+.boss-manager .boss-tab:disabled{opacity:.55;cursor:not-allowed}
+.boss-manager .boss-panel[hidden]{display:none!important}
+.boss-manager .edit-main{display:flex;align-items:center;gap:9px}
+.boss-manager .edit-name{font-size:21px;flex:1;padding:4px 0}
+.boss-manager .edit-options{margin:0;gap:5px;flex:0 1 auto}
+.boss-manager .edit-options label{font-size:12px;white-space:nowrap}
+.boss-manager .edit-save{flex:none;min-width:42px}
+.boss-manager .edit-fields{max-width:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:5px}
+.boss-manager .alias-row{margin-top:4px}
+.boss-manager .boss-edit-row{padding:10px}
+.boss-manager .edit-fields label{font-size:12px}
+.boss-manager .fixed-edit-card{background:#080f1c;border:1px solid #30435f;padding:12px;margin:10px 0}
+.boss-manager .fixed-edit-fields{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(90px,.7fr);gap:10px}
+.boss-manager .fixed-edit-actions{display:grid;grid-template-columns:1.7fr .7fr;gap:10px;margin:9px 0}
+.boss-manager .fixed-edit-actions button{font-size:14px;font-weight:700}
+.boss-manager .fixed-delete{background:#752024;border-color:#8e3337}
+.boss-manager .fixed-days{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+.boss-manager .fixed-days label{display:flex;align-items:center;gap:5px;padding:7px;border:1px solid #3e5069;border-radius:6px;font-size:12px;color:#b6c6da;background:#121c2c}
+.boss-manager .fixed-days label:has(input:checked){color:#fbd246;border-color:#d99700}
+.boss-manager .fixed-days input{margin:0}
+@media(max-width:430px){.boss-manager .edit-name{font-size:19px}.boss-manager .edit-options label{font-size:11px}.boss-manager .fixed-days label{padding:6px}}
+
+.boss-manager .config-history{margin-top:12px;padding:10px;border:1px solid #35445b;border-radius:8px;background:#101e31}
+.boss-manager .history-item{padding:9px 5px;border-bottom:1px solid #304057;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+.boss-manager .history-item:last-child{border-bottom:0}
+.boss-manager .history-item strong{font-size:13px;color:#ecf3ff}
+
+/* V19.0.2 six-button settings navigation */
+.boss-manager .boss-panel[hidden],.boss-manager .boss-tabs [hidden]{display:none!important}
+.boss-manager #bossPanelConnection{padding:8px 1px}
+.boss-manager #bossPanelEvent{padding:10px 2px}
+.boss-manager #bossPanelEvent .event-switch{margin:0}
+.boss-manager #bossPanelRestart #webRestart{display:block;width:100%;min-height:46px;background:#78432c;border:1px solid #ba7951;color:#fff;font-weight:700;border-radius:9px;margin:12px 0}
+.boss-manager #bossPanelRestart #webRestart:disabled{opacity:.55}
+.boss-manager #bossPanelConnection .sync-strip{margin-top:8px}
+
+/* V19.0.5: prevent iOS input-focus auto zoom, preserve accessible pinch-zoom. */
+@media (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]), textarea, select,
+  #setupPanel input:not([type="checkbox"]), .dock-row input, .wait-header select {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
+  }
+  .dock-row {min-width:0;}
+  .dock-row input {min-width:0; flex:1 1 0%; width:1px;}
+  .dock-row button {flex:0 0 auto; min-width:68px;}
+  .command-dock {bottom:var(--lw-keyboard-inset, 0px) !important;}
+}
+</style><script>
+(function(){
+ const setup=document.getElementById('setupPanel');
+ const ui=document.createElement('section');ui.className='boss-manager';
+ ui.innerHTML=`<div class="manager-head"><h3>⚙ Boss 設定管理</h3><button type="button" id="bossLoad">重新讀取</button></div>
+ <div class="boss-tabs" role="tablist" aria-label="Boss 類別">
+  <button type="button" class="boss-tab active" id="bossTabConnection" role="tab" aria-selected="true">🔗 連線設定</button>
+  <button type="button" class="boss-tab" id="bossTabEvent" role="tab" aria-selected="false">💥 逆襲活動</button>
+  <button type="button" class="boss-tab" id="bossTabWild" role="tab" aria-selected="false">🗺 地圖王</button>
+  <button type="button" class="boss-tab" id="bossTabFixed" role="tab" aria-selected="false">🗓 固定王</button>
+  <button type="button" class="boss-tab" id="bossTabHistory" role="tab" aria-selected="false">📋 操作紀錄</button><button type="button" class="boss-tab" id="bossTabRestart" role="tab" aria-selected="false">↻ Restart</button>
+ </div><p id="bossEditStatus" role="status">請先連線，再按「重新讀取」。</p>
+ <div class="boss-panel" id="bossPanelConnection" hidden></div>
+ <div class="boss-panel" id="bossPanelHistory" hidden>
+ <div class="manager-head"><h3>本隊操作紀錄（最近 30 筆）</h3><button type="button" id="operationHistoryLoad">重新讀取</button></div>
+ <div class="operation-filters"><label>操作類型<select id="operationType"><option value="">全部</option><option>K</option><option>Z</option><option>T</option><option>Restart</option><option>逆襲活動</option><option>地圖王設定</option><option>固定王設定</option></select></label><label>日期<input type="date" id="operationDate"></label><label>Boss 名稱<input id="operationBoss" type="search" placeholder="輸入王名" autocomplete="off"></label></div>
+ <div id="operationHistoryStatus" role="status">尚未讀取，請點重新讀取</div><div id="operationHistoryList" class="config-history"></div></div>
+ <div class="boss-panel" id="bossPanelRestart" hidden><p>重置本隊 25 隻地圖王的出生與擊殺狀態；固定王、Key、活動設定及擊殺歷史保留。此操作無法復原。</p></div>
+ <div class="boss-panel" id="bossPanelEvent" hidden></div>
+ <div class="boss-panel" id="bossPanelWild" hidden><p>地圖王設定只影響本隊；本隊野外王計時中不可修改。</p><div id="bossEditList" class="boss-edit-list"></div>
+ </div>
+ <div class="boss-panel" id="bossPanelFixed" hidden><p>固定王本隊獨立排程：名稱、時間與星期直接修改，按「儲存」更新整組；「刪除」移除整組。請謹慎操作。</p><div id="fixedEditList"></div><div class="manager-separator"></div><div class="manager-separator"></div><h3>特殊固定王</h3><div class="fixed-row"><span>萊茵哈德</span><span>每日 01、03…23 時；時間到切下一場，免 K/Z</span></div></div>`;
+
+ setup.prepend(ui);
+ const get=id=>document.getElementById(id), offsets={};
+ [['尼羅德',0],['夫人',0],['飛龍3',40],['飛龍4',40],['卡司特王',60],['大腳',90],['黑虎',120],['德雷克',130],['莫莉提亞',150],['奧杜亞',150],['飛龍1',160],['飛龍2',160],['殺戮者',190],['麥肯',210],['蜥蜴王',220],['烏勒庫斯',270],['奈克諾斯',270],['二巨',270],['庫約',280],['拉馬修',300],['庫爾託',310],['四色',330],['哈格瑪',340],['克洛林',360],['史前巨鱷',370]].forEach(([n,x])=>offsets[n]=x);
+ const excluded=new Set(['奧杜亞','四色','克洛林']);
+ // Preserve the existing connection form and the existing event-toggle controls;
+ // move the DOM nodes rather than replacing them (keeps all bound handlers/state intact).
+ const connectPanel=get('bossPanelConnection'),eventPanel=get('bossPanelEvent');
+ const restartPanel=get('bossPanelRestart'),restartButton=get('webRestart');
+ if(restartButton){restartPanel.append(restartButton);restartButton.textContent='Restart 重置本隊地圖王';}
+ const eventBar=setup.querySelector('.event-switch');
+ for(const child of Array.from(setup.children)){
+  if(child!==ui && child!==eventBar)connectPanel.append(child);
+ }
+ if(eventBar)eventPanel.append(eventBar);
+ const tabMap=[['Connection','bossPanelConnection'],['Event','bossPanelEvent'],['Wild','bossPanelWild'],['Fixed','bossPanelFixed'],['History','bossPanelHistory'],['Restart','bossPanelRestart']];
+ function showSettingsTab(selected){
+  for(const [key,panel] of tabMap){const active=selected===key;get(panel).hidden=!active;
+   const tab=get('bossTab'+key);tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));}
+  // The edit status is only relevant for boss editing, not connection/activity pages.
+  get('bossEditStatus').hidden=selected==='Connection'||selected==='Event'||selected==='Restart'||selected==='History';
+  get('bossLoad').hidden=selected==='Connection'||selected==='Event'||selected==='Restart'||selected==='History';
+ }
+ for(const [key] of tabMap)get('bossTab'+key).onclick=()=>showSettingsTab(key);
+ showSettingsTab('Connection');
+ let operationRows=[];
+ const operationArea=document.getElementById('operationHistoryList');
+ function renderOperationHistory(){
+  const type=get('operationType').value,date=get('operationDate').value,needle=get('operationBoss').value.trim().toLowerCase();
+  const rows=operationRows.filter(r=>(!type||r.type===type)&&(!needle||String(r.boss||'').toLowerCase().includes(needle))&&(!date||(()=>{const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(r.at));const v=k=>parts.find(x=>x.type===k).value;return `${v('year')}-${v('month')}-${v('day')}`})()===date));
+  operationArea.replaceChildren();
+  for(const r of rows){
+   const card=document.createElement('div');card.className='history-item';
+   const head=document.createElement('strong');head.textContent=`${new Date(r.at).toLocaleString('zh-TW',{timeZone:'Asia/Taipei',hour12:false})}｜${r.type}${r.boss?'｜'+r.boss:''}`;
+   const desc=document.createElement('div');desc.textContent=r.summary||'';card.append(head,desc);
+   if(r.before!==null&&r.before!==undefined){const diff=document.createElement('div');diff.textContent='修改前：'+JSON.stringify(r.before)+'；修改後：'+JSON.stringify(r.after);card.append(diff)}
+   if(r.operator){const op=document.createElement('div');op.textContent='來源：'+r.operator;card.append(op)}
+   operationArea.append(card);
+  }
+  get('operationHistoryStatus').textContent=`顯示 ${rows.length} 筆（已載入 ${operationRows.length} 筆）`;
+ }
+ for(const id of ['operationType','operationDate','operationBoss'])get(id).addEventListener('input',renderOperationHistory);
+ get('operationHistoryLoad').onclick=async()=>{
+  const url=get('url').value.trim().replace(/\/$/,'');const key=get('key').value;
+  if(!/^https:\/\//.test(url)||!key){get('operationHistoryStatus').textContent='請先完成連線設定及輸入 Key';return;}
+  get('operationHistoryStatus').textContent='讀取中…';
+  try{const r=await fetch(url+'/api/operation-history?team='+TEAM,{headers:{Authorization:'Bearer '+key},cache:'no-store'});const j=await r.json();if(!r.ok)throw Error(j.error||String(r.status));operationRows=Array.isArray(j.history)?j.history:[];renderOperationHistory();}
+  catch(e){get('operationHistoryStatus').textContent='讀取失敗：'+e.message}
+ };
+
+
+ let data={};
+ const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n};
+ function field(parent,title,value,type='number',name=''){const l=el('label','',title),i=el('input');i.type=type;i.value=value??'';i.dataset.field=name;i.autocomplete='off';if(type==='number'){i.min='0';i.step='any'}else i.maxLength=32;l.append(i);parent.append(l);return i}
+ function row(id,b){
+ const wrap=el('article','boss-edit-row'),top=el('div','edit-main');top.append(el('div','edit-name',b.name||id));
+ const participates=typeof b.participatesInEvent==='boolean'?b.participatesInEvent:!excluded.has(b.name);
+ const options=el('div','edit-options'),label=el('label','','參與逆襲'),toggle=el('input');toggle.type='checkbox';toggle.checked=participates;toggle.dataset.field='participatesInEvent';label.prepend(toggle);options.append(label);top.append(options);
+ const save=el('button','edit-save','存');save.type='button';top.append(save);wrap.append(top);
+ const f=el('div','edit-fields');field(f,'重生（小時）',b.cooldownHours,'number','cooldownHours');field(f,'首輪時距（分鐘）',b.spawnOffsetMinutes??offsets[b.name]??0,'number','spawnOffsetMinutes');wrap.append(f);
+ const aliases=el('div','alias-row');for(let i=0;i<3;i++)field(aliases,'別名 '+(i+1),b.aliases?.[i]??'','text','alias'+i);wrap.append(aliases);
+ const result=el('span','row-result','');result.setAttribute('role','status');wrap.append(result);
+ save.onclick=async()=>{const value=name=>wrap.querySelector('[data-field="'+name+'"]')?.value.trim();const numeric=name=>{const s=value(name);return s===''?NaN:Number(s)};const cfg={cooldownHours:numeric('cooldownHours'),spawnOffsetMinutes:numeric('spawnOffsetMinutes'),participatesInEvent:toggle.checked,aliases:[0,1,2].map(i=>value('alias'+i)).concat(Array.isArray(b.aliases)?b.aliases.slice(3):[])};
+ if(!Number.isFinite(cfg.cooldownHours)||cfg.cooldownHours<=0||cfg.cooldownHours>168||!Number.isInteger(cfg.spawnOffsetMinutes)||cfg.spawnOffsetMinutes<0){result.textContent='數值無效：週期須大於 0；偏移須為非負整數';return}
+ if(!confirm('儲存'+TEAM+'隊「'+b.name+'」設定？\n本隊野外王需已清空。'))return;
+ save.disabled=true;result.textContent='儲存中…';try{const r=await fetch(get('url').value.trim().replace(/\/$/,'')+'/api/boss-config',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+get('key').value},body:JSON.stringify({team:TEAM,id,config:cfg})});const j=await r.json();if(!r.ok)throw Error(j.error||String(r.status));data[id]=j.config;result.textContent=j.historyRecorded===false?'✓ 設定已儲存，但修改紀錄寫入失敗':'✓ 儲存成功，已記錄修改';}catch(e){result.textContent='儲存失敗：'+e.message}finally{save.disabled=false}
+ };return wrap}
+
+ // Team-local creation is performed by the authenticated API; never edit shared config.
+ (function initCreateBoss(){
+  const wild=get('bossPanelWild'),fixed=get('bossPanelFixed');
+  const make=(parent,kind)=>{
+   const box=el('div','boss-new');box.style.cssText='border:1px solid #54657a;border-radius:10px;padding:12px;margin:12px 0';
+   const title=el('h3','',kind==='wild'?'＋ 新增地圖王':'＋ 新增固定王');box.append(title);
+   const name=field(box,'Boss 名稱','','text','newName');name.maxLength=60;
+   let hours,offset,aliases=[],event,clock,days=[];
+   if(kind==='wild'){
+    hours=field(box,'重生（小時）','4','number');offset=field(box,'首輪累計時距（分鐘）','0','number');
+    for(let i=0;i<3;i++)aliases.push(field(box,'別名 '+(i+1),'','text'));
+    const l=el('label','', '參與逆襲');event=el('input');event.type='checkbox';event.checked=false;l.prepend(event);box.append(l);
+   }else{
+    clock=field(box,'時間 HH:MM','19:00','text');const dbox=el('div','fixed-days');
+    for(let i=1;i<=7;i++){const day=i%7;const label=el('label');const cb=el('input');cb.type='checkbox';cb.checked=true;label.append(cb,document.createTextNode('週'+['日','一','二','三','四','五','六'][day]));dbox.append(label);days.push({day,cb})}box.append(dbox);
+   }
+   const btn=el('button','edit-save','＋ 新增 Boss'),st=el('span','row-result','');btn.type='button';box.append(btn,st);parent.append(box);
+   btn.onclick=async()=>{
+    const config=kind==='wild'?{name:name.value.trim(),cooldownHours:Number(hours.value),spawnOffsetMinutes:Number(offset.value),participatesInEvent:event.checked,aliases:aliases.map(x=>x.value.trim())}:{bossName:name.value.trim(),time:clock.value.trim(),weekdays:days.filter(x=>x.cb.checked).map(x=>x.day)};
+    if(!config[kind==='wild'?'name':'bossName']){st.textContent='請輸入王名';return}
+    if(!confirm('新增本隊 '+(config.name||config.bossName)+'？'))return;
+    btn.disabled=true;st.textContent='新增中…';try{
+     const r=await fetch(get('url').value.trim().replace(/\/$/, '')+(kind==='wild'?'/api/boss-create':'/api/fixed-create'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+get('key').value},body:JSON.stringify({team:TEAM,config})});
+     const j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||r.status);st.textContent='✓ 新增成功';await get('bossLoad').onclick();
+    }catch(e){st.textContent='新增失敗：'+e.message}finally{btn.disabled=false}
+   };
+  };
+  // Wild addition needs a compatible LINE T/Restart migration; display no unsafe control.
+  const wildInfo=el('p','', '新增地圖王須同步升級 LINE T／Restart；此版先保留現有 25 隻，不開放新增，以免造成重置失敗。');wild.append(wildInfo);make(fixed,'fixed');
+ })();
+ get('bossLoad').onclick=async()=>{const url=get('url').value.trim().replace(/\/$/,'');if(!/^https:\/\//.test(url)||!get('key').value){get('bossEditStatus').textContent='請先填 Worker 網址及 Key';return}
+ get('bossEditStatus').textContent='讀取中…';try{const r=await fetch(url+'/api/board?team='+TEAM,{headers:{Authorization:'Bearer '+get('key').value},cache:'no-store'});const j=await r.json();if(!r.ok)throw Error(j.error||String(r.status));data=j.bosses||{};const list=get('bossEditList');list.replaceChildren();const entries=Object.entries(data).filter(([id,b])=>b&&b.enabled!==false).sort((a,b)=>(offsets[a[1].name]??999)-(offsets[b[1].name]??999));for(const [id,b] of entries)list.append(row(id,b));get('bossEditStatus').textContent='已載入 '+entries.length+' 隻地圖王（本隊獨立）；可逐隻編輯儲存。';
+ const fixed=get('fixedEditList');fixed.replaceChildren();const rawSchedules=Object.entries(j.fixedSchedules||{}).filter(([id,x])=>x&&typeof x==='object');
+ const grouped=new Map();for(const [id,x] of rawSchedules){const groupKey=JSON.stringify([x.bossName||'',x.time||'']);if(!grouped.has(groupKey))grouped.set(groupKey,{name:x.bossName||'',time:x.time||'',ids:[],weekdays:new Set()});const g=grouped.get(groupKey);g.ids.push(id);if(x.enabled!==false&&Number.isInteger(Number(x.weekday)))g.weekdays.add(Number(x.weekday));}
+ const days=['日','一','二','三','四','五','六'];
+ for(const g of [...grouped.values()].sort((a,b)=>a.time.localeCompare(b.time)||a.name.localeCompare(b.name))){
+  const card=el('article','fixed-edit-card'),f=el('div','fixed-edit-fields');const n=field(f,'固定王名稱',g.name,'text','fixedName');n.maxLength=60;const ti=field(f,'時間 HH:MM',g.time,'text','fixedTime');ti.maxLength=5;ti.placeholder='15:00';card.append(f);
+  const actions=el('div','fixed-edit-actions'),save=el('button','edit-save','儲存'),del=el('button','fixed-delete','刪除');save.type=del.type='button';actions.append(save,del);card.append(actions);
+  const daysBox=el('div','fixed-days'),checks=[];for(let i=1;i<=7;i++){const d=i%7,l=el('label'),input=el('input');input.type='checkbox';input.checked=g.weekdays.has(d);l.append(input,document.createTextNode('週'+days[d]));daysBox.append(l);checks.push({day:d,input})}card.append(daysBox);
+  const state=el('span','row-result','');state.setAttribute('role','status');card.append(state);fixed.append(card);
+  async function commit(action){const config={bossName:n.value.trim(),time:ti.value.trim(),weekdays:checks.filter(x=>x.input.checked).map(x=>x.day)};if(action==='save'&&(!config.bossName||!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(config.time)||!config.weekdays.length)){state.textContent='請填寫名稱、時間，並至少勾選一天';return}
+   if(!confirm(action==='delete'?'確定刪除'+TEAM+'隊「'+g.name+'」的所有星期排程？此操作無法復原。':'儲存「'+g.name+'」的'+TEAM+'隊星期排程？不影響另一隊。'))return;
+   save.disabled=del.disabled=true;state.textContent='儲存中…';try{const r=await fetch(get('url').value.trim().replace(/\/$/,'')+'/api/fixed-group',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+get('key').value},body:JSON.stringify({team:TEAM,action,ids:g.ids,config})});const j=await r.json();if(!r.ok)throw Error(j.error||String(r.status));state.textContent=j.historyRecorded===false?'✓ 已更新，但修改紀錄寫入失敗':'✓ 已更新且記錄修改';await get('bossLoad').onclick();showBossTab(true)}catch(e){state.textContent='操作失敗：'+e.message}finally{save.disabled=del.disabled=false}}
+  save.onclick=()=>commit('save');del.onclick=()=>commit('delete');
+ }
+ if(!grouped.size)fixed.append(el('p','', '目前沒有固定王排程'));
+ }catch(e){get('bossEditStatus').textContent='讀取失敗：'+e.message}};
+
+ // V19.0.2: fixed-boss audit reader. All record fields are rendered as text, not HTML.
+
+ // V19.0.2: team-private audit view; use textContent, never inject remote strings as HTML.
+
+})();
+ </script>
+ <script defer src="./icon-theme-six.js?v=2060"></script>
+<script src="./push-settings.js?v=19107"></script></body></html>

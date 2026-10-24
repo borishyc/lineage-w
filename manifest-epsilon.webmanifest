@@ -1,0 +1,24 @@
+{
+  "id": "/lineage-w/boss-epsilon.html",
+  "name": "天堂W 首領擊殺榜｜Epsilon",
+  "short_name": "天堂W Epsilon",
+  "start_url": "./boss-epsilon.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0d1219",
+  "theme_color": "#0b1019",
+  "icons": [
+    {
+      "src": "./icons/icon-epsilon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-epsilon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
