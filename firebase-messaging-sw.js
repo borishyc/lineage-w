@@ -1,4 +1,4 @@
-/* V19.0.7 Firebase background FCM receiver; no credentials. */
+/* V19.2.0 Firebase background FCM receiver; URL migration only. */
 importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js');
 firebase.initializeApp({"apiKey":"AIzaSyDBeZoh8YPH1laR9uK3mnbb0jAvBUxqFzQ","authDomain":"lwopendata.firebaseapp.com","projectId":"lwopendata","messagingSenderId":"133221637621","appId":"1:133221637621:web:623bf5e1da065071f194bc"});
@@ -10,9 +10,10 @@ messaging.onBackgroundMessage(payload=>{
  const tag=String(data.tag||'lineage-w-alert');
  const team=String(data.team||'');
  if(team!=='A'&&team!=='B')return;
- const url=team==='A'?'../team-a.html':'../team-b.html';
+ // Resolve relative to SW registration scope (/lineage-w/fcm-push/), not the script URL.
+ const url=new URL(team==='A'?'../boss-alpha.html':'../boss-beta.html',self.registration.scope).href;
  self.clients.matchAll({type:'window',includeUncontrolled:true}).then(clients=>{for(const client of clients)client.postMessage({type:'LW_FCM_BACKGROUND',team});}).catch(()=>{});
- return self.registration.showNotification(title,{body,tag,icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',data:{url}});
+ return self.registration.showNotification(title,{body,tag,icon:new URL('./icons/icon-192.png',self.location.href).href,badge:new URL('./icons/icon-192.png',self.location.href).href,data:{url}});
 });
 self.addEventListener('notificationclick',event=>{
  event.notification.close();
