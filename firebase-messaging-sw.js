@@ -13,7 +13,7 @@ messaging.onBackgroundMessage(payload=>{
  // Resolve relative to SW registration scope (/lineage-w/fcm-push/), not the script URL.
  const url=new URL(team==='A'?'../boss-alpha.html':'../boss-beta.html',self.registration.scope).href;
  self.clients.matchAll({type:'window',includeUncontrolled:true}).then(clients=>{for(const client of clients)client.postMessage({type:'LW_FCM_BACKGROUND',team});}).catch(()=>{});
- return self.registration.showNotification(title,{body,tag,icon:new URL('./icons/icon-192.png',self.location.href).href,badge:new URL('./icons/icon-192.png',self.location.href).href,data:{url}});
+ return self.registration.showNotification(title,{body,tag,icon:new URL(team==='A'?'./icons/icon-alpha-192.png':'./icons/icon-beta-192.png',self.location.href).href,badge:new URL(team==='A'?'./icons/icon-alpha-192.png':'./icons/icon-beta-192.png',self.location.href).href,data:{url}});
 });
 self.addEventListener('notificationclick',event=>{
  event.notification.close();
