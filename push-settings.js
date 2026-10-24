@@ -10,11 +10,11 @@
  const tab=document.createElement('button');tab.type='button';tab.id='bossTabPush';tab.className='boss-tab';tab.textContent='🔔 通知設定';tab.setAttribute('role','tab');tab.setAttribute('aria-selected','false');
  container.append(tab);
  const panel=document.createElement('div');panel.id='bossPanelPush';panel.className='boss-panel';panel.hidden=true;
- panel.innerHTML=`<h3>手機通知設定</h3><p class="push-note">本隊獨立訂閱。可測試目前手機是否能收到 FCM 通知；正式自動提醒仍須另外啟用。請先完成「連線設定」中的本隊 Key 授權。</p>
+ panel.innerHTML=`<h3>手機通知設定</h3><p class="push-note">本隊獨立訂閱。請先完成「連線設定」中的本隊 Key 授權，再設定正式通知提醒。</p>
  <input id="pushWorkerUrl" type="hidden" value="https://lineage-w-push-ab-test.boris-shi.workers.dev">
  <fieldset class="push-fieldset"><legend>出生前提醒</legend><label><input type="checkbox" name="pushMinutes" value="1"> 1 分鐘</label><label><input type="checkbox" name="pushMinutes" value="3" checked> 3 分鐘</label><label><input type="checkbox" name="pushMinutes" value="5" checked> 5 分鐘</label><label><input type="checkbox" name="pushMinutes" value="10"> 10 分鐘</label></fieldset>
  <fieldset class="push-fieldset"><legend>首領類型</legend><label><input type="checkbox" id="pushField" checked> 地圖王</label><label><input type="checkbox" id="pushFixed" checked> 固定王</label><label><input type="checkbox" id="pushSpecial" checked> 萊茵哈德</label></fieldset>
- <div class="push-actions"><button type="button" id="pushEnable" class="primary">啟用／更新本隊通知</button><button type="button" id="pushDisable">取消本隊訂閱</button><button type="button" id="pushSelfTest">🔔 測試這支手機（FCM）</button><button type="button" id="pushLocalTest">📱 測試本機通知</button></div>
+ <div class="push-actions"><button type="button" id="pushEnable" class="primary">啟用／更新本隊通知</button><button type="button" id="pushDisable">取消本隊訂閱</button></div>
  <p id="pushDiagnostic" role="status" aria-live="polite">診斷尚未開始。</p><p id="pushStatus" role="status" aria-live="polite">尚未註冊。需 HTTPS、瀏覽器允許通知及支援 FCM。</p>
  <p class="push-note">iPhone 請先將網站加入主畫面，再從主畫面開啟。若 A、B 都要收到通知，需分別到兩隊頁面授權訂閱。</p>`;
  container.parentNode.insertBefore(panel,container.nextSibling);
@@ -51,15 +51,6 @@
    }).catch(e=>diag('FCM 已收到，但系統顯示失敗：'+e.message));
   });foregroundHooked=true;}catch(e){diag('前景接收診斷不可用：'+e.message)}
  }
- async function localTest(){
-  try{
-   requireSupport();
-   if(Notification.permission!=='granted')throw Error('請先允許本機通知');
-   const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js',{scope:'./fcm-push/'});
-   await reg.showNotification('【'+TEAM+'隊】本機通知測試',{body:'這是手機直接顯示的通知，沒有經過 Cloudflare 或 Firebase。',tag:'lw-'+TEAM+'-local-'+Date.now(),icon:'./icons/icon-192.png'});
-   diag('已要求手機顯示【'+TEAM+'隊】本機通知；請查看通知中心或鎖定畫面');
-  }catch(e){diag('本機通知失敗：'+e.message)}
- }
 
  for(const other of container.querySelectorAll('button:not(#bossTabPush)'))other.addEventListener('click',()=>{panel.hidden=true;tab.classList.remove('active');tab.setAttribute('aria-selected','false');});
  tab.addEventListener('click',()=>{container.querySelector('#bossTabConnection')?.click();for(const p of document.querySelectorAll('.boss-manager .boss-panel'))p.hidden=true;container.querySelectorAll('button').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-selected','false')});panel.hidden=false;tab.classList.add('active');tab.setAttribute('aria-selected','true')});
@@ -84,27 +75,9 @@
   else if(Notification.permission!=='granted')throw Error('此裝置尚未取得通知權限，無法取得舊 Token；請先啟用通知後再取消');
   status('正在連線 Firebase 並更新本隊訂閱…');const token=await getToken();await send(disable?'/unsubscribe':'/subscribe',values,token);
   if(!disable)localStorage.setItem(preferencesKey,JSON.stringify({minutes:values.minutes,kinds:values.kinds}));
-  status(disable?`已取消 ${TEAM} 隊訂閱；另一隊不受影響`:`${TEAM} 隊訂閱成功！提醒選項已儲存，可使用「測試這支手機」。`);
+  status(disable?`已取消 ${TEAM} 隊訂閱；另一隊不受影響`:`${TEAM} 隊訂閱成功！提醒選項已儲存，正式推播設定已更新。`);
  }catch(e){status('操作失敗：'+e.message)}finally{busy=false;$('pushEnable').disabled=$('pushDisable').disabled=false}}
- async function selfTest(){
-  if(busy)return;busy=true;
-  const controls=[$('pushEnable'),$('pushDisable'),$('pushSelfTest'),$('pushLocalTest')];controls.forEach(x=>x.disabled=true);
-  try{
-   const values=verify();requireSupport();
-   if(Notification.permission!=='granted')throw Error('請先點「啟用／更新本隊通知」並允許通知');
-   status('正在對本隊目前手機發送 FCM 測試通知…');
-   const token=await getToken();
-   const res=await fetch(values.url+'/self-test',{method:'POST',headers:{Authorization:'Bearer '+values.key,'Content-Type':'application/json'},body:JSON.stringify({team:TEAM,token})});
-   const data=await res.json().catch(()=>({}));
-   if(!res.ok||!data.success){
-    if(data.error==='device_not_subscribed_to_team')throw Error('此手機尚未訂閱本隊；請先按「啟用／更新本隊通知」');
-    if(data.error==='test_rate_limited')throw Error(`測試過於頻繁，請在 ${data.retryAfterSeconds||60} 秒後重試`);
-    throw Error('通知測試失敗：'+(data.error||'HTTP '+res.status)+(data.detail?' ('+data.detail+')':''));
-   }
-   status(`已送出【${TEAM}隊】手機測試通知（FCM 已接受）。請鎖定手機螢幕查看是否收到；這不代表已實際送達。`);
-  }catch(e){status('測試失敗：'+e.message)}finally{busy=false;controls.forEach(x=>x.disabled=false)}
- }
  $('pushEnable').onclick=()=>act(false);$('pushDisable').onclick=()=>act(true);
- $('pushSelfTest').onclick=selfTest; $('pushLocalTest').onclick=localTest;
+ 
  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
