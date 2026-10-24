@@ -126,7 +126,7 @@ html,body{overscroll-behavior-y:none}
 }
 </style>
 <style>
-/* V19.1.0.1: dock occupies flex space; do not reserve its height twice in board-scroll. */
+/* V19.1.0.2: dock occupies flex space; do not reserve its height twice in board-scroll. */
 /* V19.1.0: dock contains both waiting list and input; board scroll never overlaps. */
 .command-dock{position:relative!important;bottom:auto!important;inset:auto!important;width:100%;z-index:1000;max-height:min(49dvh,345px);overflow:hidden}
 .command-dock .dock-inner{display:flex;flex-direction:column;max-height:min(49dvh,345px);min-height:0}
@@ -135,7 +135,24 @@ html,body{overscroll-behavior-y:none}
 .command-dock .dock-log,.command-dock .dock-row{flex-shrink:0}
 .board-scroll{min-height:0;flex:1 1 auto!important;overflow-y:auto!important}
 @media(max-width:760px){.dock-row input,input:not([type=checkbox]):not([type=radio]){font-size:16px!important}}
-</style></head><body class="team-b"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W 首領擊殺榜</h1><div class="subtitle">V19.1.0.1｜Restart・逐隻 K／T 首輪・王的逆襲</div></header><div id="setupPanel" hidden><div class="notice">群組 Key 首次驗證後，即可讀取及直接執行 K／Z／右滑擊殺。請僅在私人裝置記住 Key。</div><input id="url" type="hidden" value="https://lineage-w-board-api.boris-shi.workers.dev"><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 指令與 T 直接執行</h2>
+
+/* V19.1.0.3: settings-only mode, A/B user interface only. */
+body.settings-mode .board-scroll,
+body.settings-mode .command-dock,
+body.settings-mode .board-top > .filters,
+body.settings-mode .board-top > .stats,
+body.settings-mode .board-top > .restart-tools { display:none!important; }
+body.settings-mode .board-top {
+  flex:1 1 auto!important;
+  max-height:none!important;
+  min-height:0;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom, 0px));
+}
+body.settings-mode #setupPanel {display:block;}
+</style></head><body class="team-b"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W 首領擊殺榜</h1><div class="subtitle">V19.1.0.3｜Restart・逐隻 K／T 首輪・王的逆襲</div></header><div id="setupPanel" hidden><div class="notice">群組 Key 首次驗證後，即可讀取及直接執行 K／Z／右滑擊殺。請僅在私人裝置記住 Key。</div><input id="url" type="hidden" value="https://lineage-w-board-api.boris-shi.workers.dev"><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 指令與 T 直接執行</h2>
 <p>輸入後直接執行。K 可省略字首；Z 用於修正時間；T 會立即更新本隊 25 隻地圖王，不需預覽或二次確認。</p>
 <div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算</button></div>
 <div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
@@ -191,7 +208,24 @@ html,body{overscroll-behavior-y:none}
  const panel=document.getElementById('setupPanel');
  const diag=document.querySelector('details');
  if(diag)panel.appendChild(diag);
- const toggle=()=>{const opened=panel.hidden;panel.hidden=!opened;header.setAttribute('aria-expanded',String(opened));};
+ let savedBoardScroll=0,savedTopScroll=0;
+ const boardScroll=document.querySelector('.board-scroll');
+ const boardTop=document.querySelector('.board-top');
+ const toggle=()=>{
+  const opened=panel.hidden;
+  if(opened){
+    savedBoardScroll=boardScroll?.scrollTop||0;
+    savedTopScroll=boardTop?.scrollTop||0;
+  }
+  panel.hidden=!opened;
+  document.body.classList.toggle('settings-mode',opened);
+  header.setAttribute('aria-expanded',String(opened));
+  if(opened){if(boardTop)boardTop.scrollTop=0;}
+  else{
+    if(boardTop)boardTop.scrollTop=savedTopScroll;
+    if(boardScroll)boardScroll.scrollTop=savedBoardScroll;
+  }
+ };
  header.addEventListener('click',toggle);
  header.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
 })();
