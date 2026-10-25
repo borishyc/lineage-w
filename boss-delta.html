@@ -163,7 +163,8 @@ body.team-delta{--tone:#568fff}body.team-delta header{background:linear-gradient
 .guide-system{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.guide-system button.active{background:#286d91;border-color:#8fbfe4}.guide-foot{display:flex;justify-content:space-between;gap:8px;margin-top:18px}.guide-foot button{flex:1;min-height:44px}.guide-foot .primary{background:var(--tone);border-color:var(--tone)}
 .guide-note{border:1px solid #526c8a;border-radius:9px;padding:10px;background:#142238;color:#d4e5f5;font-size:12px}.guide-keyhint{color:#ffd78d;font-size:12px;margin:4px 0 9px}
 @media(max-width:460px){.guide-dialog{padding:13px}.guide-head h2{font-size:18px}}
-</style></head><body class="team-delta"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W 首領擊殺榜</h1><div class="subtitle">V19.2.0｜Restart・逐隻 K／T 首輪・王的逆襲</div></header><div id="setupPanel" hidden><div class="actions"><button type="button" id="openGuide" class="guide-launch">❔ 使用引導（Key／通知訂閱）</button></div><div class="notice">群組 Key 首次驗證後，即可讀取最新王表資訊。請僅在私人裝置記住 Key。</div><input id="url" type="hidden" value="https://lineage-w-board-api.boris-shi.workers.dev"><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 指令與 T 直接執行</h2>
+ .subtitle-event{color:#ff7777;font-weight:700}
+</style></head><body class="team-delta"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W 首領擊殺榜</h1><div class="subtitle">V19.2.0</div></header><div id="setupPanel" hidden><div class="actions"><button type="button" id="openGuide" class="guide-launch">❔ 使用引導（Key／通知訂閱）</button></div><div class="notice">群組 Key 首次驗證後，即可讀取最新王表資訊。請僅在私人裝置記住 Key。</div><input id="url" type="hidden" value="https://lineage-w-board-api.boris-shi.workers.dev"><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 指令與 T 直接執行</h2>
 <p>輸入後直接執行。K 可省略字首；Z 用於修正時間；T 會立即更新本隊 25 隻地圖王，不需預覽或二次確認。</p>
 <div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算</button></div>
 <div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
@@ -352,6 +353,30 @@ dockObserver.observe(document.querySelector('.command-dock'));
 setInterval(()=>tickWaiting(false),1000);
 renderWaiting();
 let currentEventActive=null;
+let displayTeamName="Delta 隊";
+function renderTeamSubtitle(){
+ const el=document.querySelector('#settingsHeader .subtitle');
+ if(!el)return;
+ el.textContent=displayTeamName;
+ if(currentEventActive===true){
+  const accent=document.createElement('span');accent.className='subtitle-event';
+  accent.textContent='・王的逆襲';el.append(accent);
+ }
+ el.append(document.createTextNode('｜V19.2.0'));
+}
+async function loadTeamDisplayName(){
+ try{
+  const response=await fetch('https://lineage-w-admin-test.boris-shi.workers.dev/api/public/team-names',{cache:'no-store'});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  const data=await response.json();
+  const label=data?.teams?.[TEAM];
+  if(typeof label==='string' && label.trim())displayTeamName=label.trim().slice(0,60);
+ }catch(_e){ /* Retain last display name; never block boss functions. */ }
+ renderTeamSubtitle();
+}
+renderTeamSubtitle();loadTeamDisplayName();
+setInterval(loadTeamDisplayName,300000);
+
 const restartButton=$('webRestart');
 restartButton.addEventListener('click',async()=>{
  if(!hasConnected||!groupReady())return;
@@ -364,7 +389,7 @@ restartButton.addEventListener('click',async()=>{
  }catch(e){alert('Restart 失敗：'+e.message)}finally{restartButton.textContent='Restart 重置野外王';restartButton.disabled=!hasConnected;}
 });
 const eventButton=$('eventToggle');
-function renderEventSwitch(){if(restartButton)restartButton.disabled=!hasConnected||fetching;
+function renderEventSwitch(){renderTeamSubtitle();if(restartButton)restartButton.disabled=!hasConnected||fetching;
  $('eventState').textContent=currentEventActive===null?'連線後讀取':currentEventActive?'活動中':'活動關閉';
  eventButton.textContent=currentEventActive===null?'開關設定':currentEventActive?'關閉活動':'開啟活動';
  eventButton.classList.toggle('on',currentEventActive===true);
