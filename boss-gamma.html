@@ -153,13 +153,23 @@ body.settings-mode .board-top {
 }
 body.settings-mode #setupPanel {display:block;}
 body.team-gamma{--tone:#a985ee}body.team-gamma header{background:linear-gradient(120deg,#27354a,#132033)}
-</style></head><body class="team-gamma"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W 首領擊殺榜</h1><div class="subtitle">V19.2.0｜Restart・逐隻 K／T 首輪・王的逆襲</div></header><div id="setupPanel" hidden><div class="notice">群組 Key 首次驗證後，即可讀取及直接執行 K／Z／右滑擊殺。請僅在私人裝置記住 Key。</div><input id="url" type="hidden" value="https://lineage-w-board-api.boris-shi.workers.dev"><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 指令與 T 直接執行</h2>
+</style><style>
+/* V19.2.0 embedded onboarding; standalone UI, leaves original commands and push logic intact */
+.guide-launch{background:#285477;border-color:#678eb9;font-size:13px;padding:9px 12px}
+.guide-shade[hidden]{display:none!important}.guide-shade{position:fixed;inset:0;background:#050a12d9;z-index:5000;display:flex;align-items:center;justify-content:center;padding:12px;overscroll-behavior:contain}
+.guide-dialog{width:min(100%,510px);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;background:#1b2b40;border:1px solid #7891b1;border-radius:14px;padding:17px;box-shadow:0 20px 60px #000a;color:#f2f6ff}
+.guide-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.guide-head h2{margin:0;font-size:20px;color:#e9be70}.guide-x{min-width:39px;min-height:39px;font-size:19px}
+.guide-progress{color:#c2d4eb;margin:10px 0;font-size:12px}.guide-screen{font-size:14px;line-height:1.8}.guide-screen p{margin:9px 0}.guide-screen ol{padding-left:22px}.guide-screen li{margin:6px 0}.guide-screen strong{color:#ffe1a2}
+.guide-system{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.guide-system button.active{background:#286d91;border-color:#8fbfe4}.guide-foot{display:flex;justify-content:space-between;gap:8px;margin-top:18px}.guide-foot button{flex:1;min-height:44px}.guide-foot .primary{background:var(--tone);border-color:var(--tone)}
+.guide-note{border:1px solid #526c8a;border-radius:9px;padding:10px;background:#142238;color:#d4e5f5;font-size:12px}.guide-keyhint{color:#ffd78d;font-size:12px;margin:4px 0 9px}
+@media(max-width:460px){.guide-dialog{padding:13px}.guide-head h2{font-size:18px}}
+</style></head><body class="team-gamma"><header id="settingsHeader" class="settings-toggle" role="button" tabindex="0" aria-controls="setupPanel" aria-expanded="false" title="點擊展開或收合設定"><h1>天堂W 首領擊殺榜</h1><div class="subtitle">V19.2.0｜Restart・逐隻 K／T 首輪・王的逆襲</div></header><div id="setupPanel" hidden><div class="actions"><button type="button" id="openGuide" class="guide-launch">❔ 使用引導（Key／通知訂閱）</button></div><div class="notice">群組 Key 首次驗證後，即可讀取最新王表資訊。請僅在私人裝置記住 Key。</div><input id="url" type="hidden" value="https://lineage-w-board-api.boris-shi.workers.dev"><label>群組 Key<input id="key" type="password" autocomplete="off" placeholder="至少 32 字元"></label><div class="remember-box"><label class="remember-toggle"><input id="rememberKey" type="checkbox"> <span>記住群組 Key（僅限私人裝置）</span></label><button type="button" id="clearSaved">清除已儲存設定</button><span id="rememberStatus" class="muted" role="status" aria-live="polite"></span><p class="remember-hint">Worker 網址會在成功連線後記住；金鑰只有勾選後才會儲存在此瀏覽器。共用電腦請勿勾選。</p></div><div class="write-arming"><p class="remember-hint">授權成功後即可直接寫入；每次擊殺仍需右滑露出擊殺鍵再點選。若共用裝置請勿記住 Key。</p></div><div class="actions"><button class="primary" id="go">連線並授權</button><span id="lastFetch" class="muted">尚未讀取；首次成功後每 30 秒自動同步</span></div><p id="status" class="muted">等待連線</p><div class="sync-strip" aria-live="polite"><span id="syncDot" class="sync-dot"></span><strong id="syncLabel">尚未連線</strong><span id="syncDetail">首次成功後啟用每 30 秒自動同步</span><span class="right" id="syncClock">—</span></div></div><section class="cmd-panel" aria-labelledby="cmdTitle"><h2 id="cmdTitle">K／Z 指令與 T 直接執行</h2>
 <p>輸入後直接執行。K 可省略字首；Z 用於修正時間；T 會立即更新本隊 25 隻地圖王，不需預覽或二次確認。</p>
 <div class="cmd-actions" role="group" aria-label="選擇指令"><button type="button" class="selected" data-cmd="K">K 擊殺</button><button type="button" data-cmd="Z">Z 修正</button><button type="button" data-cmd="T">T 推算</button></div>
 <div class="cmd-grid"><label>首領名稱<input id="cmdBoss" list="cmdBossNames" placeholder="例如：德雷克" autocomplete="off"></label><label>台灣時間 HHMM<input id="cmdTime" inputmode="numeric" maxlength="4" placeholder="例如：1432" autocomplete="off"></label></div>
 <datalist id="cmdBossNames"></datalist><button type="button" id="cmdPreview">檢查指令（不執行）</button>
 <div class="write-zone"><label>此隊獨立寫入金鑰（不儲存）<input id="writeKey" type="password" autocomplete="off" placeholder="BOARD_WRITE_KEY 專用，不是讀取金鑰"></label><label class="write-check"><input id="writeAgree" type="checkbox"> 我已核對隊伍、首領及擊殺時間</label><button type="button" id="cmdCommit" disabled>確認並執行 K／Z 寫入</button><p class="muted">必須先通過「檢查指令」，才能執行。寫入後會同步至 LINE 王表。</p></div><p class="cmd-label">驗證／執行結果</p><div class="cmd-output" id="cmdOutput" role="status" aria-live="polite">請先選擇指令、輸入首領及時間。</div>
-<p>注意：本版 K／Z 在寫入金鑰、檢查與二次確認後將修改此隊 Firebase 與 LINE 共用的王表資料。T 從底部指令列直接計算並寫入本隊 25 隻地圖王，不需預覽或再次確認。寫入金鑰不儲存。</p></section><div class="pick-hint">提示：點選野外首領卡片，可帶入下方 K／Z／T 輸入欄位（不會執行指令）。</div><div class="filters"><button data-filter="all" class="active">全部</button><button data-filter="field">野外首領</button><button data-filter="fixed">固定首領</button></div><div class="stats"><span>首領列表（台灣時間）</span><span id="count">0 筆</span></div><main id="list"></main><details><summary>安全診斷（不顯示金鑰）</summary><pre id="diag"></pre></details><div class="command-dock" aria-label="固定指令操作列"><div class="dock-inner"><div class="wait-header"><strong>⚔ 待擊殺區</strong><label>保留時間 <select id="waitMinutes" aria-label="待擊殺區保留時間"><option value="5">5 分鐘</option><option value="10">10 分鐘</option></select></label></div><div id="waitingArea" class="waiting-area" aria-live="polite"></div><div id="dockLog" class="dock-log" role="status" aria-live="polite">請先連線授權</div><div class="dock-row"><input id="dockCommand" placeholder="海賊 0857、海賊 或 T 德雷克 0857" autocomplete="off" aria-label="輸入指令"><button id="dockSend" type="button">送出</button></div></div></div><script>
+<p>注意：本版 K／Z 在寫入金鑰、檢查與二次確認後將修改此隊 Firebase 與 LINE 共用的王表資料。T 從底部指令列直接計算並寫入本隊 25 隻地圖王，不需預覽或再次確認。寫入金鑰不儲存。</p></section><div class="pick-hint">提示：點選野外首領卡片，可帶入下方 K／Z／T 輸入欄位（不會執行指令）。</div><div class="filters"><button data-filter="all" class="active">全部</button><button data-filter="field">野外首領</button><button data-filter="fixed">固定首領</button></div><div class="stats"><span>首領列表（台灣時間）</span><span id="count">0 筆</span></div><main id="list"></main><details><summary>安全診斷（不顯示金鑰）</summary><pre id="diag"></pre></details><div class="command-dock" aria-label="固定指令操作列"><div class="dock-inner"><div class="wait-header"><strong>⚔ 待擊殺區</strong><label>保留時間 <select id="waitMinutes" aria-label="待擊殺區保留時間"><option value="5">5 分鐘</option><option value="10">10 分鐘</option></select></label></div><div id="waitingArea" class="waiting-area" aria-live="polite"></div><div id="dockLog" class="dock-log" role="status" aria-live="polite">請先連線授權</div><div class="dock-row"><input id="dockCommand" placeholder="海賊 0857、海賊 或 T 德雷克 0857" autocomplete="off" aria-label="輸入指令"><button id="dockSend" type="button">送出</button></div></div></div><div id="guideShade" class="guide-shade" hidden><section class="guide-dialog" role="dialog" aria-modal="true" aria-labelledby="guideTitle" tabindex="-1"><div class="guide-head"><h2 id="guideTitle">首次使用｜操作引導</h2><button id="guideClose" type="button" class="guide-x" aria-label="關閉使用引導">✕</button></div><div id="guideProgress" class="guide-progress"></div><div id="guideScreen" class="guide-screen"></div><div class="guide-foot"><button id="guideBack" type="button">上一步</button><button id="guideNext" type="button" class="primary">下一步</button></div></section></div><script>
 /* V19.0.5: keyboard-safe bottom command bar without disabling page zoom. */
 (function(){
   if (!window.visualViewport) return;
@@ -395,7 +405,7 @@ async function refreshBoard(manual=false){
  liveRows=rows; reconcileWaiting(rows); renderBoard();
  currentEventActive=j.eventActive===true;
  hasConnected=true;lastSync=Date.now();syncError=false;saveOnSuccess();renderEventSwitch();
- $('status').textContent=(waitingForT?'⚠ 本隊已 Restart；可逐隻 K 或直接執行 T，未記錄的野外王保持空白。｜':'同步成功（每 30 秒自動更新）：')+entries.length+' 筆原始狀態｜野外首領 '+rows.filter(x=>!x.fixed).length+' 筆｜今日固定首領 '+rows.filter(x=>x.fixed).length+' 筆';
+ $('status').textContent='';
  $('lastFetch').textContent='最後讀取：'+new Date().toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour12:false});
  }catch(e){syncError=true;$('status').textContent='同步失敗（保留上次畫面）：'+e.message;$('diag').textContent=JSON.stringify({team:TEAM,error:e.message},null,2)}finally{fetching=false;updateSyncUI();renderEventSwitch()}
 }
@@ -802,4 +812,45 @@ window.addEventListener('DOMContentLoaded',restoreSaved);
 })();
  </script>
  <script defer src="./icon-theme-six.js?v=2060"></script>
-<script src="./push-settings.js?v=19107"></script></body></html>
+<script>
+/* Embedded onboarding. No credentials copied into the guide; no push API invoked on behalf of the user. */
+(function(){
+ const shade=document.getElementById('guideShade');
+ const screen=document.getElementById('guideScreen');
+ const progress=document.getElementById('guideProgress');
+ const dialog=shade.querySelector('.guide-dialog');
+ const keyField=document.getElementById('key');
+ const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ const isAndroid=/Android/i.test(navigator.userAgent);
+ let platform=isIOS?'ios':isAndroid?'android':'ios',step=0,lastFocus=null;
+ const total=4;
+ const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+ function h(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+ function render(){
+  progress.textContent='步驟 '+(step+1)+'／'+total;
+  const screens=[
+   '<p><strong>歡迎使用 C 隊首領擊殺榜</strong></p><p>首次使用，只要完成群組 Key 授權，接著依手機系統設定通知即可。</p><p class="guide-note">本引導不會替你儲存 Key，也不會自動開啟通知權限。</p>',
+   '<p><strong>輸入 C 隊群組 Key</strong></p><ol><li>向管理者取得 C 隊的群組 Key（至少 32 字元）。</li><li>點下方「前往輸入 Key」，在設定頁貼上。</li><li>按「連線並授權」，確認顯示「已連線」。</li></ol><p class="guide-keyhint">只在私人裝置勾選「記住群組 Key」；共用裝置不要勾選。</p>',
+   '<p><strong>選擇你的手機系統</strong></p><div class="guide-system"><button type="button" data-platform="ios" class="'+(platform==='ios'?'active':'')+'">iPhone／iPad</button><button type="button" data-platform="android" class="'+(platform==='android'?'active':'')+'">Android</button></div>'+(platform==='ios'?'<ol><li>請用 <strong>Safari</strong> 開啟本王表。</li><li>點 Safari 的「分享」，選「加入主畫面」。</li><li>從主畫面圖示重新開啟王表，再進行通知訂閱。</li></ol><p class="guide-note">iPhone 網頁推播需要 iOS／iPadOS 16.4 以上，並透過主畫面網頁 App 訂閱。'+(standalone?'目前偵測為主畫面 App。':'目前未偵測到主畫面 App；若已安裝，請從主畫面開啟。')+'</p>':'<ol><li>請用 <strong>Chrome</strong> 開啟王表。</li><li>Android Chrome 一般可直接允許網頁通知。</li><li>建議從 Chrome 選單「安裝應用程式／加入主畫面」，方便日後使用。</li></ol>'),
+   '<p><strong>訂閱 Boss 出生提醒</strong></p><ol><li>先確認 C 隊 Key 已成功授權。</li><li>在王表頁面尋找「訂閱提醒／通知設定」，依畫面操作。</li><li>若系統詢問通知權限，請選「允許」。</li><li>確認訂閱介面顯示成功，必要時用系統提供的測試通知驗證。</li></ol><p class="guide-note">本 HTML 的訂閱功能由外部 push-settings.js 載入；若沒有出現訂閱功能，請確認部署時已一併保留該檔案及相關 Service Worker。單純允許通知，不代表訂閱已成功。</p>'
+  ];
+  screen.innerHTML=screens[step];
+  document.getElementById('guideBack').disabled=step===0;
+  document.getElementById('guideNext').textContent=step===total-1?'完成':'下一步';
+  screen.querySelectorAll('[data-platform]').forEach(b=>b.addEventListener('click',()=>{platform=b.dataset.platform;render();}));
+  if(step===1){const b=document.createElement('button');b.type='button';b.textContent='前往輸入 Key';b.className='primary';b.addEventListener('click',()=>{close();openSettings();keyField.focus();});screen.appendChild(b);}
+ }
+ function openSettings(){const p=document.getElementById('setupPanel');if(p.hidden)document.getElementById('settingsHeader').click();}
+ function open(){lastFocus=document.activeElement;step=0;shade.hidden=false;document.body.style.setProperty('--guide-open','1');render();dialog.focus();}
+ function close(){shade.hidden=true;document.body.style.removeProperty('--guide-open');if(lastFocus&&typeof lastFocus.focus==='function')lastFocus.focus();}
+ document.getElementById('openGuide').addEventListener('click',open);
+ document.getElementById('guideClose').addEventListener('click',close);
+ document.getElementById('guideBack').addEventListener('click',()=>{if(step>0){step--;render();}});
+ document.getElementById('guideNext').addEventListener('click',()=>{if(step<total-1){step++;render();}else{try{localStorage.setItem('lw-guide-seen-C-v1920','yes');}catch(e){}close();openSettings();}});
+ shade.addEventListener('click',e=>{if(e.target===shade)close();});
+ document.addEventListener('keydown',e=>{if(shade.hidden)return;if(e.key==='Escape'){close();return;}if(e.key==='Tab'){const nodes=[...shade.querySelectorAll('button:not([disabled])')];const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
+ // On first visit, expose settings and the guide; avoid covering the board on returning devices.
+ let seen=false;try{seen=localStorage.getItem('lw-guide-seen-C-v1920')==='yes';}catch(e){}
+ if(!seen){openSettings();open();}
+})();
+</script><script src="./push-settings.js?v=19107"></script></body></html>
