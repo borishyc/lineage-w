@@ -511,7 +511,7 @@ async function submitDock(raw,source='指令'){
  if(!url.startsWith('https://')||!key){dockMessage('請先設定 Worker 網址與群組 Key','bad');return}
  if(Date.now()-lastActionAt<1200){dockMessage('操作太快，請稍後再試','bad');return}
  submitting=true;lastActionAt=Date.now();$('dockSend').disabled=true;document.querySelector('.command-dock').classList.add('busy');
- dockMessage('寫入中｜'+cmd.action+' '+cmd.boss+' '+cmd.hhmm,'working');
+ // K/Z writes silently; show status only after server confirmation.
  try{
   if(!isArmed())throw Error('群組授權已失效，請重新連線');
   const requestId=crypto.randomUUID().replace(/-/g,'');
