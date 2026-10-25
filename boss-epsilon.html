@@ -511,16 +511,9 @@ async function submitDock(raw,source='指令'){
  if(!url.startsWith('https://')||!key){dockMessage('請先設定 Worker 網址與群組 Key','bad');return}
  if(Date.now()-lastActionAt<1200){dockMessage('操作太快，請稍後再試','bad');return}
  submitting=true;lastActionAt=Date.now();$('dockSend').disabled=true;document.querySelector('.command-dock').classList.add('busy');
- dockMessage('檢查中｜'+cmd.action+' '+cmd.boss+' '+cmd.hhmm,'working');
+ dockMessage('寫入中｜'+cmd.action+' '+cmd.boss+' '+cmd.hhmm,'working');
  try{
-  const check=await fetch(url+'/api/command-check',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({...cmd}),cache:'no-store'});
-  const c=await check.json();if(!check.ok)throw Error(check.status===404||check.status===405?'目前 Worker 不支援擊殺驗證 API（/api/command-check）；已阻止寫入，請勿重複點擊':'檢查失敗：'+(c.error||check.status));
-  if(c.team!==TEAM)throw Error('安全驗證失敗：伺服器回傳的隊伍不一致');
-  if(!c.valid)throw Error('未通過 K／Z 驗證：'+(c.warnings||[]).join('；'));
-  if(!Number.isFinite(Number(c.killedAt))||!Number.isFinite(Number(c.respawnAt)))throw Error('安全驗證失敗：伺服器時間資料不完整');
-  if(typeof c.boss!=='string'||!c.boss)throw Error('伺服器未回傳正式王名');
   if(!isArmed())throw Error('群組授權已失效，請重新連線');
-  dockMessage('寫入中｜'+cmd.action+' '+c.boss+' '+cmd.hhmm,'working');
   const requestId=crypto.randomUUID().replace(/-/g,'');
   const res=await fetch(url+'/api/command-commit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({...cmd,requestId}),cache:'no-store'});
   const j=await res.json();if(!res.ok)throw Error(res.status===404||res.status===405?'Worker 不支援擊殺寫入 API；未確認資料更動':'寫入失敗：'+(j.error||res.status));
