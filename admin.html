@@ -33,10 +33,20 @@ function draw(){
   const boardUrl=fixedBoardUrl(t);
   inner+=`<div class="url-controls"><strong>Boss 王表固定網址</strong><code class="board-url">${escapeHtml(boardUrl)}</code><button class="secondary" data-open-board="${t}" type="button">開啟王表</button><button class="secondary" data-copy-board="${t}" type="button">複製王表網址</button><small>此網址為固定連結，無法在管理頁修改。</small></div>`;
   for(const item of group.groups||[]){
-   inner+=`<article><small>${escapeHtml(item.label||'未命名')}｜${item.status==='active'?'已授權':'已撤銷'}</small><div><code>${escapeHtml(item.groupId)}</code></div>${item.status==='active'?`<button class="danger" data-revoke="${escapeHtml(item.groupId)}" data-team="${t}">撤銷此群組</button>`:''}</article>`;
+   const active=item.status==='active';
+   inner+=`<article><small>${escapeHtml(item.label||'未命名')}｜${active?'已授權':'已撤銷'}</small><div><code>${escapeHtml(item.groupId)}</code></div>${active?`<label>群組名稱（可隨時修改）<input maxlength="60" data-label-input="${escapeHtml(item.groupId)}" value="${escapeHtml(item.label||'')}" placeholder="輸入群組名稱"></label><button class="secondary" type="button" data-save-label="${escapeHtml(item.groupId)}" data-team="${t}">儲存群組名稱</button><button class="danger" data-revoke="${escapeHtml(item.groupId)}" data-team="${t}">撤銷此群組</button>`:''}</article>`;
   }
   panel.innerHTML=inner;holder.append(panel);
  }
+ holder.querySelectorAll('[data-save-label]').forEach(b=>b.onclick=async()=>{
+  const id=b.dataset.saveLabel,team=b.dataset.team;
+  const input=[...holder.querySelectorAll('[data-label-input]')].find(el=>el.dataset.labelInput===id);
+  const label=input?.value.trim()||'';
+  if(!label||label.length>60)return status('請輸入 1～60 字的群組名稱');
+  if(!confirm('確定更新此群組名稱？不會修改群組 ID 或授權。'))return;
+  b.disabled=true;
+  try{await mutate({action:'set_label',team,groupId:id,label});}finally{b.disabled=false;}
+ });
  holder.querySelectorAll('[data-revoke]').forEach(b=>b.onclick=async()=>{
   if(!confirm('確定撤銷此 LINE 群組授權？'))return;
   await mutate({action:'revoke',team:b.dataset.team,groupId:b.dataset.revoke});
